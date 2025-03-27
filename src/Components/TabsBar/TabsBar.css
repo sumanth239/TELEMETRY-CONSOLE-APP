@@ -1,0 +1,22 @@
+.active-bars-container {
+    list-style-type: none;
+    display: flex;
+    gap: 50px;
+    justify-content:flex-start;
+    overflow: hidden;
+  }
+  
+  
+  .active-bars-container li button {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--primary-color);
+    background-color: white;
+    border: 0;
+    cursor: pointer;
+    padding: 3px;
+  }
+  
+  .active-bars-container  .active {
+    border-bottom:2px solid var(--primary-color) !important;
+  }

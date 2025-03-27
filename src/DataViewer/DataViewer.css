@@ -1,0 +1,326 @@
+.dataviewer-main-container .calender-container {
+  height: 120px;
+  /* width: 100%; */
+  background-color: var(--greay-background);
+  border-radius: var(--primary-border-radius);
+  margin: 10px 22px  10px 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 50px;
+  /* padding: 10px 100px; */
+  position: relative;
+  width: 94.5%;
+}
+.dataviewer-main-container .calender-container .dropdown-container{
+  position: relative;
+  margin: 10px 20px;
+  /* height: 50px; */
+  padding: 15px;
+  width: 300px;
+}
+
+.dataviewer-main-container .calender-container .dropdown-container .dropdown-button {
+  padding:  5px 10px; 
+  border: 1px solid white;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+  color: black;
+  color: grey;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.dataviewer-main-container .calender-container .dropdown-container .dropdown-menu {
+  width: 160px;
+  text-overflow: ellipsis;
+  /* height: auto; */
+  background-color:white;
+  color: black;
+  padding: 5px 15px;
+  position: absolute;
+  top: 13px;
+  left: 170px;
+  border-radius: 5PX;
+  overflow-y: scroll;
+  height: 300px;
+  z-index: 10;
+  border: 1px solid var(--greay-background);
+  box-shadow: 1px 1px  1px 1px #888888;
+}
+
+.dataviewer-main-container .calender-container .dropdown-container .dropdown-menu ul {
+  
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  justify-content: space-between;
+  align-items:first baseline;
+}
+
+/* Set the checkbox background color to white */
+.dataviewer-main-container .calender-container .dropdown-container .dropdown-menu .dropdown-item input[type="checkbox"] {
+  background-color: white !important;
+  cursor: pointer;
+}
+
+/* Change checkmark color to gray when checked */
+.dataviewer-main-container .calender-container .dropdown-container .dropdown-menu .dropdown-item input[type="checkbox"]:checked {
+  accent-color: gray;
+}
+
+.dataviewer-main-container .calender-container .dropdown-container .dropdown-menu ul  li {
+  padding: 0;
+  border: 0;
+  color: grey;
+  background-color: white;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 7px;
+}
+
+
+.dataviewer-main-container .calender-container .data-buttons-container {
+  list-style: none;
+  display: inline;
+  margin-right: 0;
+  position: absolute;
+  bottom: 2px;
+  right: 20px;
+  /* width: 300px; */
+}
+
+.dataviewer-main-container .calender-container .data-buttons-container li {
+  margin-right: 20px;
+  display: inline;
+  float: right;
+  /* margin-right: 100px; */
+  /* margin-left: 50px; */
+}
+
+.dataviewer-main-container .calender-container .data-buttons-container button{
+  background-color: var(--primary-color);
+  padding: 7px 15px;
+  border-radius: 5px;
+  border:  0px solid black;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.dataviewer-main-container .calender-container .time-range-container{
+  display: flex;
+  color: black;
+  gap: 10px;
+  margin: 10px 20px;
+  height: 50px;
+  /* font-size: 15px; */
+  /* font-weight: 500; */
+}
+.dataviewer-main-container .graphs-main-container {
+    display: grid;
+    /* padding: 0 30px 10px 30px; */
+    grid-template-columns: 20% 75%; /* First div takes 25%, second takes 75% */
+    gap: 25px;
+    margin: 10px 20px;
+  }
+
+  .dataviewer-main-container .graphs-main-container  .labels-data-container{
+    height: 600px;
+    background-color: var(--greay-background);
+    /* margin-bottom: 15px; */
+    border-radius: var(--primary-border-radius);
+    padding: 5px 25px;
+    overflow-y: scroll;
+  }
+
+  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data{
+    display: grid;
+    grid-template-columns: 38% 47% 10%;
+    gap: 10px;
+    color: var(--primary-color);
+    align-items: center;
+    height: 37.5px;
+
+  }
+
+  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text{
+    width: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text:hover{
+    overflow: visible;
+    white-space: normal;
+    background: #fff;
+    /* position: absolute; */
+    z-index: 1;
+    width: 300px;
+    max-width: 300px; /* Set max width for hover display */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    border-radius: 5px;
+  }
+  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data div{
+    background-color: white;
+    width: auto;
+    color: black;
+    border: 1px solid white;
+    border-radius: 5px;
+    height:20px ;
+    display: flex;
+    justify-content:left;
+    align-items: center;
+    /* text-overflow: hidden; */
+    padding-left: 4%;
+
+  }
+
+   .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container{
+    height: 580px;
+    background-color: var(--greay-background);
+    border-radius: var(--primary-border-radius);
+    /* margin-bottom: 15px; */
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start;
+    overflow-y: scroll;
+
+  }
+   .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph {
+    color: black;
+    background-color: white;
+    width: 450px;
+    height: 180px;
+    margin-bottom: 10.5px;
+    padding: 0;
+  }
+
+   .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph .graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 15px;
+    height: 30px;
+    position: relative;
+  }
+
+   .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph .graph-header .view-more-button {
+    border: 0;
+    background-color: white;
+    color: black;
+    /* height: 10px; */
+    padding: 0;
+    cursor: pointer;
+  }
+
+    .dataviewer-main-container .graphs-main-container  .graphs-container .graph-header  .graph-options-menu {
+    width: auto;
+    text-overflow: ellipsis;
+    /* height: auto; */
+    background-color:white;
+    color: black;
+    padding: 5px 15px;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    border-radius: 3px;
+    overflow-y: scroll;
+    height: 100px;
+    z-index: 10;
+    border: 1px solid var(--greay-background);
+    box-shadow: 1px 1px  1px 1px #888888;
+
+  }
+
+    .dataviewer-main-container .graphs-main-container  .graphs-container .graph-header  .graph-options-menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+    .dataviewer-main-container .graphs-main-container  .graphs-container .graph-header  .graph-options-menu ul  li button {
+    padding: 0;
+    border: 0;
+    color: black;
+    background-color: white;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+    .dataviewer-main-container .graphs-main-container  .graphs-container .graph-header  .graph-options-menu ul  li button:hover {
+    background-color: var(--greay-background);
+    padding:  5px 3px ;
+  }
+
+
+/* Small desktops and laptops (1024px - 1279px) */
+@media  (max-width: 1279px) {
+
+  .dataviewer-main-container .calender-container {
+    margin: 10px 50px 10px 20px;
+  }
+  .dataviewer-main-container .calender-container .time-range-container{
+    display: flex;
+    color: black;
+    gap: 10px;
+    margin: 10px 20px;
+    height: 50px;
+    font-size: 15px;
+    /* font-weight: 500; */
+  }
+  .dataviewer-main-container .calender-container .data-buttons-container button{
+    background-color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: 5px;
+    border:  0px solid black;
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .dataviewer-main-container .calender-container .data-buttons-container {
+    list-style: none;
+    display: inline;
+    margin-right: 0;
+    position: absolute;
+    bottom: 0px;
+    right: 20px;
+    /* width: 300px; */
+  }
+  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text{
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text:hover{
+    cursor: help;
+    overflow: visible;
+    white-space: normal;
+    background: #fff;
+    position: absolute;
+    z-index: 10;
+    width: 100px;
+    max-width: 50px; /* Set max width for hover display */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 2px;
+    border-radius: 5px;
+  } 
+
+  .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph {
+    width: 330px;
+    height: 120px;
+    margin-bottom: 10.5px;
+    padding: 0;
+  }
+}
