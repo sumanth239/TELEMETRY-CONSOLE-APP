@@ -40,7 +40,7 @@ const Header: React.FC = () => {
             {/* Logo contianer*/}
             <div className="logo-container">
                 <img id="astro-logo-image" src={logo} alt="AstroLink Logo" />
-                <p id="logo-text">AstroLink</p>
+                <p id="logo-text">AstroLink 10G ODT</p>
             </div>
 
             {/* Date and time contianer */}

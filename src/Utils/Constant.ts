@@ -64,7 +64,7 @@ export const settingsMenu = ["Import Data","Export Data","Settings Options","Dat
 export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlines","[Graph Option]"]
 
 
-export const allLables = ["Al Angle","En Angle","lable1","lable2","lable3" , "label6", "label7", "label8", "label9", "label10","label11", "label12", "label13", "label14", "label15"]
+export const allLables = ["System Mode","Azimuth Angle","Elevation Angle","Optical Bench Temperature","Gimbal Driver System Temperature","lable1","lable2","lable3" , "label6", "label7", "label8", "label9", "label10"]
 export const tempTelemetryData: string = "$100*,$200*,$300*,$400,$500*";
 
 export interface TelemetryData {
@@ -161,3 +161,4 @@ export function convertToUtcFormat(date: Date): string {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 }
 
+// export default const systemModes 

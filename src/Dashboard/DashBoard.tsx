@@ -36,9 +36,12 @@ const Dashboard: React.FC = () => {
   const [systemStartedTime, setSystemStartedTime] = useState<any>("27-03-2025 12:30:45");    //to handle system live time
   const [teleCmdData, setTeleCmdData] = useState<string[]>([]);   //for telecmd packet data genrated from backend
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
-  const [selectedCommandType, setSelectedCommandType] = useState("Real Time");    //to handle the telecmd type i.e Real time or Time Tagged
-  const [selectedCommand, setSelectedCommand] = useState<{ "cmd": string; "cmdId": number }>();   //states to handle the telecmd
-  const [teleCmdValue, setTeleCmdValue] = useState("");   //states to handle the telecmd value i.e input by user
+  const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
+    "teleCmdType": "Real Time",
+    "teleCmd": { "cmd": "", "cmdId": 0 },
+    "teleCmdValue": "",
+
+  })
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [visibleGraphs, setVisibleGraphs] = useState<{ [key: string]: boolean }>(     //to handle the  graphs visibility
     () => allLables.reduce((acc, label) => {
@@ -47,7 +50,7 @@ const Dashboard: React.FC = () => {
     }, {} as { [key: string]: boolean })
   );
 
-  const { formattedDate, formattedTime,currentUtcTime} = useCurrentTime();   //Extracting current time and current date thorugh custom hook
+  const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
 
   //function to fetch the telecmds data along with telecmd values and system counters  
   const fetchTmtCmds = async () => {
@@ -119,22 +122,23 @@ const Dashboard: React.FC = () => {
 
   //Handlar functions
 
-  const handleDateChange = (date: Date | null) => {   //to handle date change in child component
-    setSelectedDateTime(date);
+  const handleDateChange = (event: any) => {   //to handle date change in child component
+    setSelectedDateTime(event.target.value);
+    console.log(event.target.value)
   };
-  
+
   const CommandsDataHandler = async (event: any) => {     //to handle commands data on apply telecmd form
 
     const cmdData = {
-      telecmd_type: selectedCommandType,
-      telecmd_type_value:
-        selectedCommandType == "Real Time"
+      "telecmd_type": teleCmdsFormData.teleCmdType,
+      "telecmd_type_value":
+        teleCmdsFormData.teleCmdType == "Real Time"
           ? `${formattedDate} ${formattedTime}`
-          : `${selectedDateTime?.toLocaleDateString("en-GB").replace(/\//g, "-")} ${selectedDateTime?.toLocaleTimeString()}`,
-      telecmd: selectedCommand?.cmd,   // Extract cmd from selectedCommand object
-      telecmd_value: teleCmdValue,
-      telecmd_id: selectedCommand?.cmdId?.toString(),
-      systemCounter: 0 ? selectedCommandType == "Real Time" : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
+          : `${selectedDateTime}`,
+      "telecmd": teleCmdsFormData.teleCmd.cmd,   // Extract cmd from selectedCommand object
+      "telecmd_value": teleCmdsFormData.teleCmdValue,
+      "telecmd_id": teleCmdsFormData.teleCmd.cmdId,
+      "systemCounter": 0 ? teleCmdsFormData.teleCmdType == "Real Time" : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
     };
     console.log("Sending command data:", cmdData);
 
@@ -161,15 +165,26 @@ const Dashboard: React.FC = () => {
 
   const CommandHandler = (event: any) => {      //to handle entered telecommand
     const selectedData = JSON.parse(event.target.value);
-    setSelectedCommand(selectedData)
+    setTeleCmdsFormData((prevState) => (
+      {
+        ...prevState,
+        ["teleCmd"]: selectedData
+      }
+    ))
   };
 
   const CommandTypeHandler = (event: any) => {      //to handle telecmd type i.e realtime or time tagged
-    setSelectedCommandType(event.target.value);
+    setTeleCmdsFormData((prevstate) => ({
+      ...prevstate,
+      ["teleCmdType"]: event.target.value
+    }))
   };
 
   const TeleCmdValueHandler = (event: any) => {     //to handle telecmd value i.e input by user
-    setTeleCmdValue(event.target.value);
+    setTeleCmdsFormData((prevstate) => ({
+      ...prevstate,
+      ["teleCmdValue"]: event.target.value
+    }))
   };
 
   const toggleGraph = (label: string) => {      // to toggle graph visibility
@@ -201,10 +216,10 @@ const Dashboard: React.FC = () => {
     return Math.abs((end.getTime() - start.getTime()) / 1000);    // Calculating the difference in seconds
   }
 
-
+  console.log("data", teleCmdsFormData)
   return (
     <>
-      {startSystem ? <button onClick={() => { setStartSystem(!startSystem) }}>stop</button> : <button onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }}>start</button>}
+      {/* {startSystem ? <button onClick={() => { setStartSystem(!startSystem) }}>stop</button> : <button onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }}>start</button>} */}
       <div className="dashboard-main-container">
         {/* labels container */}
         <div className="lables-container">
@@ -217,10 +232,10 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {/* condtionally rendering icons to handle graphs visibility */}
-                {visibleGraphs[label] ? 
-                  <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", fontSize: "18px", color: "black",}}></i>
-                   : 
-                  <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", fontSize: "18px", color: "black",}}></i>
+                {visibleGraphs[label] ?
+                  <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
+                  :
+                  <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
                 }
               </div>
             ))}
@@ -238,7 +253,7 @@ const Dashboard: React.FC = () => {
             </select>
 
             {/*condtionally rendering calender componenet based on command type */}
-            {selectedCommandType == "Real Time" ?  <span>{currentUtcTime}</span>  :  <CalendarComponent onDateChange={handleDateChange} /> }
+            {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
             <p>TELE COMMAND</p>
 
             <select onChange={CommandHandler}>
@@ -248,7 +263,7 @@ const Dashboard: React.FC = () => {
               ))}
             </select>
 
-            <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdValue} ></input>
+            <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input>
             <button id="commands-apply-button" onClick={CommandsDataHandler}>{" "}Apply Now</button>
           </div>
         </div>
@@ -311,27 +326,65 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/*Time tag container */}
-        <div className="time-tag-container">
-          <p>Time Tag Command Queue</p>
-          <div className="time-tag-commands-container">
-            {/* Time tags with steppers */}
-            {tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").map((data: any, index) => (
-              <div key={index} className="step-item">
+        <div className="system-status-and-time-tag-main-contianer">
+          <div className="system-status-main-container">
+            <div className="system-status-container">
+              {startSystem ? <span style={{ display: "inline-flex", marginTop: "7px", marginBottom: "0", alignItems: "center", gap: "10px", lineHeight: "1" }}>
+                <i className="bi bi-toggle-on" style={{ fontSize: "38px", color: "green", paddingLeft: "3px" }}></i>
+                ON
+              </span> :
+              <span style={{ display: "inline-flex", marginTop: "7px", marginBottom: "0", alignItems: "center", gap: "10px", lineHeight: "1" }}>
+              <i className="bi bi-toggle-off" style={{ fontSize: "38px", color: "gray", paddingLeft: "3px" }}></i>
+              OFF
+            </span> }
+              
 
-                <div className="step-circle"></div>
-                <div  className="step-line"
+              <p>💧 Humidity : 45% - 55%</p>
+              <p>🌡️ Temperature: 22°C - 27°C</p>
+            </div>
+            {/* System Mode Data */}
+            <div className="system-mode-container">
+              <p >
+                ⚙️ <strong>Idle Mode</strong> {startSystem ?  <i className="bi bi-toggle-off" onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }} style={{color:"gray"}}></i> :  <i className="bi bi-toggle-on" style={{color:"green"}}></i>}
+              </p>
+              <p>
+                ⏳ <strong>Stand By</strong> {startSystem ?  <i className="bi bi-toggle-on" style={{color:"green"}}></i> :  <i className="bi bi-toggle-off" onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }} style={{color:"gray"}}></i>}
+              </p>
+            </div>
+
+          </div>
+          <div className="time-tag-container">
+
+            <p>Time Tag Command Queue</p>
+            <div className="time-tag-commands-container">
+              {/* Time tags with steppers */}
+              {tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").map((data: any, index) => (
+                <div key={index} className="step-item">
+
+                  <div className="step-circle" style={{
+                    backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
+                      data.status === 'Failed' ? '#F8CECC' :
+                        data.status === 'Success' ? '#D5E8D4' : '#666666'
+                  }}></div>
+                  <div className="step-line"
                     style={{
-                    display: index === tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").length - 1 ? "none" : "block",
-                  }}
-                ></div>
-                <p className="step-text">
-                  {data.telecmd_type_value} &nbsp; : &nbsp; {data.teleCmdPacket}
-                </p>
-              </div>
-            ))}
+                      backgroundColor: data.status === 'Pending' ? '#666666' :
+                        data.status === 'Failed' ? '#B85450' :
+                          data.status === 'Success' ? '#82B366' : '#666666',
+                      display: index === tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").length - 1 ? "none" : "block",
+                    }}
+                  ></div>
+                  <p className="step-text">
+                    {data.telecmd_type_value} &nbsp; : &nbsp; {data.teleCmdPacket}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+
+        {/*Time tag container */}
       </div>
     </>
   );

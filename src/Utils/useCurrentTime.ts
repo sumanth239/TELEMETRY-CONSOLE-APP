@@ -7,7 +7,7 @@ const useCurrentTime = () => {
     //states
     const [currentTime, setCurrentTime] = useState(new Date());     //to handle the current time
     const formattedDate = currentTime.toLocaleDateString("en-GB").replace(/\//g, "-");      // Format date as DD-MM-YYYY (UTC)
-    const formattedTime = currentTime.toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: false });   // Format time as HH-MM-SS (UTC)
+    const formattedTime = currentTime.toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true });   // Format time as HH-MM-SS (UTC)
     const currentUtcTime = convertToUtcFormat(currentTime)
 
     useEffect(() => {

@@ -11,9 +11,6 @@ interface LabelsData {
     [key: string]: { value: string }[];
 }
 
-interface MultiSelectDropdownProps {
-    labelsData: LabelsData;
-}
 
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
