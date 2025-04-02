@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./DashBoard.css"; // Import the CSS file
-import { teleCommandType, teleCommands, graphOptions, allLables, } from "../Utils/Constant";
+import { teleCommandType, systemModes, teleCommands, graphOptions, allLables, } from "../Utils/Constant";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
 import useCurrentTime from "../Utils/useCurrentTime";
 import axios from "axios";
+import { data } from "react-router-dom";
 
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
-const intialTelemeteryData: { [key: string]: { timestamp: number; value: number }[] } = {};
+const intialTelemeteryData: { [key: string]: { timestamp: string; value: number }[] } = {};
 
 
 //Modifying intial state of graphs as visible
@@ -49,6 +50,8 @@ const Dashboard: React.FC = () => {
       return acc;
     }, {} as { [key: string]: boolean })
   );
+  const [systemMode, setSystemMode] = useState("Idle Mode");
+  const [teleCmdValueError, setTeleCmdValueError] = useState<string>("");
 
   const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
 
@@ -91,7 +94,7 @@ const Dashboard: React.FC = () => {
 
             allLables.forEach((label, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { timestamp: Date.now(), value: incomingData[index] };
+                const newEntry = { timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }), value: incomingData[index] };
                 updatedData[label] = [...(prevData[label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
               }
             });
@@ -118,7 +121,14 @@ const Dashboard: React.FC = () => {
 
   }, [startSystem]);
 
+  useEffect(() => {
+    setTeleCmdValueError(""); // Reset error
 
+    setTeleCmdsFormData((prev) => ({
+      ...prev,
+      teleCmdValue: "", // Reset input value properly
+    }));
+  }, [teleCmdsFormData.teleCmd]); 
 
   //Handlar functions
 
@@ -128,6 +138,30 @@ const Dashboard: React.FC = () => {
   };
 
   const CommandsDataHandler = async (event: any) => {     //to handle commands data on apply telecmd form
+    event.preventDefault()
+
+    let teleCommand = teleCmdsFormData.teleCmd
+    let teleCommandValue = teleCmdsFormData.teleCmdValue
+
+    if (teleCmdsFormData.teleCmdType == "Real Time") {
+      if (teleCommand.cmd == "System Mode") {
+        setSystemMode(teleCommandValue)
+
+        if (teleCommandValue == "Stand-By Mode") {
+          setStartSystem(!startSystem);
+          // setUtcCounter(0); 
+          // setSystemCounter(0);
+          setSystemStartedTime(new Date())
+        }
+      } else if (teleCommand.cmd == "Shutdown System") {
+        setStartSystem(!startSystem);
+        setUtcCounter(0);
+        setSystemCounter(0);
+        setSystemStartedTime(new Date())
+
+      }
+    }
+
 
     const cmdData = {
       "telecmd_type": teleCmdsFormData.teleCmdType,
@@ -135,12 +169,13 @@ const Dashboard: React.FC = () => {
         teleCmdsFormData.teleCmdType == "Real Time"
           ? `${formattedDate} ${formattedTime}`
           : `${selectedDateTime}`,
-      "telecmd": teleCmdsFormData.teleCmd.cmd,   // Extract cmd from selectedCommand object
-      "telecmd_value": teleCmdsFormData.teleCmdValue,
-      "telecmd_id": teleCmdsFormData.teleCmd.cmdId,
-      "systemCounter": 0 ? teleCmdsFormData.teleCmdType == "Real Time" : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
+      "telecmd": teleCommand.cmd,   // Extract cmd from selectedCommand object
+      "telecmd_value": teleCommandValue,
+      "telecmd_id": teleCommand.cmdId,
+      "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
     };
     console.log("Sending command data:", cmdData);
+    // return ;
 
     try {
       const response: any = await axios.post("http://127.0.0.1:8000/dashboard/get_telecmds", cmdData, {   //API to convert the telecmd into packet format along with system counter
@@ -168,9 +203,11 @@ const Dashboard: React.FC = () => {
     setTeleCmdsFormData((prevState) => (
       {
         ...prevState,
-        ["teleCmd"]: selectedData
+        ["teleCmd"]: selectedData,
+       [ "teleCmdValue"]:"100"
       }
     ))
+    console.log("ay",teleCmdsFormData.teleCmdValue)
   };
 
   const CommandTypeHandler = (event: any) => {      //to handle telecmd type i.e realtime or time tagged
@@ -181,6 +218,29 @@ const Dashboard: React.FC = () => {
   };
 
   const TeleCmdValueHandler = (event: any) => {     //to handle telecmd value i.e input by user
+    setTeleCmdValueError(""); 
+    const numValue = parseFloat(event.target.value);
+    console.log(numValue)
+    if (teleCmdsFormData.teleCmd.cmd !="System Mode" && isNaN(numValue)) {
+      setTeleCmdValueError("Value must be a number.");
+      return;
+    }
+
+    if (teleCmdsFormData.teleCmd.cmd === "PAT Mode" && (numValue < 0 || numValue > 3)) {
+      setTeleCmdValueError("Value must be between 0 and 3.");
+      return;
+    }
+
+    if (teleCmdsFormData.teleCmd.cmd === "EDFA Power" && (numValue < 20 || numValue > 32)) {
+      setTeleCmdValueError("Value must be between 20 and 32 dBm.");
+      return;
+    }
+
+    if (["Elevation Angle", "Azimuth Angle"].includes(teleCmdsFormData.teleCmd.cmd) && (numValue < -110 || numValue > 110)) {
+      setTeleCmdValueError(`Value must be between -110 and 110 degrees.`);
+      return;
+    }
+    setTeleCmdValueError(""); 
     setTeleCmdsFormData((prevstate) => ({
       ...prevstate,
       ["teleCmdValue"]: event.target.value
@@ -216,7 +276,68 @@ const Dashboard: React.FC = () => {
     return Math.abs((end.getTime() - start.getTime()) / 1000);    // Calculating the difference in seconds
   }
 
-  console.log("data", teleCmdsFormData)
+  const systemModeIcon = (mode: string) => {
+    if (mode == "Idle Mode") {
+      return <i className="bi bi-pause-circle"></i>
+    } else if (mode == "Maintenance Mode") {
+      return <i className="bi bi-tools"></i>
+    } else if (mode == "Stand-By Mode") {
+      return <i className="bi bi-hourglass-split"></i>
+    } else if (mode == "Downlink Mode") {
+      return <i className="bi bi-cloud-arrow-down"></i>
+    }
+  }
+  const renderTeleCmdsExtraFields = () => {
+    let command = teleCmdsFormData.teleCmd.cmd;
+    if (!command) return null;
+
+    switch (command) {
+      case "System Mode":
+        return (
+          <select onChange={TeleCmdValueHandler}>
+            {systemModes.map((item, index) => (
+              <option key={index} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        )
+
+      case "PAT Mode":
+        return (
+          <>
+            <input onChange={TeleCmdValueHandler}   className={teleCmdValueError ? "input-error" : ""}  type="text" />
+          </>
+
+        )
+
+      case "EDFA Power":
+        return (
+          <>
+            <input type="text" className={teleCmdValueError ? "input-error" : ""} onChange={TeleCmdValueHandler} /><b>dBm</b>
+          </>
+
+        )
+
+      case "Elevation Angle":
+      case "Azimuth Angle":
+        return (
+          <>
+            <input type="text" className={teleCmdValueError ? "input-error" : ""} onChange={TeleCmdValueHandler} /><b>degrees</b>
+          </>
+
+        )
+
+      // case "Shutdown System" :
+      // case "EDFA Shutdown":
+      //   return (
+      //     <>
+      //       <input type="text" />
+      //     </>
+      //   )
+    }
+  }
+  // console.log("data", teleCmdsFormData)
   return (
     <>
       {/* {startSystem ? <button onClick={() => { setStartSystem(!startSystem) }}>stop</button> : <button onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }}>start</button>} */}
@@ -241,31 +362,33 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
 
-          {/* comands data container */}
-          <div className="commands-data-container">
-            <p>TELE COMMAND TYPE</p>
-            <select onChange={CommandTypeHandler}>
-              {teleCommandType.map((value, index) => (
-                <option id={value} key={index}>
-                  {value}
-                </option>
-              ))}
-            </select>
+          <form>
+            {/* comands data container */}
+            <div className="commands-data-container">
+              <p>TELE COMMAND TYPE</p>
+              <select onChange={CommandTypeHandler}>
+                {teleCommandType.map((value, index) => (
+                  <option id={value} key={index}>
+                    {value}
+                  </option>
+                ))}
+              </select>
 
-            {/*condtionally rendering calender componenet based on command type */}
-            {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
-            <p>TELE COMMAND</p>
+              {/*condtionally rendering calender componenet based on command type */}
+              {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
+              <p>TELE COMMAND</p>
 
-            <select onChange={CommandHandler}>
-              {/* <option selected> TeleCmd</option> */}
-              {teleCommands.map((data, index) => (
-                <option id={data.cmd} key={index} value={JSON.stringify(data)}> {data.cmd} </option>
-              ))}
-            </select>
-
-            <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input>
-            <button id="commands-apply-button" onClick={CommandsDataHandler}>{" "}Apply Now</button>
-          </div>
+              <select onChange={CommandHandler}>
+                {/* <option selected> TeleCmd</option> */}
+                {teleCommands.map((data, index) => (
+                  <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
+                ))}
+              </select>
+              {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
+              {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
+              <button id="commands-apply-button" onClick={CommandsDataHandler}>{" "}Apply Now</button>
+            </div>
+          </form>
         </div>
 
         {/* graphs container*/}
@@ -333,23 +456,21 @@ const Dashboard: React.FC = () => {
                 <i className="bi bi-toggle-on" style={{ fontSize: "38px", color: "green", paddingLeft: "3px" }}></i>
                 ON
               </span> :
-              <span style={{ display: "inline-flex", marginTop: "7px", marginBottom: "0", alignItems: "center", gap: "10px", lineHeight: "1" }}>
-              <i className="bi bi-toggle-off" style={{ fontSize: "38px", color: "gray", paddingLeft: "3px" }}></i>
-              OFF
-            </span> }
-              
+                <span style={{ display: "inline-flex", marginTop: "7px", marginBottom: "0", alignItems: "center", gap: "10px", lineHeight: "1" }}>
+                  <i className="bi bi-toggle-off" style={{ fontSize: "38px", color: "gray", paddingLeft: "3px" }}></i>
+                  OFF
+                </span>}
 
-              <p>💧 Humidity : 45% - 55%</p>
-              <p>🌡️ Temperature: 22°C - 27°C</p>
+              <p >
+                <strong> {systemModeIcon(systemMode)} {systemMode}</strong>
+              </p>
+
             </div>
             {/* System Mode Data */}
-            <div className="system-mode-container">
-              <p >
-                ⚙️ <strong>Idle Mode</strong> {startSystem ?  <i className="bi bi-toggle-off" onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }} style={{color:"gray"}}></i> :  <i className="bi bi-toggle-on" style={{color:"green"}}></i>}
-              </p>
-              <p>
-                ⏳ <strong>Stand By</strong> {startSystem ?  <i className="bi bi-toggle-on" style={{color:"green"}}></i> :  <i className="bi bi-toggle-off" onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }} style={{color:"gray"}}></i>}
-              </p>
+            <div className="weather-data-container">
+              <p>⚡ Power :120w - 160w</p>
+              <p>💧 Humidity : 45% - 55%</p>
+              <p>🌡️ Temperature: 22°C - 27°C</p>
             </div>
 
           </div>

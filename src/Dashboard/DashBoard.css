@@ -67,7 +67,7 @@
 }
 
 .dashboard-main-container .lables-container .commands-data-container {
-  height: 230px;
+  height: 250px;
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
   padding: 2px 15px;
@@ -79,7 +79,7 @@
 .dashboard-main-container .lables-container .commands-data-container {
   color: var(--primary-color);
   font-weight: 500;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .dashboard-main-container .lables-container .commands-data-container select {
@@ -95,7 +95,7 @@
 
 .dashboard-main-container .lables-container .commands-data-container #commands-apply-button {
   position: absolute;
-  bottom: 20px;
+  bottom: 10px;
   right: 20px;
   background-color: var(--primary-color);
   padding: 7px 12px;
@@ -174,7 +174,7 @@
 }
 
 .dashboard-main-container .graphs-container .commands-output-container {
-  height: 215px;
+  height: 235px;
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
   padding: 10px;
@@ -213,14 +213,14 @@
   border-radius: 15px;
   padding: 5px 20px 20px 10px;
   background-color: white;
-  height: 140px;
+  height: 160px;
   overflow-y: scroll;
   margin-left: 17px;
   margin-top: 15px;
 }
 
 .dashboard-main-container .time-tag-container {
-  height: 560px;
+  height: 580px;
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
   padding: 0px 20px 20px 20px;
@@ -283,7 +283,7 @@
 
 .dashboard-main-container .time-tag-container .time-tag-commands-container .step-item .step-text {
   margin-left: 20px;
-  font-size: 16px;
+  font-size: 15px;
   color: black;
 }
 
@@ -331,17 +331,60 @@
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
   color: var(--primary-color);
-  display: grid;
-  grid-template-columns: 65% 35%;
+  padding-left: 5px;
 }
 
 .system-status-main-container .system-status-container {
-  padding: 5px 15px;
+  padding: 5px 0px 0px 10px;
+  display: flex;
+  gap: 30px;
+  /* justify-content: space-around; */
+  /* justify-content: center; */
+  align-items: center;
+  margin: 0;
+}
+.system-status-main-container .system-status-container p {
+  padding-top: 6px;
 }
 
-.system-status-main-container .system-mode-container {
-  padding: auto 10px;
+/* .system-status-main-container .system-status-container{
+  font-size: 15px;
+} */
+
+.system-status-main-container .weather-data-container {
+  padding: 0 10px;
+  font-size: 15px;
+  margin: 0;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* gap: 5px; */
+  /* justify-content: space-between; */
+  box-sizing: border-box;
 }
+.system-status-main-container .weather-data-container p {
+  padding: 1px 0;
+  margin: 0;
+}
+
+.error {
+  color: #B85450;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 5px;
+  margin-left: 5px;
+}
+
+.input-error {
+  border: 2px solid #B85450;
+  background-color: #ffe6e6;
+}
+
+.error-icon {
+  color: #B85450;
+  margin-left: 5px;
+  font-size: 16px;
+}
+
 
 /* Small desktops and laptops (1024px - 1279px) */
 @media (min-width: 600px) and (max-width: 1279px) {

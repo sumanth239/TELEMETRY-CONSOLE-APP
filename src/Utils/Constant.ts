@@ -8,6 +8,12 @@ export const systemLogs = [
     { timestamp: "21-02-2025 09:51 UTC", message: "System Mode changed to Stand-By" },
     
 ];
+export const systemModes = [
+    "Idle Mode",
+    "Stand-By Mode",
+    "Mainteance Mode",
+    "Downlink Mode"
+]
 const data = [
     { value: 400.7481},
     { value: 300.98758 },
