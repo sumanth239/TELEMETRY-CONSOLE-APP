@@ -6,6 +6,7 @@ import CalendarComponent from "../Components/Calender";
 import useCurrentTime from "../Utils/useCurrentTime";
 import axios from "axios";
 import { data } from "react-router-dom";
+import { exportToExcel } from "../Utils/HelperFunctions";
 
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
@@ -37,23 +38,25 @@ const Dashboard: React.FC = () => {
   const [systemStartedTime, setSystemStartedTime] = useState<any>("27-03-2025 12:30:45");    //to handle system live time
   const [teleCmdData, setTeleCmdData] = useState<string[]>([]);   //for telecmd packet data genrated from backend
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
+  const [systemMode, setSystemMode] = useState("Idle Mode"); //to handle the system mode
+  const [teleCmdValueError, setTeleCmdValueError] = useState<string>(""); //to handle telecmd input validation errors
+  const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
+  const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
+  const [isLogging,setIsLogging] = useState(false);   //state to handle telemetry data logging
+  const [logsData, setLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
     "teleCmdType": "Real Time",
     "teleCmd": { "cmd": "", "cmdId": 0 },
     "teleCmdValue": "",
 
   })
-  const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [visibleGraphs, setVisibleGraphs] = useState<{ [key: string]: boolean }>(     //to handle the  graphs visibility
     () => allLables.reduce((acc, label) => {
       acc[label] = true;      // Initialize each label as visible (true)
       return acc;
     }, {} as { [key: string]: boolean })
   );
-  const [systemMode, setSystemMode] = useState("Idle Mode");
-  const [teleCmdValueError, setTeleCmdValueError] = useState<string>("");
-
-  const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
+  // console.log("telemetry data",telemetryData)
 
   //function to fetch the telecmds data along with telecmd values and system counters  
   const fetchTmtCmds = async () => {
@@ -69,7 +72,7 @@ const Dashboard: React.FC = () => {
         setTmtData(response.data);
       }
 
-      console.log("Response from API:", response.data);
+      // console.log("Response from API:", response.data);
     } catch (error) {
       console.error("API call failed:", error);
     }
@@ -80,15 +83,34 @@ const Dashboard: React.FC = () => {
     fetchTmtCmds()
   }, [startSystem]); // Dependency array remains empty to avoid re-creating intervals
 
-
+  console.log("logs",logsData)
   useEffect(() => {
     if (startSystem) {
       const ws = new WebSocket(`ws://127.0.0.1:8000/ws`);
 
       ws.onmessage = (event) => {   //on websocket connection
+
+        //logging telemetry data to export data through excel 
+        if(isLogging){
+          const data = JSON.parse(event.data);
+          const newData = {
+            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
+            ...allLables.reduce((acc, label, index) => {
+              acc[label] = data[index] || null;
+              return acc;
+            }, {} as { [key: string]: any })
+          };
+          
+          
+        
+          setLogsData((prevState) => [...prevState, newData]);
+          console.log("new data",newData)
+        }
+
+
         try {
           const incomingData = JSON.parse(event.data); // Expected JSON: { "Al Angle": 45, "En Angle": 30, "label1": 12, ... }
-
+          // console.log("incoming data",incomingData);
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
@@ -119,7 +141,7 @@ const Dashboard: React.FC = () => {
     }
 
 
-  }, [startSystem]);
+  }, [startSystem,isLogging]);
 
   useEffect(() => {
     setTeleCmdValueError(""); // Reset error
@@ -130,20 +152,21 @@ const Dashboard: React.FC = () => {
     }));
   }, [teleCmdsFormData.teleCmd]); 
 
+
   //Handlar functions
 
   const handleDateChange = (event: any) => {   //to handle date change in child component
     setSelectedDateTime(event.target.value);
-    console.log(event.target.value)
+    // console.log(event.target.value)
   };
 
   const CommandsDataHandler = async (event: any) => {     //to handle commands data on apply telecmd form
-    event.preventDefault()
+    event.preventDefault() //prevent default form submission
 
-    let teleCommand = teleCmdsFormData.teleCmd
+    let teleCommand = teleCmdsFormData.teleCmd 
     let teleCommandValue = teleCmdsFormData.teleCmdValue
 
-    if (teleCmdsFormData.teleCmdType == "Real Time") {
+    if (teleCmdsFormData.teleCmdType == "Real Time") {  //updating system mode state and system started time
       if (teleCommand.cmd == "System Mode") {
         setSystemMode(teleCommandValue)
 
@@ -153,7 +176,7 @@ const Dashboard: React.FC = () => {
           // setSystemCounter(0);
           setSystemStartedTime(new Date())
         }
-      } else if (teleCommand.cmd == "Shutdown System") {
+      } else if (teleCommand.cmd == "Shutdown System") {  //updating system mode state and system started time
         setStartSystem(!startSystem);
         setUtcCounter(0);
         setSystemCounter(0);
@@ -162,7 +185,7 @@ const Dashboard: React.FC = () => {
       }
     }
 
-
+    //cmd data i.e request to send backend API
     const cmdData = {
       "telecmd_type": teleCmdsFormData.teleCmdType,
       "telecmd_type_value":
@@ -174,7 +197,7 @@ const Dashboard: React.FC = () => {
       "telecmd_id": teleCommand.cmdId,
       "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
     };
-    console.log("Sending command data:", cmdData);
+    // console.log("Sending command data:", cmdData);
     // return ;
 
     try {
@@ -190,8 +213,8 @@ const Dashboard: React.FC = () => {
         fetchTmtCmds()
       }
 
-      console.log("Response from API:", response.data);
-      console.log("tele", teleCmdData)
+      // console.log("Response from API:", response.data);
+      // console.log("tele", teleCmdData)
     } catch (error) {
       console.error("API call failed:", error);
     }
@@ -207,7 +230,7 @@ const Dashboard: React.FC = () => {
        [ "teleCmdValue"]:"100"
       }
     ))
-    console.log("ay",teleCmdsFormData.teleCmdValue)
+    // console.log("ay",teleCmdsFormData.teleCmdValue)
   };
 
   const CommandTypeHandler = (event: any) => {      //to handle telecmd type i.e realtime or time tagged
@@ -218,9 +241,20 @@ const Dashboard: React.FC = () => {
   };
 
   const TeleCmdValueHandler = (event: any) => {     //to handle telecmd value i.e input by user
-    setTeleCmdValueError(""); 
+    
+    setTeleCmdValueError("");         //setting telecmd error empty on changing the telecmd
+    
     const numValue = parseFloat(event.target.value);
-    console.log(numValue)
+
+    setTeleCmdsFormData((prevstate) => ({           //updating telecmd value
+      ...prevstate,
+      ["teleCmdValue"]: event.target.value
+    }))
+
+    // console.log(numValue)
+
+
+    //telecmd input value validations
     if (teleCmdsFormData.teleCmd.cmd !="System Mode" && isNaN(numValue)) {
       setTeleCmdValueError("Value must be a number.");
       return;
@@ -232,19 +266,16 @@ const Dashboard: React.FC = () => {
     }
 
     if (teleCmdsFormData.teleCmd.cmd === "EDFA Power" && (numValue < 20 || numValue > 32)) {
-      setTeleCmdValueError("Value must be between 20 and 32 dBm.");
+      setTeleCmdValueError("Value must be between 20 and 32.");
       return;
     }
 
     if (["Elevation Angle", "Azimuth Angle"].includes(teleCmdsFormData.teleCmd.cmd) && (numValue < -110 || numValue > 110)) {
-      setTeleCmdValueError(`Value must be between -110 and 110 degrees.`);
+      setTeleCmdValueError(`Value must be between -110 and 110.`);
       return;
     }
     setTeleCmdValueError(""); 
-    setTeleCmdsFormData((prevstate) => ({
-      ...prevstate,
-      ["teleCmdValue"]: event.target.value
-    }))
+   
   };
 
   const toggleGraph = (label: string) => {      // to toggle graph visibility
@@ -276,7 +307,7 @@ const Dashboard: React.FC = () => {
     return Math.abs((end.getTime() - start.getTime()) / 1000);    // Calculating the difference in seconds
   }
 
-  const systemModeIcon = (mode: string) => {
+  const systemModeIcon = (mode: string) => {        // to return system mode icon based on system mode
     if (mode == "Idle Mode") {
       return <i className="bi bi-pause-circle"></i>
     } else if (mode == "Maintenance Mode") {
@@ -287,7 +318,9 @@ const Dashboard: React.FC = () => {
       return <i className="bi bi-cloud-arrow-down"></i>
     }
   }
-  const renderTeleCmdsExtraFields = () => {
+
+
+  const renderTeleCmdsExtraFields = () => {         //function to render different input fields for different commands
     let command = teleCmdsFormData.teleCmd.cmd;
     if (!command) return null;
 
@@ -306,7 +339,12 @@ const Dashboard: React.FC = () => {
       case "PAT Mode":
         return (
           <>
-            <input onChange={TeleCmdValueHandler}   className={teleCmdValueError ? "input-error" : ""}  type="text" />
+          {/* <div style={{"display":"flex","flexDirection":"column","gap":"5px","width":"100px","boxSizing":"border-box" ,"position":"absolute","right":"125px","bottom":"67px"}}> */}
+          <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
+            {/* <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
+            <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
+          </div> */}
+           
           </>
 
         )
@@ -314,7 +352,7 @@ const Dashboard: React.FC = () => {
       case "EDFA Power":
         return (
           <>
-            <input type="text" className={teleCmdValueError ? "input-error" : ""} onChange={TeleCmdValueHandler} /><b>dBm</b>
+            <input type="text" className={teleCmdValueError ? "input-error" : ""} value={teleCmdsFormData.teleCmdValue} onChange={TeleCmdValueHandler} />&nbsp;<b>  dBm</b>
           </>
 
         )
@@ -323,7 +361,7 @@ const Dashboard: React.FC = () => {
       case "Azimuth Angle":
         return (
           <>
-            <input type="text" className={teleCmdValueError ? "input-error" : ""} onChange={TeleCmdValueHandler} /><b>degrees</b>
+            <input type="text" className={teleCmdValueError ? "input-error" : ""} value={teleCmdsFormData.teleCmdValue} onChange={TeleCmdValueHandler} />&nbsp;&nbsp;<b>degrees</b>
           </>
 
         )
@@ -386,7 +424,7 @@ const Dashboard: React.FC = () => {
               </select>
               {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
               {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
-              <button id="commands-apply-button" onClick={CommandsDataHandler}>{" "}Apply Now</button>
+              <button id="commands-apply-button" disabled={teleCmdValueError ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
             </div>
           </form>
         </div>
@@ -448,7 +486,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-
+        
+        {/* system status and weather condtions data container*/}
         <div className="system-status-and-time-tag-main-contianer">
           <div className="system-status-main-container">
             <div className="system-status-container">
@@ -466,14 +505,19 @@ const Dashboard: React.FC = () => {
               </p>
 
             </div>
+
             {/* System Mode Data */}
             <div className="weather-data-container">
-              <p>⚡ Power :120w - 160w</p>
-              <p>💧 Humidity : 45% - 55%</p>
-              <p>🌡️ Temperature: 22°C - 27°C</p>
+              <p>⚡ Power&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;120w - 160w</p>
+              <p>💧 Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp; 45% - 55%</p>
+              <p>🌡️ Temperature&nbsp;&nbsp; :&nbsp;&nbsp; 22°C - 27°C</p>
+              {startSystem && <button className="logging-button" onClick={() => setIsLogging(!isLogging)}>{isLogging? "Stop Log":"Start Log"}</button>}
+              { logsData.length > 0 && !isLogging&& <button className="export-button" onClick={() => {exportToExcel(logsData);setLogsData([]);}}>Export Data</button>}
             </div>
 
           </div>
+
+           {/*Time tag container */}
           <div className="time-tag-container">
 
             <p>Time Tag Command Queue</p>
@@ -505,7 +549,6 @@ const Dashboard: React.FC = () => {
         </div>
 
 
-        {/*Time tag container */}
       </div>
     </>
   );

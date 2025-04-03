@@ -1,5 +1,5 @@
 export const teleCommandType = ["Real Time","Time Tagged"]
-export const teleCommands = [{"cmd":"PAT mode","cmdId":10},{"cmd":"Shut Down","cmdId":20},{"cmd":"Reset System","cmdId":50},{"cmd":"PAT mode2","cmdId":80}]
+export const teleCommands = [{"cmd":"PAT Mode","cmdId":10},{"cmd":"System Mode","cmdId":120},{"cmd":"Azimuth Angle","cmdId":20},{"cmd":"Elevation Angle","cmdId":50},{"cmd":"EDFA Power","cmdId":80},{"cmd":"EDFA Shutdown","cmdId":84},{"cmd":"Shutdown System","cmdId":96}]
 export const systemLogs = [
     { timestamp: "21-02-2025 10:07 UTC", message: "System is undergoing software update" },
     { timestamp: "21-02-2025 10:06 UTC", message: "CRC pass for Boot Image. System is ready for Software Update" },
@@ -11,7 +11,7 @@ export const systemLogs = [
 export const systemModes = [
     "Idle Mode",
     "Stand-By Mode",
-    "Mainteance Mode",
+    "Maintenance Mode",
     "Downlink Mode"
 ]
 const data = [
@@ -70,7 +70,7 @@ export const settingsMenu = ["Import Data","Export Data","Settings Options","Dat
 export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlines","[Graph Option]"]
 
 
-export const allLables = ["System Mode","Azimuth Angle","Elevation Angle","Optical Bench Temperature","Gimbal Driver System Temperature","lable1","lable2","lable3" , "label6", "label7", "label8", "label9", "label10"]
+export const allLables = ["System Mode","Azimuth Angle","Elevation Angle","Optical Bench Temperature","Gimbal Temperature","lable1","lable2","lable3" , "label6", "label7", "label8", "label9", "label10"]
 export const tempTelemetryData: string = "$100*,$200*,$300*,$400,$500*";
 
 export interface TelemetryData {
