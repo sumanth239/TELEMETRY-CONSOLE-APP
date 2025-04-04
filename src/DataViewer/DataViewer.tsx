@@ -1,9 +1,10 @@
 import React from "react";
 import "./DataViewer.css";
-import { labelsData, graphOptions } from "../Utils/Constant";
-import { useState } from "react";
+import { labelsData, graphOptions, allLables } from "../Utils/Constant";
+import { useState ,useRef} from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
+import * as XLSX from "xlsx";
 
 //Interfaces
 
@@ -18,15 +19,15 @@ const initialGraphOptionsState: { [key: string]: boolean } = {};
 const initialDropdownOptions: string[] = [];
 
 //Modifying intial states  
-Object.keys(labelsData).forEach((label) => {    //graphs visiblilty
+allLables.forEach((label) => {    //graphs visiblilty
     initialVisibility[label] = true;
 });
 
-Object.keys(labelsData).forEach((label) => {    //graph options
+allLables.forEach((label) => {    //graph options
     initialGraphOptionsState[label] = false;
 });
 
-Object.keys(labelsData).forEach((label) => (    //dropdown options
+allLables.forEach((label) => (    //dropdown options
     initialDropdownOptions.push(label)
 ))
 
@@ -37,9 +38,12 @@ const DataViewer: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
     const [visibleGraphs, setVisibleGraphs] = useState(initialVisibility);      //to handle the  graphs visibility 
     const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
+    const [telemetryData, setTelemetryData] = useState([]);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
+    const [file, setFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
 
     //handler functions
@@ -88,6 +92,47 @@ const DataViewer: React.FC = () => {
         console.log("Selected Date & Time in Parent:", date);
     };
 
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = event.target.files?.[0];
+        if (!selectedFile) return;
+    
+        // Check file type
+        if (!selectedFile.name.endsWith(".xlsx") && !selectedFile.name.endsWith(".xls")) {
+          alert("Please upload a valid Excel file (.xlsx or .xls)");
+          return;
+        }
+    
+        setFile(selectedFile);
+        readExcelData(selectedFile);
+      };
+    
+      const readExcelData = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const jsonData:any = XLSX.utils.sheet_to_json(sheet);
+          const transformedData: any = {};
+          jsonData.forEach((row: any) => {
+            Object.keys(row).forEach((key) => {
+              if (!transformedData[key]) {
+                transformedData[key] = [];
+              }
+              transformedData[key].push(row[key]);
+            });
+          });
+          
+          setTelemetryData(transformedData);
+        };
+        reader.readAsArrayBuffer(file);
+      };
+    
+      const handleButtonClick = () => {
+        fileInputRef.current?.click();
+      };
+      console.log(telemetryData)
     return (
         <>
             {/* data viewer main container*/}
@@ -114,7 +159,7 @@ const DataViewer: React.FC = () => {
                                         />
 
                                     </li>
-                                    {Object.entries(labelsData).map(([label, data], index) => (
+                                    {allLables.map((label, index) => (
                                         <li key={label} className="dropdown-item">
                                             <label>{label}</label>
                                             <input
@@ -133,13 +178,17 @@ const DataViewer: React.FC = () => {
                         <p>Select Start Date : <CalendarComponent onDateChange={handleDateChange} /></p>
                         <p>Select End Date : <CalendarComponent onDateChange={handleDateChange} /></p>
                     </div>
-                    <ul className="data-buttons-container">
+
+                    <ul className="data-buttons-container" >
+                        <li><input  ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> Select Xlsx or Xls file</li>
                         <li>
-                            <button className="system-log-buttons">Show Data</button>
+                            {telemetryData.length > 0 ? <button className="system-log-buttons">Show Data</button> : <button className="system-log-buttons" onClick={handleButtonClick}>Import Data</button>}
+
                         </li>
                         <li>
                             <button className="system-log-buttons">Export Data</button>
                         </li>
+
                     </ul>
 
                 </div>
@@ -182,7 +231,7 @@ const DataViewer: React.FC = () => {
                     <div className="graphs-container">
                         <div className="graphs-data-container">
                             {/* Condtionly rendering the graphs based on visibility */}
-                            {Object.entries(labelsData).map(([label, data], index) =>
+                            {Object.entries(telemetryData).map(([label, data], index) =>
                                 visibleGraphs[label] ? (
                                     <div className="graph">
                                         <div className="graph-header">

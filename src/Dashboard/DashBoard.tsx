@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
   const [teleCmdValueError, setTeleCmdValueError] = useState<string>(""); //to handle telecmd input validation errors
   const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
-  const [isLogging,setIsLogging] = useState(false);   //state to handle telemetry data logging
+  const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
   const [logsData, setLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
     "teleCmdType": "Real Time",
@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
     fetchTmtCmds()
   }, [startSystem]); // Dependency array remains empty to avoid re-creating intervals
 
-  console.log("logs",logsData)
+  console.log("logs", logsData)
   useEffect(() => {
     if (startSystem) {
       const ws = new WebSocket(`ws://127.0.0.1:8000/ws`);
@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
       ws.onmessage = (event) => {   //on websocket connection
 
         //logging telemetry data to export data through excel 
-        if(isLogging){
+        if (isLogging) {
           const data = JSON.parse(event.data);
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
@@ -100,11 +100,11 @@ const Dashboard: React.FC = () => {
               return acc;
             }, {} as { [key: string]: any })
           };
-          
-          
-        
+
+
+
           setLogsData((prevState) => [...prevState, newData]);
-          console.log("new data",newData)
+          console.log("new data", newData)
         }
 
 
@@ -141,7 +141,7 @@ const Dashboard: React.FC = () => {
     }
 
 
-  }, [startSystem,isLogging]);
+  }, [startSystem, isLogging]);
 
   useEffect(() => {
     setTeleCmdValueError(""); // Reset error
@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
       ...prev,
       teleCmdValue: "", // Reset input value properly
     }));
-  }, [teleCmdsFormData.teleCmd]); 
+  }, [teleCmdsFormData.teleCmd]);
 
 
   //Handlar functions
@@ -163,7 +163,7 @@ const Dashboard: React.FC = () => {
   const CommandsDataHandler = async (event: any) => {     //to handle commands data on apply telecmd form
     event.preventDefault() //prevent default form submission
 
-    let teleCommand = teleCmdsFormData.teleCmd 
+    let teleCommand = teleCmdsFormData.teleCmd
     let teleCommandValue = teleCmdsFormData.teleCmdValue
 
     if (teleCmdsFormData.teleCmdType == "Real Time") {  //updating system mode state and system started time
@@ -227,7 +227,7 @@ const Dashboard: React.FC = () => {
       {
         ...prevState,
         ["teleCmd"]: selectedData,
-       [ "teleCmdValue"]:"100"
+        ["teleCmdValue"]: "100"
       }
     ))
     // console.log("ay",teleCmdsFormData.teleCmdValue)
@@ -241,9 +241,9 @@ const Dashboard: React.FC = () => {
   };
 
   const TeleCmdValueHandler = (event: any) => {     //to handle telecmd value i.e input by user
-    
+
     setTeleCmdValueError("");         //setting telecmd error empty on changing the telecmd
-    
+
     const numValue = parseFloat(event.target.value);
 
     setTeleCmdsFormData((prevstate) => ({           //updating telecmd value
@@ -255,7 +255,7 @@ const Dashboard: React.FC = () => {
 
 
     //telecmd input value validations
-    if (teleCmdsFormData.teleCmd.cmd !="System Mode" && isNaN(numValue)) {
+    if (teleCmdsFormData.teleCmd.cmd != "System Mode" && isNaN(numValue)) {
       setTeleCmdValueError("Value must be a number.");
       return;
     }
@@ -274,8 +274,8 @@ const Dashboard: React.FC = () => {
       setTeleCmdValueError(`Value must be between -110 and 110.`);
       return;
     }
-    setTeleCmdValueError(""); 
-   
+    setTeleCmdValueError("");
+
   };
 
   const toggleGraph = (label: string) => {      // to toggle graph visibility
@@ -339,12 +339,12 @@ const Dashboard: React.FC = () => {
       case "PAT Mode":
         return (
           <>
-          {/* <div style={{"display":"flex","flexDirection":"column","gap":"5px","width":"100px","boxSizing":"border-box" ,"position":"absolute","right":"125px","bottom":"67px"}}> */}
-          <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
+            {/* <div style={{"display":"flex","flexDirection":"column","gap":"5px","width":"100px","boxSizing":"border-box" ,"position":"absolute","right":"125px","bottom":"67px"}}> */}
+            <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
             {/* <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
             <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
           </div> */}
-           
+
           </>
 
         )
@@ -403,26 +403,32 @@ const Dashboard: React.FC = () => {
           <form>
             {/* comands data container */}
             <div className="commands-data-container">
-              <p>TELE COMMAND TYPE</p>
-              <select onChange={CommandTypeHandler}>
-                {teleCommandType.map((value, index) => (
-                  <option id={value} key={index}>
-                    {value}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <p>TELECOMMAND</p>
+                <select onChange={CommandTypeHandler}>
+                  {teleCommandType.map((value, index) => (
+                    <option id={value} key={index}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
 
-              {/*condtionally rendering calender componenet based on command type */}
-              {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
-              <p>TELE COMMAND</p>
+                {/*condtionally rendering calender componenet based on command type */}
+                {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
+              </div>
 
-              <select onChange={CommandHandler}>
-                {/* <option selected> TeleCmd</option> */}
-                {teleCommands.map((data, index) => (
-                  <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
-                ))}
-              </select>
-              {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
+
+              {/* <p>TELE COMMAND</p> */}
+
+              <div>
+                <select onChange={CommandHandler}>
+                  {/* <option selected> TeleCmd</option> */}
+                  {teleCommands.map((data, index) => (
+                    <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
+                  ))}
+                </select>
+                {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
+              </div>
               {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
               <button id="commands-apply-button" disabled={teleCmdValueError ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
             </div>
@@ -486,7 +492,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         {/* system status and weather condtions data container*/}
         <div className="system-status-and-time-tag-main-contianer">
           <div className="system-status-main-container">
@@ -511,13 +517,13 @@ const Dashboard: React.FC = () => {
               <p>⚡ Power&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;120w - 160w</p>
               <p>💧 Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp; 45% - 55%</p>
               <p>🌡️ Temperature&nbsp;&nbsp; :&nbsp;&nbsp; 22°C - 27°C</p>
-              {startSystem && <button className="logging-button" onClick={() => setIsLogging(!isLogging)}>{isLogging? "Stop Log":"Start Log"}</button>}
-              { logsData.length > 0 && !isLogging&& <button className="export-button" onClick={() => {exportToExcel(logsData);setLogsData([]);}}>Export Data</button>}
+              {startSystem && <button className="logging-button" onClick={() => setIsLogging(!isLogging)}>{isLogging ? "Stop Log" : "Start Log"}</button>}
+              {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
             </div>
 
           </div>
 
-           {/*Time tag container */}
+          {/*Time tag container */}
           <div className="time-tag-container">
 
             <p>Time Tag Command Queue</p>
