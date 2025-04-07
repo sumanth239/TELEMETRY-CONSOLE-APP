@@ -12,7 +12,7 @@ interface LabelsData {
     [key: string]: { value: string }[];
 }
 
-
+const intialTelemeteryData: { [key: string]: { value: number }[] } = {};
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
@@ -38,11 +38,11 @@ const DataViewer: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
     const [visibleGraphs, setVisibleGraphs] = useState(initialVisibility);      //to handle the  graphs visibility 
     const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
-    const [telemetryData, setTelemetryData] = useState([]);
+    const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
-    const [file, setFile] = useState<File | null>(null);
+    const [file, setFile] = useState<File>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -93,6 +93,7 @@ const DataViewer: React.FC = () => {
     };
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTelemetryData({});
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
     
@@ -103,10 +104,13 @@ const DataViewer: React.FC = () => {
         }
     
         setFile(selectedFile);
-        readExcelData(selectedFile);
       };
     
-      const readExcelData = (file: File) => {
+      const readExcelData = () => {
+        if (!file) {
+            console.warn("No file selected.");
+            return;
+          }
         const reader = new FileReader();
         reader.onload = (e) => {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -120,7 +124,7 @@ const DataViewer: React.FC = () => {
               if (!transformedData[key]) {
                 transformedData[key] = [];
               }
-              transformedData[key].push(row[key]);
+              transformedData[key].push({"value":row[key]});
             });
           });
           
@@ -129,9 +133,14 @@ const DataViewer: React.FC = () => {
         reader.readAsArrayBuffer(file);
       };
     
-      const handleButtonClick = () => {
-        fileInputRef.current?.click();
+      const getLabelRecentData = (label: string): any => {
+        const labelArray = telemetryData[label];
+        if (!labelArray || labelArray.length === 0) {
+          return null;
+        }
+        return labelArray[labelArray.length - 1].value;
       };
+      
       console.log(telemetryData)
     return (
         <>
@@ -180,9 +189,9 @@ const DataViewer: React.FC = () => {
                     </div>
 
                     <ul className="data-buttons-container" >
-                        <li><input  ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> Select Xlsx or Xls file</li>
+                        <li><input  ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> {!file && "Select Xlsx or Xls file "}</li>
                         <li>
-                            {telemetryData.length > 0 ? <button className="system-log-buttons">Show Data</button> : <button className="system-log-buttons" onClick={handleButtonClick}>Import Data</button>}
+                            {file && Object.keys(telemetryData).length == 0 && <button className="system-log-buttons" onClick={readExcelData}>Import Data</button> }
 
                         </li>
                         <li>
@@ -199,7 +208,7 @@ const DataViewer: React.FC = () => {
                                 <div className="labels-data">
                                     <p className="label-text">{label}</p>
                                     <div>
-                                        <p className="label-text">800</p>
+                                        <p className="label-text">{getLabelRecentData(label)}</p>
                                     </div>
 
                                     {/* condtionally rendering icons to handle graphs visibility */}

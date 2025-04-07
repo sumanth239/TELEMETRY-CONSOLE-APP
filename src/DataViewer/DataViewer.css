@@ -107,6 +107,10 @@
   font-size: 15px;
   cursor: pointer;
 }
+.dataviewer-main-container .calender-container .data-buttons-container {
+  color: var(--primary-color);
+  font-size: 14px;
+}
 
 .dataviewer-main-container .calender-container .time-range-container{
   display: flex;

@@ -7,7 +7,7 @@ const Layout: React.FC = () => {
     return (
         <>
             <Header />
-            <ActiveTabsBar />
+            {/* <ActiveTabsBar /> */}
             <div className="content" style={{"backgroundColor":"white"}}>
                 <Outlet />  {/* This is where the routed component will be rendered */}
             </div>

@@ -31,15 +31,20 @@ const LineChartComponent: React.FC <ChildProps > = ({data}) => {
 
   // console.log("data",data);
   return (
-    <ResponsiveContainer width="100%" height="75%" >
-      <LineChart width={500} height={110} data={data} style={{"marginLeft":"-10px"}}>
+    <ResponsiveContainer width="100%" height="78%">
+    <LineChart data={data}   margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
       <CartesianGrid strokeDasharray="3 3" />
-      {/* <XAxis dataKey="timestamp" tickFormatter={(t) => t} /> */}
       <YAxis />
       <Tooltip />
-      <Line type="monotone"  dot={<CustomDot />}  dataKey="value" stroke="#8884d8" isAnimationActive={false} />
+      <Line
+        type="monotone"
+        dot={<CustomDot />}
+        dataKey="value"
+        stroke="#8884d8"
+        isAnimationActive={false}
+      />
     </LineChart>
-    </ResponsiveContainer>
+  </ResponsiveContainer>
   );
 };
 

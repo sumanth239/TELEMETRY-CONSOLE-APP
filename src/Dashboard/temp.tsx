@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./DashBoard.css"; // Import the CSS file
+import "./temp.css"; // Import the CSS file
 import { teleCommandType, systemModes, teleCommands, graphOptions, allLables, } from "../Utils/Constant";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
@@ -7,9 +7,6 @@ import useCurrentTime from "../Utils/useCurrentTime";
 import axios from "axios";
 import { data } from "react-router-dom";
 import { exportToExcel } from "../Utils/HelperFunctions";
-import temperatureIcon from "../assets/temperature_icon.png";
-import powerIcon from "../assets/bolt_icon.png";
-
 
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
@@ -119,7 +116,7 @@ const Dashboard: React.FC = () => {
 
             allLables.forEach((label, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index] };
+                const newEntry = {  value: incomingData[index] };
                 updatedData[label] = [...(prevData[label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
               }
             });
@@ -342,11 +339,11 @@ const Dashboard: React.FC = () => {
       case "PAT Mode":
         return (
           <>
-            <div style={{ "display": "flex", "flexDirection": "column", "gap": "5px", "width": "212px", "boxSizing": "border-box", "position": "absolute", "left": "166px", "bottom": "67px" }}>
-              <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
-              <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
-              <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
-            </div>
+            {/* <div style={{"display":"flex","flexDirection":"column","gap":"5px","width":"100px","boxSizing":"border-box" ,"position":"absolute","right":"125px","bottom":"67px"}}> */}
+            <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
+            {/* <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
+            <input onChange={TeleCmdValueHandler}  value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""}  type="text" />
+          </div> */}
 
           </>
 
@@ -381,104 +378,10 @@ const Dashboard: React.FC = () => {
   // console.log("data", teleCmdsFormData)
   return (
     <>
-
-      <div className="dashboard-container1">
-        <div className="system-status-container">
-          <div className="status-item">
-            <span className="icon"><i className="bi bi-power" style={{ fontSize: "25px", color: startSystem ? "#66FF66" : "grey" }} ></i></span>
-            <span className="text">{startSystem ? "System ON" : "System OFF"}</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><i className="bi bi-sliders"></i></span>
-            <span className="text">{systemMode}</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><img id="temperature-icon" src={temperatureIcon} alt="Temperature" /></span>
-            <span className="text">37.5</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><img src={powerIcon} alt="Power" id="power-icon" /></span>
-            <span className="text">45W Consumption</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i></span>
-            <span className="text">Alerts</span>
-          </div>
-        </div>
-
-
-        <div className="commands-main-container">
-          {/* comands data container */}
-          <div className="commands-data-container">
-            <div>
-              <p>TELECOMMAND</p>
-              <select onChange={CommandTypeHandler}>
-                {teleCommandType.map((value, index) => (
-                  <option id={value} key={index}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-
-              {/*condtionally rendering calender componenet based on command type */}
-              {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
-            </div>
-
-
-            {/* <p>TELE COMMAND</p> */}
-
-            <div>
-              <select onChange={CommandHandler}>
-                {/* <option selected> TeleCmd</option> */}
-                {teleCommands.map((data, index) => (
-                  <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
-                ))}
-              </select>
-              {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
-            </div>
-            {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
-            <button id="commands-apply-button" disabled={teleCmdValueError ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
-          </div>
-
-          {/* commands output container */}
-          <div className="commands-output-container">
-            <span>System Log</span>
-            <ul>
-              <li>
-                <button className="system-log-buttons">Export Log</button>
-              </li>
-              <li>
-                <button className="system-log-buttons">Clear Log</button>
-              </li>
-            </ul>
-
-            <div className="system-logs-container">
-              {/* {systemLogs.map((data) => (
-                <p>
-                  {data.timestamp} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{" "}
-                  {data.message}
-                </p>
-              ))} */}
-              {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
-                <p>{data.telecmd_type_value} &nbsp; : {data.teleCmdPacket}&nbsp;</p>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="dashboard-container2">
-        <div className="telemetry-main-container" >
-          <div className="logs-button-container">
-            {startSystem && <button className="logging-button" onClick={() => setIsLogging(!isLogging)}>{isLogging ? "Stop Logging" : "Start Logging"}</button>}
-
-            {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
-          </div>
-          <div className="labels-and-graphs-container">
+      {/* {startSystem ? <button onClick={() => { setStartSystem(!startSystem) }}>stop</button> : <button onClick={() => { setStartSystem(!startSystem); setUtcCounter(0); setSystemCounter(0); setSystemStartedTime(new Date()) }}>start</button>} */}
+      <div className="dashboard-main-container">
+        {/* labels container */}
+        <div className="lables-container">
           <div className="labels-data-container">
             {Object.entries(telemetryData).map(([label, data], index) => (
               <div className="labels-data">
@@ -496,7 +399,44 @@ const Dashboard: React.FC = () => {
               </div>
             ))}
           </div>
-          {/* graphs container*/}
+
+          <form>
+            {/* comands data container */}
+            <div className="commands-data-container">
+              <div>
+                <p>TELECOMMAND</p>
+                <select onChange={CommandTypeHandler}>
+                  {teleCommandType.map((value, index) => (
+                    <option id={value} key={index}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+
+                {/*condtionally rendering calender componenet based on command type */}
+                {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
+              </div>
+
+
+              {/* <p>TELE COMMAND</p> */}
+
+              <div>
+                <select onChange={CommandHandler}>
+                  {/* <option selected> TeleCmd</option> */}
+                  {teleCommands.map((data, index) => (
+                    <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
+                  ))}
+                </select>
+                {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
+              </div>
+              {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
+              <button id="commands-apply-button" disabled={teleCmdValueError ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
+            </div>
+          </form>
+        </div>
+
+        {/* graphs container*/}
+        <div className="graphs-container">
           <div className="graphs-data-container">
             {/* Condtionly rendering the graphs based on visibility */}
             {Object.entries(telemetryData).map(([label, data], index) =>
@@ -526,42 +466,97 @@ const Dashboard: React.FC = () => {
               ) : null
             )}
           </div>
-        </div>
-        </div>
 
+          {/* commands output container */}
+          <div className="commands-output-container">
+            <span>System Log</span>
+            <ul>
+              <li>
+                <button className="system-log-buttons">Export Log</button>
+              </li>
+              <li>
+                <button className="system-log-buttons">Clear Log</button>
+              </li>
+            </ul>
 
-        {/*Time tag container */}
-        <div className="time-tag-container">
-
-          <p>Time Tag Command Queue</p>
-          <div className="time-tag-commands-container">
-            {/* Time tags with steppers */}
-            {tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").map((data: any, index) => (
-              <div key={index} className="step-item">
-
-                <div className="step-circle" style={{
-                  backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
-                    data.status === 'Failed' ? '#F8CECC' :
-                      data.status === 'Success' ? '#D5E8D4' : '#666666'
-                }}></div>
-                <div className="step-line"
-                  style={{
-                    backgroundColor: data.status === 'Pending' ? '#666666' :
-                      data.status === 'Failed' ? '#B85450' :
-                        data.status === 'Success' ? '#82B366' : '#666666',
-                    display: index === tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").length - 1 ? "none" : "block",
-                  }}
-                ></div>
-                <p className="step-text">
-                  {data.telecmd_type_value} &nbsp; : &nbsp; {data.teleCmdPacket}
+            <div className="system-logs-container">
+              {/* {systemLogs.map((data) => (
+                <p>
+                  {data.timestamp} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{" "}
+                  {data.message}
                 </p>
-              </div>
-            ))}
+              ))} */}
+              {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
+                <p>{data.telecmd_type_value} &nbsp; : {data.teleCmdPacket}&nbsp;</p>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* system status and weather condtions data container*/}
+        <div className="system-status-and-time-tag-main-contianer">
+          <div className="system-status-main-container">
+            <div className="system-status-container">
+              {startSystem ? <span style={{ display: "inline-flex", marginTop: "7px", marginBottom: "0", alignItems: "center", gap: "10px", lineHeight: "1" }}>
+                <i className="bi bi-toggle-on" style={{ fontSize: "38px", color: "green", paddingLeft: "3px" }}></i>
+                ON
+              </span> :
+                <span style={{ display: "inline-flex", marginTop: "7px", marginBottom: "0", alignItems: "center", gap: "10px", lineHeight: "1" }}>
+                  <i className="bi bi-toggle-off" style={{ fontSize: "38px", color: "gray", paddingLeft: "3px" }}></i>
+                  OFF
+                </span>}
+
+              <p >
+                <strong> {systemModeIcon(systemMode)} {systemMode}</strong>
+              </p>
+
+            </div>
+
+            {/* System Mode Data */}
+            <div className="weather-data-container">
+              <p>⚡ Power&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;120w - 160w</p>
+              <p>💧 Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp; 45% - 55%</p>
+              <p>🌡️ Temperature&nbsp;&nbsp; :&nbsp;&nbsp; 22°C - 27°C</p>
+              {startSystem && <button className="logging-button" onClick={() => setIsLogging(!isLogging)}>{isLogging ? "Stop Log" : "Start Log"}</button>}
+              {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
+            </div>
+
+          </div>
+
+          {/*Time tag container */}
+          <div className="time-tag-container">
+
+            <p>Time Tag Command Queue</p>
+            <div className="time-tag-commands-container">
+              {/* Time tags with steppers */}
+              {tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").map((data: any, index) => (
+                <div key={index} className="step-item">
+
+                  <div className="step-circle" style={{
+                    backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
+                      data.status === 'Failed' ? '#F8CECC' :
+                        data.status === 'Success' ? '#D5E8D4' : '#666666'
+                  }}></div>
+                  <div className="step-line"
+                    style={{
+                      backgroundColor: data.status === 'Pending' ? '#666666' :
+                        data.status === 'Failed' ? '#B85450' :
+                          data.status === 'Success' ? '#82B366' : '#666666',
+                      display: index === tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").length - 1 ? "none" : "block",
+                    }}
+                  ></div>
+                  <p className="step-text">
+                    {data.telecmd_type_value} &nbsp; : &nbsp; {data.teleCmdPacket}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+
       </div>
     </>
-
   );
 };
 
