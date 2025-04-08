@@ -1,22 +1,99 @@
-.active-bars-container {
-    list-style-type: none;
-    display: flex;
-    gap: 50px;
-    justify-content:flex-start;
-    overflow: hidden;
-  }
-  
-  
-  .active-bars-container li button {
-    font-size: 17px;
-    font-weight: 500;
-    color: var(--primary-color);
-    background-color: white;
-    border: 0;
-    cursor: pointer;
-    padding: 3px;
-  }
-  
-  .active-bars-container  .active {
-    border-bottom:2px solid var(--primary-color) !important;
-  }
+.sidebar {
+  background-color: #E6E6E6;
+  color: var(--deep-blue-color);
+  /* display: flex;
+  flex-direction: column;
+  justify-content: space-between; */
+  transition: width 0.3s ease;
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+.sidebar  .logo-container{
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+.sidebar  .logo-container #astro-logo-image{
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+
+}
+
+/* Optional: A colored top bar strip */
+
+.sidebar.open {
+  width: 340px;
+  z-index: 2;
+}
+ 
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  background-color: var(--deep-blue-color);
+  font-size: 30px;
+  padding: 16px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  height: 75px;
+  color: white;
+  border-radius: 0;
+  font-weight: bolder;
+  margin-bottom: 20px;
+}
+
+.sidebar-top,
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-bottom {
+  position: absolute;
+  bottom: 15px;
+  width: 100%;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  text-decoration: none;
+    color: var(--deep-blue-color);
+  transition: background 0.2s;
+}
+
+.sidebar.open .sidebar-item:hover {
+  background-color: #DAE8FC;
+}
+
+.sidebar-item.active {
+  background-color: white;
+}
+
+.icon {
+  font-size: 25px;
+}
+
+.label {
+  margin-left: 30px;
+  font-size: 16px;
+  font-weight: bolder;
+}
+/* .active-icon {
+  background-color: aquamarine;
+  padding: 10px 10px 10px 5px;
+} */
+.icon-active {
+  color: var(--buttons-color); /* Change this to your active color */
+}

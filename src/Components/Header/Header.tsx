@@ -51,12 +51,12 @@ const Header: React.FC = () => {
 
             <div className="settings-help-container">
                 <p id="username">Hello, [User Name]</p>
-                <button className="settings-button" onClick={SettingsButtonHandler}>
+                {/* <button className="settings-button" onClick={SettingsButtonHandler}>
                     <i className="bi bi-gear-fill" style={{ fontSize: "25px" }}  ></i>
-                </button>
+                </button> */}
 
                 {/*settings button conditional render */}
-                {settingsButtonIsOpen &&
+                {/* {settingsButtonIsOpen &&
                     <div className="settings-menu">
                         <ul>
                             {settingsMenu.map((item, index) => (
@@ -64,8 +64,8 @@ const Header: React.FC = () => {
                             ))}
                         </ul>
                     </div>
-                }
-                {settingsButtonIsOpen && exportDataBtnIsClicked &&
+                } */}
+                {/* {settingsButtonIsOpen && exportDataBtnIsClicked &&
                     <div className="export-data-container">
                         <div className="export-options-container">
                             <span>Export Data</span>
@@ -84,10 +84,10 @@ const Header: React.FC = () => {
                         </div>
                         <button > Export Data</button>
                     </div>
-                }
+                } */}
 
                 {/* Help icon*/}
-                <button className="help-button"><i className="bi bi-question-circle-fill" style={{ fontSize: "25px" }} ></i></button>
+                {/* <button className="help-button"><i className="bi bi-question-circle-fill" style={{ fontSize: "25px" }} ></i></button> */}
             </div>
         </div>
     );

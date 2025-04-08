@@ -342,7 +342,7 @@ const Dashboard: React.FC = () => {
       case "PAT Mode":
         return (
           <>
-            <div style={{ "display": "flex", "flexDirection": "column", "gap": "5px", "width": "212px", "boxSizing": "border-box", "position": "absolute", "left": "166px", "bottom": "67px" }}>
+            <div style={{ "display": "flex", "flexDirection": "column", "gap": "5px", "width": "212px", "boxSizing": "border-box", "position": "absolute", "left": "158px", "bottom": "83px" }}>
               <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
               <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
               <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
@@ -406,7 +406,7 @@ const Dashboard: React.FC = () => {
 
           <div className="status-item">
             <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i></span>
-            <span className="text">Alerts</span>
+            <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right"></i></span>
           </div>
         </div>
 
@@ -415,7 +415,7 @@ const Dashboard: React.FC = () => {
           {/* comands data container */}
           <div className="commands-data-container">
             <div>
-              <p>TELECOMMAND</p>
+              {/* <p>TELECOMMAND</p> */}
               <select onChange={CommandTypeHandler}>
                 {teleCommandType.map((value, index) => (
                   <option id={value} key={index}>
@@ -474,8 +474,8 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-container2">
         <div className="telemetry-main-container" >
           <div className="logs-button-container">
-            {startSystem && <button className="logging-button" onClick={() => setIsLogging(!isLogging)}>{isLogging ? "Stop Logging" : "Start Logging"}</button>}
-
+           <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
+           <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!isLogging}>Stop Logging</button>
             {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
           </div>
           <div className="labels-and-graphs-container">

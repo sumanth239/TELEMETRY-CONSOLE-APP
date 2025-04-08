@@ -1,41 +1,91 @@
-import React ,{useState} from "react";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "./TabsBar.css";
-import { Link } from "react-router-dom";
+import logo from "../../assets/logo.png";
 
-const ActiveTabsBar: React.FC = () => {
 
-    //states
-    const [activeTab,setActiveTab] = useState("dashboard"); //to handle the active tab 
+const Sidebar: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
-    return (
-        <>
-            <ul className="active-bars-container">
-                <li> 
-                    <Link to="/dashboard"> 
-                        <button className={activeTab === "dashboard" ? "active" : ""} onClick={() => (setActiveTab("dashboard"))}>Dashboard</button>
-                    </Link>
-                </li>
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
-                <li>
-                    <Link to="/data-viewer">
-                        <button className={activeTab === "dataViewer" ? "active" : ""} onClick={() => (setActiveTab("dataViewer"))}>Data Viewer</button>
-                    </Link>
-                    
-                </li>
-                <li>
-                    <Link to="/title1">
-                        <button className={activeTab === "title1" ? "active" : ""} onClick={() => (setActiveTab("title1"))}>Title1</button>
-                    </Link>
-                    
-                </li>
-                <li>
-                    <Link to="/title2">
-                        <button className={activeTab === "title2" ? "active" : ""} onClick={() => (setActiveTab("title2"))}>Title2</button>
-                    </Link>
-                    
-                </li>
-            </ul>
-        </>
-    )
+  return (
+    <div className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
+
+      <button className="toggle-btn" onClick={toggleSidebar}>
+        {isOpen ? <i className="bi bi-x"></i> : <i className="bi bi-list"></i>}
+       
+      </button>
+      {/* {isOpen && <div className="logo-container">
+                <img id="astro-logo-image" src={logo} alt="AstroLink Logo" />
+                <p id="logo-text">AstroLink 10G ODT</p>
+            </div>} */}
+
+      <div className="sidebar-top">
+        <SidebarItem
+          to="/dashboard"
+          icon="bi bi-house-door-fill"
+          label="Dashboard"
+          isOpen={isOpen}
+          isActive={location.pathname === "/dashboard"}
+        />
+        <SidebarItem
+          to="/data-viewer"
+          icon="bi bi-file-earmark-bar-graph-fill"
+          label="Dataviewer"
+          isOpen={isOpen}
+          isActive={location.pathname === "/data-viewer"}
+        />
+        <SidebarItem
+          to="/title1"
+          icon="bi bi-gear-fill"
+          label="Settings"
+          isOpen={isOpen}
+          isActive={location.pathname === "/title1"}
+        />
+      </div>
+
+      <div className="sidebar-bottom">
+      <SidebarItem
+          to="/logout"
+          icon="bi-box-arrow-right"
+          label="Logout"
+          isOpen={isOpen}
+          isActive={location.pathname === "/logout"}
+        />
+        <SidebarItem
+          to="/help"
+          icon="bi bi-question-circle-fill"
+          label="Help"
+          isOpen={isOpen}
+          isActive={location.pathname === "/help"}
+        />
+       
+      </div>
+    </div>
+  );
 };
-export default ActiveTabsBar;
+
+type SidebarItemProps = {
+  to: string;
+  icon: string;
+  label: string;
+  isOpen: boolean;
+  isActive: boolean;
+};
+
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  to,
+  icon,
+  label,
+  isOpen,
+  isActive,
+}) => (
+  <Link to={to} className={`sidebar-item ${isActive ? "active" : ""}`}>
+      <i className={`bi ${icon} icon ${isActive ? "icon-active" : ""}`}></i>
+    {isOpen && <span className="label">{label}</span>}
+  </Link>
+);
+
+export default Sidebar;

@@ -1,7 +1,7 @@
 import React from "react";
 import "./DataViewer.css";
-import { labelsData, graphOptions, allLables } from "../Utils/Constant";
-import { useState ,useRef} from "react";
+import { labelsData, graphOptions, allLables, systemLogs } from "../Utils/Constant";
+import { useState, useRef } from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
 import * as XLSX from "xlsx";
@@ -96,52 +96,52 @@ const DataViewer: React.FC = () => {
         setTelemetryData({});
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
-    
+
         // Check file type
         if (!selectedFile.name.endsWith(".xlsx") && !selectedFile.name.endsWith(".xls")) {
-          alert("Please upload a valid Excel file (.xlsx or .xls)");
-          return;
+            alert("Please upload a valid Excel file (.xlsx or .xls)");
+            return;
         }
-    
+
         setFile(selectedFile);
-      };
-    
-      const readExcelData = () => {
+    };
+
+    const readExcelData = () => {
         if (!file) {
             console.warn("No file selected.");
             return;
-          }
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const jsonData:any = XLSX.utils.sheet_to_json(sheet);
-          const transformedData: any = {};
-          jsonData.forEach((row: any) => {
-            Object.keys(row).forEach((key) => {
-              if (!transformedData[key]) {
-                transformedData[key] = [];
-              }
-              transformedData[key].push({"value":row[key]});
+            const data = new Uint8Array(e.target?.result as ArrayBuffer);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const jsonData: any = XLSX.utils.sheet_to_json(sheet);
+            const transformedData: any = {};
+            jsonData.forEach((row: any) => {
+                Object.keys(row).forEach((key) => {
+                    if (!transformedData[key]) {
+                        transformedData[key] = [];
+                    }
+                    transformedData[key].push({ "value": row[key] });
+                });
             });
-          });
-          
-          setTelemetryData(transformedData);
+
+            setTelemetryData(transformedData);
         };
         reader.readAsArrayBuffer(file);
-      };
-    
-      const getLabelRecentData = (label: string): any => {
+    };
+
+    const getLabelRecentData = (label: string): any => {
         const labelArray = telemetryData[label];
         if (!labelArray || labelArray.length === 0) {
-          return null;
+            return null;
         }
         return labelArray[labelArray.length - 1].value;
-      };
-      
-      console.log(telemetryData)
+    };
+
+    console.log(telemetryData)
     return (
         <>
             {/* data viewer main container*/}
@@ -189,9 +189,9 @@ const DataViewer: React.FC = () => {
                     </div>
 
                     <ul className="data-buttons-container" >
-                        <li><input  ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> {!file && "Select Xlsx or Xls file "}</li>
+                        <li><input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> {!file && "Select Xlsx or Xls file "}</li>
                         <li>
-                            {file && Object.keys(telemetryData).length == 0 && <button className="system-log-buttons" onClick={readExcelData}>Import Data</button> }
+                            {file && Object.keys(telemetryData).length == 0 && <button className="system-log-buttons" onClick={readExcelData}>Import Data</button>}
 
                         </li>
                         <li>
@@ -277,6 +277,19 @@ const DataViewer: React.FC = () => {
                                     </div>
                                 ) : null
                             )}
+                        </div>
+                    </div>
+
+                    {/*system log container */}
+                    <div className="system-log-container">
+
+                        <p>System Log</p>
+                        <div className="logs-container">
+                            {systemLogs.map((data) => (
+                                <p>
+                                    {data.timestamp}  &nbsp; : &nbsp; {data.message}
+                                </p>
+                            ))}
                         </div>
                     </div>
                 </div>

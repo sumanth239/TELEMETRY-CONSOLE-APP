@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 14% auto;
   gap: 15px;
-  padding: 15px 10px 5px 100px;
+  padding: 15px 10px 5px 75px;
   background-color: #DAE8FC;
 }
 
@@ -12,16 +12,15 @@
   gap: 10px;
   grid-template-columns: 35% 65%;
   height: 215px;
-  background-color: #162555;
+  background-color: var(--deep-blue-color);
   border-radius: var(--primary-border-radius);
   /* box-sizing: border-box; */
   justify-content: space-between;
 }
 
 .dashboard-container1  .system-status-container {
-  background-color: #162555;
+  background-color: var(--deep-blue-color);
   border-radius: var(--primary-border-radius);
-  color: var(--primary-color);
   height: 219px;
   padding: 10px 25px;
   display: flex;
@@ -80,12 +79,11 @@
 .dashboard-container1  .commands-main-container .commands-data-container {
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
-  padding: 2px 15px;
+  padding: 15px 8px;
   position: relative;
   box-sizing: border-box;
   color: var(--primary-color);
-  font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 
@@ -104,12 +102,6 @@
   position: absolute;
   bottom: 10px;
   right: 20px;
-  background-color: var(--primary-color);
-  padding: 7px 12px;
-  border-radius: 5px;
-  border: 0px solid black;
-  font-weight: 500;
-  cursor: pointer;
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container span {
@@ -120,22 +112,23 @@
   border-radius: 5px;
 }
 
-.date-picker {
+/* .date-picker {
   background-color: white;
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 500;
   color: grey;
   border: 1px solid white;
-}
+} */
 
 .dashboard-container1  .commands-main-container .commands-data-container input {
   /* width: 150px; */
   background-color: white;
-  padding: 3.5px 0px;
+  padding: 3px 0px;
   color: #878787;
   border: 1px solid white;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 12px;
+  width:fit-content;
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container  .error {
@@ -144,9 +137,9 @@
   font-size: 12px;
   font-weight: bold;
   /* margin-top: 5px; */
-  right: 75px;
+  right: 41%;
   width: 150px;
-  bottom: 90px;
+  bottom: 85px;
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container .input-error {
@@ -171,7 +164,7 @@
 .dashboard-container1  .commands-main-container .commands-output-container {
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
-  padding: 10px;
+  padding: 7px;
 }
 
 .dashboard-container1  .commands-main-container .commands-output-container ul {
@@ -193,16 +186,6 @@
   float: right;
 }
 
-.dashboard-container1  .commands-main-container .commands-output-container ul button {
-  background-color: var(--primary-color);
-  padding: 7px 15px;
-  border-radius: 5px;
-  border: 0px solid black;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-}
-
 .dashboard-container1  .commands-main-container .commands-output-container .system-logs-container {
   color: black;
   border-radius: 15px;
@@ -210,8 +193,8 @@
   background-color: white;
   overflow-y: scroll;
   margin-left: 17px;
-  margin-top: 15px;
-  height: 145px;
+  margin-top: 10px;
+  height: 155px;
   font-size: 15px;
 }
 .dashboard-container1  .commands-main-container .commands-output-container .system-logs-container p {
@@ -224,11 +207,11 @@
   gap: 15px;
   /* margin: 20px 0; */
   background-color: #DAE8FC;
-  padding: 15px 25px 0 100px;
+  padding: 15px 25px 0 75px;
 }
 .telemetry-main-container{
   padding: 10px 30px 15px 15px ;
-  background-color: #162555;
+  background-color: var(--deep-blue-color);
   border-radius: var(--primary-border-radius);
 }
 
@@ -380,13 +363,12 @@
 
 .dashboard-container2  .time-tag-container {
   height: 530px;
-  background-color: #162555;
+  background-color: var(--deep-blue-color);
   border-radius: var(--primary-border-radius);
   padding: 10px 20px 20px 20px;
 }
 
 .dashboard-container2  .time-tag-container p {
-  color: #666666;
   padding: 0;
   margin: 5px 0 15px 0 ;
   font-size: 17px;
@@ -410,7 +392,7 @@
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container p {
   font-size: 15px;
-  color: black;
+  color: grey;
 }
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item {
@@ -454,7 +436,7 @@
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item .step-text {
   margin-left: 20px;
   font-size: 15px;
-  color: black;
+  color: #666666;
 }
 
 
