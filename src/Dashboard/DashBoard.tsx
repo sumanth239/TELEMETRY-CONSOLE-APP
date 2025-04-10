@@ -9,6 +9,7 @@ import { data } from "react-router-dom";
 import { exportToExcel } from "../Utils/HelperFunctions";
 import temperatureIcon from "../assets/temperature_icon.png";
 import powerIcon from "../assets/bolt_icon.png";
+import AlertPopup from "../Components/AlertPopUp";
 
 
 //Intials states of useState
@@ -42,15 +43,16 @@ const Dashboard: React.FC = () => {
   const [teleCmdData, setTeleCmdData] = useState<string[]>([]);   //for telecmd packet data genrated from backend
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
   const [systemMode, setSystemMode] = useState("0"); //to handle the system mode
-  const [teleCmdValueError, setTeleCmdValueError] = useState<string>(""); //to handle telecmd input validation errors
+  const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
   const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
   const [logsData, setLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
+  const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
     "teleCmdType": "Real Time",
     "teleCmd": { "cmd": "", "cmdId": 0 },
-    "teleCmdValue": "",
+    "teleCmdValue": [""],
 
   })
   const [visibleGraphs, setVisibleGraphs] = useState<{ [key: string]: boolean }>(     //to handle the  graphs visibility
@@ -147,11 +149,11 @@ const Dashboard: React.FC = () => {
   }, [startSystem, isLogging]);
 
   useEffect(() => {
-    setTeleCmdValueError(""); // Reset error
+    setTeleCmdValueError([]); // Reset error
 
     setTeleCmdsFormData((prev) => ({
       ...prev,
-      teleCmdValue: "", // Reset input value properly
+      teleCmdValue: [], // Reset input value properly
     }));
   }, [teleCmdsFormData.teleCmd]);
 
@@ -173,10 +175,10 @@ const Dashboard: React.FC = () => {
 
     if (teleCmdsFormData.teleCmdType == "Real Time") {  //updating system mode state and system started time
       if (teleCommand.cmd == "System Mode") {
-        setSystemMode(teleCommandValue)
+        setSystemMode(teleCommandValue[0])
 
 
-        if (teleCommandValue == "2") {
+        if (teleCommandValue[0] == "2") {
           setStartSystem(!startSystem);
           // setUtcCounter(0); 
           // setSystemCounter(0);
@@ -216,7 +218,9 @@ const Dashboard: React.FC = () => {
             ? formatDateTime(selectedDateTime)
             : "",
       "telecmd": teleCommand.cmd,   // Extract cmd from selectedCommand object
-      "telecmd_value": teleCommandValue,
+      "telecmd_value": `$${teleCmdsFormData.teleCmdType == "Real Time" ? `RLT,${formattedDate} ${formattedTime}` : `TMT,${selectedDateTime
+        ? formatDateTime(selectedDateTime)
+        : ""}`},${teleCommand.cmdId},${teleCommandValue.toString()}*\r\n`,
       "telecmd_id": teleCommand.cmdId,
       "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
     };
@@ -250,10 +254,10 @@ const Dashboard: React.FC = () => {
       {
         ...prevState,
         ["teleCmd"]: selectedData,
-        ["teleCmdValue"]: ""
+        ["teleCmdValue"]: ["", "", ""]
       }
     ))
-    // console.log("ay",teleCmdsFormData.teleCmdValue)
+    console.log("ay", teleCmdsFormData.teleCmdValue)
   };
 
   const CommandTypeHandler = (event: any) => {      //to handle telecmd type i.e realtime or time tagged
@@ -263,41 +267,76 @@ const Dashboard: React.FC = () => {
     }))
   };
 
-  const TeleCmdValueHandler = (event: any) => {     //to handle telecmd value i.e input by user
+  const TeleCmdValueHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index?: number) => {     //to handle telecmd value i.e input by user
 
-    setTeleCmdValueError("");         //setting telecmd error empty on changing the telecmd
-
-    const numValue = parseFloat(event.target.value);
-
-    setTeleCmdsFormData((prevstate) => ({           //updating telecmd value
-      ...prevstate,
-      ["teleCmdValue"]: event.target.value
-    }))
-
-    console.log(numValue,teleCmdsFormData.teleCmdValue)
+    const value = event.target.value;
+    const numValue = parseFloat(value);
 
 
-    //telecmd input value validations
-    if (teleCmdsFormData.teleCmd.cmd != "System Mode" && isNaN(numValue)) {
-      setTeleCmdValueError("Value must be a number.");
-      return;
+    setTeleCmdsFormData((prevState) => {
+      const updatedValues = [...prevState.teleCmdValue];
+
+      // If index is passed, update specific input
+      if (typeof index === "number") {
+        updatedValues[index] = value;
+      } else {
+        // Else replace the entire value array (for select dropdown)
+        return {
+          ...prevState,
+          teleCmdValue: [value],
+        };
+      }
+
+      return {
+        ...prevState,
+        teleCmdValue: updatedValues,
+      };
+    });
+
+    // console.log(numValue,teleCmdsFormData.teleCmdValue)
+
+
+    // Dynamic validation based on range
+    const cmdInfo = teleCommands.find(
+      (item) => item.cmd === teleCmdsFormData.teleCmd.cmd
+    );
+
+    if (!cmdInfo) return;
+
+    if (cmdInfo.inputType === 2 && typeof index === "number") {
+      const inputConfig = (cmdInfo.inputValues as {
+        name: string;
+        units: string;
+        range?: [number, number];
+      }[])[index];
+
+      var error = "";
+      // Basic numeric check
+      if (isNaN(numValue) && value != "") {
+        error = `Value must be a number.`;
+        return;
+      }
+
+      // If range is defined and valid
+      const [min, max] = inputConfig.range || [];
+      if (
+        inputConfig.range &&
+        (typeof min === "number" && typeof max === "number")
+      ) {
+        if (numValue < min || numValue > max) {
+          error = `Value must be between ${min} and ${max}.`;
+        }
+      }
+    }
+    // Update error array
+    if (typeof index === "number") {
+      setTeleCmdValueError((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[index] = error;
+        return newErrors;
+      });
     }
 
-    if (teleCmdsFormData.teleCmd.cmd === "PAT Mode" && (numValue < 0 || numValue > 3)) {
-      setTeleCmdValueError("Value must be between 0 and 3.");
-      return;
-    }
-
-    if (teleCmdsFormData.teleCmd.cmd === "EDFA Power" && (numValue < 20 || numValue > 32)) {
-      setTeleCmdValueError("Value must be between 20 and 32.");
-      return;
-    }
-
-    if (["Elevation Angle", "Azimuth Angle"].includes(teleCmdsFormData.teleCmd.cmd) && (numValue < -110 || numValue > 110)) {
-      setTeleCmdValueError(`Value must be between -110 and 110.`);
-      return;
-    }
-    setTeleCmdValueError("");
 
   };
 
@@ -353,34 +392,42 @@ const Dashboard: React.FC = () => {
     if (cmdInfo.inputType === 1) {
       // Narrowing the type for TypeScript
       const inputOptions = cmdInfo.inputValues as { label: string; value: number }[];
-    
+
       return (
-        <select onChange={TeleCmdValueHandler}>
-          {inputOptions.map(({ label, value }, index) => (
-            <option key={index} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <>
+          <select onChange={(e) => TeleCmdValueHandler(e)}>
+            {inputOptions.map(({ label, value }, index) => (
+              <option key={index} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </>
       );
-    }else if (cmdInfo.inputType === 2) {
+    } else if (cmdInfo.inputType === 2) {
       const inputOptions = cmdInfo.inputValues as { name: string; units: string; range: [number, number] }[];
-    
+
       return (
-        <div style={{ "display": "flex", "flexDirection": "column", "gap": "7px", "width": "212px", "boxSizing": "border-box", "position": "absolute", "left": "220px", "top": "52px" }}>
+        <div className="dynamic-inputs-container" >
           {inputOptions.map((item, index) => (
-            
+
             <div>
-              <input onChange={TeleCmdValueHandler} placeholder={item.name} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />&nbsp;<b>  dBm</b>
+              <input value={teleCmdsFormData.teleCmdValue[index]} onChange={(e) => TeleCmdValueHandler(e, index)} placeholder={item.name} className={teleCmdValueError[index] ? "input-error" : ""} type="text" />&nbsp;<b>  dBm</b>
+              {teleCmdValueError[index] && <div className="error">{teleCmdValueError[index]}</div>}
             </div>
-        
+
           ))}
         </div>
       );
     }
-    
-    
 
+
+    const alertMessages = [
+      'Network connection lost.',
+      'Failed to load data.',
+      'New update available.',
+      'Your session will expire soon.',
+    ];
 
   }
   // console.log("data", teleCmdsFormData)
@@ -411,7 +458,14 @@ const Dashboard: React.FC = () => {
 
           <div className="status-item">
             <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i></span>
-            <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right"></i></span>
+            <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i></span>
+            {showAlert && (
+              <AlertPopup
+                message="This is a success alert!"
+                type="success"
+                onClose={() => setShowAlert(false)}
+              />
+            )}
           </div>
         </div>
 
@@ -445,10 +499,11 @@ const Dashboard: React.FC = () => {
                   <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
                 ))}
               </select>
-              {renderTeleCmdsExtraFields()}{teleCmdValueError && <p className="error">{teleCmdValueError}</p>}
+              {renderTeleCmdsExtraFields()}
+
             </div>
             {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
-            <button id="commands-apply-button" disabled={teleCmdValueError ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
+            <button id="commands-apply-button" disabled={teleCmdValueError.length > 0 && teleCmdValueError.every(item => item === " ") ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
           </div>
 
           {/* commands output container */}
@@ -471,7 +526,7 @@ const Dashboard: React.FC = () => {
                 </p>
               ))} */}
               {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
-                <p>{data.telecmd_type_value} &nbsp; : &nbsp;{data.teleCmdPacket}</p>
+                <p>{data.telecmd_type_value} &nbsp; : &nbsp;{data.telecmd_value}</p>
               ))}
             </div>
           </div>
@@ -560,7 +615,7 @@ const Dashboard: React.FC = () => {
                   }}
                 ></div>
                 <p className="step-text">
-                  {data.telecmd_type_value} : {data.teleCmdPacket}
+                  {data.telecmd_type_value} : {data.telecmd_value}
                 </p>
               </div>
             ))}

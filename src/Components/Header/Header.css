@@ -4,7 +4,7 @@
     align-items: center;
     border-bottom: 2px solid #e5e7eb;
     padding: 0 40px 0 100px;
-    font-size: 20px;
+    font-size: var(--font-size-heading);
     background-color: var(--buttons-color);
     color: white;
 
@@ -92,7 +92,7 @@
     border: 0;
     color: black;
     background-color: white;
-    font-size: 15px;
+    font-size: var(--font-size-body);
     cursor: pointer;
   }
 
@@ -136,7 +136,7 @@
   }
 
   .header-main-container .settings-help-container .export-data-container .export-options-container label{
-    font-size: 15px;
+    font-size: var(--font-size-body);
     /* display: block; */
     display: flex;
     align-items: center;

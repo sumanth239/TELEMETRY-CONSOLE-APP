@@ -87,7 +87,7 @@
 
 .label {
   margin-left: 30px;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: bolder;
 }
 /* .active-icon {

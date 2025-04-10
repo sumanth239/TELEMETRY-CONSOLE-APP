@@ -58,7 +58,7 @@ export const teleCommands = [
       "cmd"  : "Beacon Camera Exposure",
       "cmdId": 20,
       "inputType": 2,
-      "inputValues": [{ "name": "Exposure", "units": "", "range": [] }],
+      "inputValues": [{ "name": "Exposure", "units": "", "range": [10,20] }],
     },
     {
       "cmd"  : "Beacon Camera ROI",

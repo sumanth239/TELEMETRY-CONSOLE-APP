@@ -2,7 +2,7 @@
   height: 120px;
   background-color: var(--deep-blue-color);
   border-radius: var(--primary-border-radius);
-  margin: 15px 22px ;
+  /* margin: 13px 15px ; */
   display: flex;
   justify-content: space-between;
   gap: 50px;
@@ -11,11 +11,11 @@
 
 .dataviewer-main-container {
   background-color: #DAE8FC;
-  padding-left: 60px;
+  padding: 15px 15px 15px 75px;
 }
 .dataviewer-main-container .calender-container .dropdown-container{
   position: relative;
-  margin: 10px 20px;
+  /* margin: 10px 20px; */
   padding: 15px;
   width: 300px;
   height: 50px;
@@ -30,7 +30,7 @@
   color: black;
   color: grey;
   font-weight: bold;
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .dataviewer-main-container .calender-container .dropdown-container .dropdown-menu {
@@ -81,7 +81,7 @@
   border: 0;
   color: grey;
   background-color: white;
-  font-size: 15px;
+  font-size: var(--font-size-body);
   cursor: pointer;
   margin-bottom: 7px;
 }
@@ -118,12 +118,12 @@
     background-color: var(--deep-blue-color);
     grid-template-columns: 20% 60% auto; /* First div takes 25%, second takes 75% */
     gap: 25px;
-    margin: 0px 22px;
+    margin-top: 15px;
     border-radius: var(--primary-border-radius);
   }
 
   .dataviewer-main-container .graphs-main-container  .labels-data-container{
-    height: 620px;
+    height: 630px;
     background-color: var(--greay-background);
     border-radius: var(--primary-border-radius);
     padding: 5px 25px;
@@ -136,7 +136,7 @@
     gap: 15px;
     color: var(--primary-color);
     align-items: center;
-    height: 37px;
+    height: 33px;
     justify-content: space-between;
 
   }
@@ -147,7 +147,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--font-size-body);
     font-weight: bold;
     text-align: right;
   }
@@ -181,7 +181,7 @@
   }
 
    .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container{
-    height: 600px;
+    height: 610px;
     background-color: var(--greay-background);
     border-radius: var(--primary-border-radius);
     /* margin-bottom: 15px; */
@@ -251,7 +251,7 @@
     border: 0;
     color: black;
     background-color: white;
-    font-size: 15px;
+    font-size: var(--font-size-body);
     cursor: pointer;
   }
 
@@ -261,7 +261,7 @@
   }
 
  .dataviewer-main-container .graphs-main-container .system-log-container{
-    height: 610px;
+    height: 620px;
     background-color: var(--greay-background);
     border-radius: var(--primary-border-radius);
     padding: 10px 20px;
@@ -292,7 +292,7 @@
   .dataviewer-main-container .graphs-main-container .system-log-container .logs-container p{
     padding: 0;
     margin: 5px 0 15px 0 ;
-    font-size: 14px;
+    font-size: var(--font-size-body);
     color: #666666;
   }
 
@@ -317,7 +317,7 @@
     border-radius: 5px;
     border:  0px solid black;
     font-weight: 500;
-    font-size: 12px;
+    font-size:var(--font-size-span);
   }
   .dataviewer-main-container .calender-container .data-buttons-container {
     list-style: none;
@@ -329,7 +329,7 @@
     /* width: 300px; */
   }
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text{
-    font-size: 12px;
+    font-size:var(--font-size-span);
     font-weight: bold;
   }
 
