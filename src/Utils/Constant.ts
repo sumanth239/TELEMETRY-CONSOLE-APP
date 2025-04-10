@@ -1,5 +1,183 @@
 export const teleCommandType = ["Real Time","Time Tagged"]
-export const teleCommands = [{"cmd":"PAT Mode","cmdId":10},{"cmd":"System Mode","cmdId":120},{"cmd":"Azimuth Angle","cmdId":20},{"cmd":"Elevation Angle","cmdId":50},{"cmd":"EDFA Power","cmdId":80},{"cmd":"EDFA Shutdown","cmdId":84},{"cmd":"Shutdown System","cmdId":96}]
+export const teleCommands = [
+    {
+      "cmd"  : "Shutdown",
+      "cmdId": 6,
+      "inputType": 0,
+      "inputValues" :[]
+    },
+    {
+      "cmd"  : "System Mode",
+      "cmdId": 7,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Safe Mode", "value": 0 },
+        { "label": "Maintenance Mode", "value": 1 },
+        { "label": "Stand-By Mode", "value": 2 },
+        { "label": "Downlink Mode", "value": 3 },
+      ],
+    },
+    {
+      "cmd"  : "Data Transfer Toggle",
+      "cmdId": 8,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Enable", "value": 0 },
+        { "label": "Disable", "value": 1 },
+      ],
+    },
+    {
+      "cmd"  : "Data Speed Configuration",
+      "cmdId": 9,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "0.5 Gbps", "value": 0 },
+        { "label": "1 Gbps", "value": 1 },
+        { "label": "2.5 Gbps", "value": 2 },
+      ],
+    },
+    {
+      "cmd"  : "TEC Toggle",
+      "cmdId": 10,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Enable", "value": 0 },
+        { "label": "Disable", "value": 1 },
+      ],
+    },
+    {
+      "cmd"  : "Laser Driver Control",
+      "cmdId": 11,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Constant Current Control", "value": 0 },
+        { "label": "Automatic Power Control", "value": 1 },
+      ],
+    },
+    {
+      "cmd"  : "Beacon Camera Exposure",
+      "cmdId": 20,
+      "inputType": 2,
+      "inputValues": [{ "name": "Exposure", "units": "", "range": [] }],
+    },
+    {
+      "cmd"  : "Beacon Camera ROI",
+      "cmdId": 21,
+      "inputType": 2,
+      "inputValues": [{ "name": "Start Px", "units": "Px", "range": [] },{ "name": "ROI Size", "units": "", "range": [] }],
+    },
+    {
+      "cmd"  : "FSM Driver Toggle",
+      "cmdId": 30,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Enable", "value": 0 },
+        { "label": "Disable", "value": 1 },
+      ],
+    },
+    {
+      "cmd"  : "FSM Commanding",
+      "cmdId": 31,
+      "inputType": 2,
+      "inputValues": [
+        { "name": "X Axis", "units": "Degrees", "range": [-2.1, 2.1] },
+        { "name": "Y Axis", "units": "Degrees", "range": [-2.1, 2.1] },
+      ],
+    },
+    {
+      "cmd"  : "FSM Status",
+      "cmdId": 32,
+      "inputType": 0,
+      "inputValues" :[]
+    },
+    {
+      "cmd"  : "Motor Command",
+      "cmdId": 40,
+      "inputType": 2,
+      "inputValues": [
+        { "name": "Azimuth Angle", "units": "Degrees", "range": [-110, 110] },
+        { "name": "Elevation Angle", "units": "Degrees", "range": [-45, 45] },
+      ],
+    },
+    {
+      "cmd"  : "Motor Driver Toggle",
+      "cmdId": 41,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Enable", "value": 0 },
+        { "label": "Disable", "value": 1 },
+      ],
+    },
+    {
+      "cmd"  : "Pat Mode",
+      "cmdId": 50,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Pointing", "value": 0 },
+        { "label": "Acquisition", "value": 1 },
+        { "label": "Tracking", "value": 2 },
+      ],
+    },
+    {
+      "cmd"  : "EDFA Power",
+      "cmdId": 90,
+      "inputType": 2,
+      "inputValues": [{ "name": "Power", "units": "W", "range": [0, 1.5] }],
+    },
+    {
+      "cmd"  : "EDFA Gain",
+      "cmdId": 91,
+      "inputType": 2,
+      "inputValues": [{ "name": "Gain", "units": "dB", "range": [] }],
+    },
+    {
+      "cmd"  : "EDFA Current",
+      "cmdId": 92,
+      "inputType": 2,
+      "inputValues": [{ "name": "Current", "units": "mA", "range": [] }],
+    },
+    {
+      "cmd"  : "EDFA Mode",
+      "cmdId": 93,
+      "inputType": 1,
+      "inputValues": [
+        { "label": "Power Control", "value": 0 },
+        { "label": "Gain Control", "value": 1 },
+        { "label": "Current Control", "value": 2 },
+        { "label": "OFF", "value": 3 },
+      ],
+    },
+  ];
+  
+  
+
+  export const teleCommands2 = [
+    {"cmd": "Shutdown", "cmdId": 6},
+    {"cmd": "System Mode", "cmdId": 7},
+    {"cmd": "Data Transfer Toggle", "cmdId": 8},
+    {"cmd": "Data Speed Configuration", "cmdId": 9},
+  
+    {"cmd": "TEC Toggle", "cmdId": 10},
+    {"cmd": "Laser Driver Control", "cmdId": 11},
+  
+    {"cmd": "Beacon Camera Exposure", "cmdId": 20},
+    {"cmd": "Beacon Camera ROI", "cmdId": 21},
+  
+    {"cmd": "FSM Driver Toggle", "cmdId": 30},
+    {"cmd": "FSM Commanding", "cmdId": 31},
+    {"cmd": "FSM Status", "cmdId": 32},
+  
+    {"cmd": "Motor Command", "cmdId": 40},
+    {"cmd": "Motor Driver Toggle", "cmdId": 41},
+  
+    {"cmd": "Pat Mode", "cmdId": 50},
+  
+    {"cmd": "EDFA Power", "cmdId": 90},
+    {"cmd": "EDFA Gain", "cmdId": 91},
+    {"cmd": "EDFA Current", "cmdId": 92},
+    {"cmd": "EDFA Mode", "cmdId": 93}
+  ]
+
 export const systemLogs = [
     { timestamp: "21-02-2025 10:07 UTC", message: "System is undergoing software update" },
     { timestamp: "21-02-2025 10:06 UTC", message: "CRC pass for Boot Image. System is ready for Software Update" },
@@ -9,60 +187,11 @@ export const systemLogs = [
     
 ];
 export const systemModes = [
-    "Idle Mode",
-    "Stand-By Mode",
+    "Safe Mode",
     "Maintenance Mode",
+    "Stand-By Mode",
     "Downlink Mode"
 ]
-const data = [
-    { value: 400.7481},
-    { value: 300.98758 },
-    { value: 500 },
-    { value: 700 },
-    { value: 400 },
-    { value: 300 },
-    { value: 500 },
-    { value: 700 },
-    { value: 600 },
-    { value: 800 },
-    { value: 600 },
-    { value: 800 },
-    { value: 400 },
-    { value: 300 },
-    { value: 500 },
-    { value: 700 },
-    { value: 600 },
-    { value: 800 },
-    { value: 400 },
-    { value: 300 },
-    { value: 500 },
-    { value: 700 },
-    { value: 600 },
-    { value: 800 },
-  ];
-export const labelsData = {
-    "Al Angle": data,
-    "En Angle": data,
-    "Label1": data,
-    "Label2": data,
-    "Label3": data,
-    "Temparature ewruthqwrejitpoa ieoij oae58yhwirjyij": data,
-    "Label4": data,
-    "Label5": data,
-    "Label6": data,
-    "Temparature":data,
-    "Al Angle1": data,
-    "En Angle2": data,
-    "Label11": data,
-    "Label22": data,
-    "Label33": data,
-    "Tempaature ewruthqwrejitpoa ieoij oae58yhwirjyij": data,
-    "Label55": data,
-    "Label10": data,
-    "Labe": data,
-    "Temparaure":data
-  };
-
 
 
   
@@ -70,87 +199,37 @@ export const settingsMenu = ["Import Data","Export Data","Settings Options","Dat
 export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlines","[Graph Option]"]
 
 
-export const allLables = ["System Mode","Azimuth Angle","Elevation Angle","Optical Bench Temperature","Gimbal Temperature","lable1","lable2","lable3" , "label6", "label7", "label8", "label9", "label10"]
-export const tempTelemetryData: string = "$100*,$200*,$300*,$400,$500*";
-
-export interface TelemetryData {
-    label1: { value: number }[];
-}
-
-export const modifiedTelemetryData: TelemetryData = { label1: [] };
-
-// Split data by comma
-const dataArray: string[] = tempTelemetryData.split(",");
-
-// Loop through the array and extract valid values
-for (let i = 0; i < dataArray.length; i++) {
-    let item: string = dataArray[i];
-    if (item.startsWith("$") && item.endsWith("*")) {
-        // Extract numeric value between $ and *
-        const numericValue = parseInt(item.slice(1, -1), 10);
-        modifiedTelemetryData.label1.push({ value: numericValue });
-    }
-}
-
-console.log(modifiedTelemetryData);
-
-
-
-// Function to generate random telemetry data
-// function generateTelemetryData(labels:string[], packets:number) {
-//     let tempStr = "";
-//     for (let i = 0; i < packets; i++) {
-//         let values = labels.map(() => Math.floor(Math.random() * 500)); // Random values for each label
-//         tempStr += `$ER${i % 10},${values.join(",")}*`;
-//     }
-//     return tempStr;
-// }
-
-interface telemetryData {
-    [key: string]: { value: number }[];
-}
-
-// Function to generate random telemetry data
-function generateTelemetryData(labels: string[], packets: number): string {
-    let tempStr = "";
-    for (let i = 0; i < packets; i++) {
-        let values = labels.map(() => Math.floor(Math.random() * 500)); // Random values for each label
-        tempStr += `$ER${i % 10},${values.join(",")}*`;
-    }
-    return tempStr;
-}
-
-// Function to parse telemetry data
-function parseTelemetryData(tempStr: string, labels: string[]): telemetryData {
-    let dataStore: telemetryData = {};
-    labels.forEach(label => dataStore[label] = []);
-    
-    let packets = tempStr.split("$").filter(packet => packet.includes("*"));
-    
-    for (let packet of packets) {
-        let cleanPacket = packet.replace("*", "");
-        let parts:any = cleanPacket.split(",");
-        let erIdentifier = parseInt(parts.shift().replace("ER", "")); // Convert ER4 to 4
-        
-        dataStore[labels[0]].push({ value: erIdentifier }); // Store ER identifier under first label
-        
-        parts.forEach((value:any, index:number) => {
-            if (index < labels.length - 1) {
-                dataStore[labels[index + 1]].push({ value: parseInt(value) });
-            }
-        });
-    }
-    return dataStore;
-}
-
-// Define labels and generate random data
-let labels: string[] = ["label1", "label2", "label3", "label4", "label5", "label6", "label7", "label8", "label9", "label10"];
-let tempStr = generateTelemetryData(labels, 20);
-console.log("Generated Telemetry Data:", tempStr);
-
-// Parse the telemetry data
-export let parsedData = parseTelemetryData(tempStr, labels);
-console.log("Parsed Data:", JSON.stringify(parsedData, null, 2));
+export const  allLables = [
+    "System Mode",
+    "Azimuth Angle",
+    "Elevation Angle",
+    "Motor Current Comsumption",
+    "ODT Temperature",
+    "Gimbal Temperature",
+    "Quadcell Channel 1",
+    "Quadcell Channel 2",
+    "Quadcell Channel 3",
+    "Quadcell Channel 4",
+    "EDFA Mode",
+    "EDFA Power",
+    "EDFA Gain",
+    "EDFA Current",
+    "EDFA Alarms",
+    "EDFA Laser Temperature",
+    "EDFA Internal Temperature",
+    "Beacon Status",
+    "Beacon Exposure Time",
+    "Beacon Sensor Temperature",
+    "TEC Laser Temperature",
+    "TEC Voltage",
+    "TEC Current",
+    "ODT 5V Rail",
+    "SOC 3.3V Rail",
+    "SOC 1.8V Rail",
+    "SOC 1.35V Rail",
+    "SOC 1V Rail",
+    "SOC Temperature"
+  ];
 
 
 export function convertToUtcFormat(date: Date): string {

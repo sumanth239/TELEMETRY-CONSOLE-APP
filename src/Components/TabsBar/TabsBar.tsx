@@ -38,7 +38,7 @@ const Sidebar: React.FC = () => {
           isActive={location.pathname === "/data-viewer"}
         />
         <SidebarItem
-          to="/title1"
+          to="/"
           icon="bi bi-gear-fill"
           label="Settings"
           isOpen={isOpen}
@@ -48,14 +48,14 @@ const Sidebar: React.FC = () => {
 
       <div className="sidebar-bottom">
       <SidebarItem
-          to="/logout"
+          to="/"
           icon="bi-box-arrow-right"
           label="Logout"
           isOpen={isOpen}
           isActive={location.pathname === "/logout"}
         />
         <SidebarItem
-          to="/help"
+          to="/"
           icon="bi bi-question-circle-fill"
           label="Help"
           isOpen={isOpen}

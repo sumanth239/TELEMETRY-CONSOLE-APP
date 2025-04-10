@@ -8,7 +8,7 @@ const Layout: React.FC = () => {
         <>
         <Sidebar />
             <Header />
-            <div className="content" style={{"backgroundColor":"white"}}>
+            <div className="content" >
                 <Outlet />  {/* This is where the routed component will be rendered */}
             </div>
         </>

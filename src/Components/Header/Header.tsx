@@ -45,8 +45,7 @@ const Header: React.FC = () => {
 
             {/* Date and time contianer */}
             <div className="date-time-container">
-                <div className="date">{formattedDate}</div>
-                <div className="time">{formattedTime} UTC</div>
+                <p>{formattedDate} &nbsp;  | &nbsp; {formattedTime} UTC </p>
             </div>
 
             <div className="settings-help-container">

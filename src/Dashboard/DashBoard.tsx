@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
   const [systemStartedTime, setSystemStartedTime] = useState<any>("27-03-2025 12:30:45");    //to handle system live time
   const [teleCmdData, setTeleCmdData] = useState<string[]>([]);   //for telecmd packet data genrated from backend
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
-  const [systemMode, setSystemMode] = useState("Idle Mode"); //to handle the system mode
+  const [systemMode, setSystemMode] = useState("0"); //to handle the system mode
   const [teleCmdValueError, setTeleCmdValueError] = useState<string>(""); //to handle telecmd input validation errors
   const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
     fetchTmtCmds()
   }, [startSystem]); // Dependency array remains empty to avoid re-creating intervals
 
-  console.log("logs", logsData)
+  // console.log("logs", logsData)
   useEffect(() => {
     if (startSystem) {
       const ws = new WebSocket(`ws://127.0.0.1:8000/ws`);
@@ -159,7 +159,9 @@ const Dashboard: React.FC = () => {
   //Handlar functions
 
   const handleDateChange = (event: any) => {   //to handle date change in child component
-    setSelectedDateTime(event.target.value);
+    const date = new Date(event.target.value);
+    setSelectedDateTime(date);
+    // setSelectedDateTime(event.target.value);
     // console.log(event.target.value)
   };
 
@@ -173,7 +175,8 @@ const Dashboard: React.FC = () => {
       if (teleCommand.cmd == "System Mode") {
         setSystemMode(teleCommandValue)
 
-        if (teleCommandValue == "Stand-By Mode") {
+
+        if (teleCommandValue == "2") {
           setStartSystem(!startSystem);
           // setUtcCounter(0); 
           // setSystemCounter(0);
@@ -187,6 +190,21 @@ const Dashboard: React.FC = () => {
 
       }
     }
+    const formatDateTime = (date: Date) => {
+      const day = date.toLocaleString("en-GB", { day: "2-digit" });
+      const month = date.toLocaleString("en-GB", { month: "2-digit" });
+      const year = date.toLocaleString("en-GB", { year: "numeric" });
+      const time = date.toLocaleTimeString("en-GB", {
+        hour12: true,
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+
+      return `${day}-${month}-${year} ${time}`;
+    };
+
+
 
     //cmd data i.e request to send backend API
     const cmdData = {
@@ -194,13 +212,15 @@ const Dashboard: React.FC = () => {
       "telecmd_type_value":
         teleCmdsFormData.teleCmdType == "Real Time"
           ? `${formattedDate} ${formattedTime}`
-          : `${selectedDateTime}`,
+          : selectedDateTime
+            ? formatDateTime(selectedDateTime)
+            : "",
       "telecmd": teleCommand.cmd,   // Extract cmd from selectedCommand object
       "telecmd_value": teleCommandValue,
       "telecmd_id": teleCommand.cmdId,
       "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
     };
-    // console.log("Sending command data:", cmdData);
+    console.log("Sending command data:", cmdData);
     // return ;
 
     try {
@@ -230,7 +250,7 @@ const Dashboard: React.FC = () => {
       {
         ...prevState,
         ["teleCmd"]: selectedData,
-        ["teleCmdValue"]: "100"
+        ["teleCmdValue"]: ""
       }
     ))
     // console.log("ay",teleCmdsFormData.teleCmdValue)
@@ -254,7 +274,7 @@ const Dashboard: React.FC = () => {
       ["teleCmdValue"]: event.target.value
     }))
 
-    // console.log(numValue)
+    console.log(numValue,teleCmdsFormData.teleCmdValue)
 
 
     //telecmd input value validations
@@ -311,7 +331,7 @@ const Dashboard: React.FC = () => {
   }
 
   const systemModeIcon = (mode: string) => {        // to return system mode icon based on system mode
-    if (mode == "Idle Mode") {
+    if (mode == "Safe Mode") {
       return <i className="bi bi-pause-circle"></i>
     } else if (mode == "Maintenance Mode") {
       return <i className="bi bi-tools"></i>
@@ -324,59 +344,44 @@ const Dashboard: React.FC = () => {
 
 
   const renderTeleCmdsExtraFields = () => {         //function to render different input fields for different commands
-    let command = teleCmdsFormData.teleCmd.cmd;
-    if (!command) return null;
+    let cmd = teleCmdsFormData.teleCmd.cmd;
+    if (!cmd) return null;
 
-    switch (command) {
-      case "System Mode":
-        return (
-          <select onChange={TeleCmdValueHandler}>
-            {systemModes.map((item, index) => (
-              <option key={index} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        )
+    let cmdInfo = teleCommands.find((item) => item.cmd === cmd);
+    if (!cmdInfo) return null
 
-      case "PAT Mode":
-        return (
-          <>
-            <div style={{ "display": "flex", "flexDirection": "column", "gap": "5px", "width": "212px", "boxSizing": "border-box", "position": "absolute", "left": "158px", "bottom": "83px" }}>
-              <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
-              <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
-              <input onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />
+    if (cmdInfo.inputType === 1) {
+      // Narrowing the type for TypeScript
+      const inputOptions = cmdInfo.inputValues as { label: string; value: number }[];
+    
+      return (
+        <select onChange={TeleCmdValueHandler}>
+          {inputOptions.map(({ label, value }, index) => (
+            <option key={index} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      );
+    }else if (cmdInfo.inputType === 2) {
+      const inputOptions = cmdInfo.inputValues as { name: string; units: string; range: [number, number] }[];
+    
+      return (
+        <div style={{ "display": "flex", "flexDirection": "column", "gap": "7px", "width": "212px", "boxSizing": "border-box", "position": "absolute", "left": "220px", "top": "52px" }}>
+          {inputOptions.map((item, index) => (
+            
+            <div>
+              <input onChange={TeleCmdValueHandler} placeholder={item.name} value={teleCmdsFormData.teleCmdValue} className={teleCmdValueError ? "input-error" : ""} type="text" />&nbsp;<b>  dBm</b>
             </div>
-
-          </>
-
-        )
-
-      case "EDFA Power":
-        return (
-          <>
-            <input type="text" className={teleCmdValueError ? "input-error" : ""} value={teleCmdsFormData.teleCmdValue} onChange={TeleCmdValueHandler} />&nbsp;<b>  dBm</b>
-          </>
-
-        )
-
-      case "Elevation Angle":
-      case "Azimuth Angle":
-        return (
-          <>
-            <input type="text" className={teleCmdValueError ? "input-error" : ""} value={teleCmdsFormData.teleCmdValue} onChange={TeleCmdValueHandler} />&nbsp;&nbsp;<b>degrees</b>
-          </>
-
-        )
-
-      // case "Shutdown System" :
-      // case "EDFA Shutdown":
-      //   return (
-      //     <>
-      //       <input type="text" />
-      //     </>
-      //   )
+        
+          ))}
+        </div>
+      );
     }
+    
+    
+
+
   }
   // console.log("data", teleCmdsFormData)
   return (
@@ -390,8 +395,8 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="status-item">
-            <span className="icon"><i className="bi bi-sliders"></i></span>
-            <span className="text">{systemMode}</span>
+            <span className="icon">{systemModeIcon(systemModes[Number(systemMode)])}</span>
+            <span className="text">{systemModes[Number(systemMode)]}</span>
           </div>
 
           <div className="status-item">
@@ -417,6 +422,7 @@ const Dashboard: React.FC = () => {
             <div>
               {/* <p>TELECOMMAND</p> */}
               <select onChange={CommandTypeHandler}>
+                <option value="" disabled selected hidden>TeleCmd Type</option>
                 {teleCommandType.map((value, index) => (
                   <option id={value} key={index}>
                     {value}
@@ -425,7 +431,7 @@ const Dashboard: React.FC = () => {
               </select>
 
               {/*condtionally rendering calender componenet based on command type */}
-              {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" value={selectedDateTime?.toString()} onChange={handleDateChange} step="1"></input>}
+              {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" onChange={handleDateChange} step="1"></input>}
             </div>
 
 
@@ -434,6 +440,7 @@ const Dashboard: React.FC = () => {
             <div>
               <select onChange={CommandHandler}>
                 {/* <option selected> TeleCmd</option> */}
+                <option value="" disabled selected hidden>TeleCmd</option>
                 {teleCommands.map((data, index) => (
                   <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
                 ))}
@@ -464,7 +471,7 @@ const Dashboard: React.FC = () => {
                 </p>
               ))} */}
               {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
-                <p>{data.telecmd_type_value} &nbsp; : {data.teleCmdPacket}&nbsp;</p>
+                <p>{data.telecmd_type_value} &nbsp; : &nbsp;{data.teleCmdPacket}</p>
               ))}
             </div>
           </div>
@@ -474,59 +481,59 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-container2">
         <div className="telemetry-main-container" >
           <div className="logs-button-container">
-           <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
-           <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!isLogging}>Stop Logging</button>
+            <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
+            <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!isLogging}>Stop Logging</button>
             {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
           </div>
           <div className="labels-and-graphs-container">
-          <div className="labels-data-container">
-            {Object.entries(telemetryData).map(([label, data], index) => (
-              <div className="labels-data">
-                <p className="label-text">{label}</p>
-                <div>
-                  <p className="label-text">{data[data.length - 1]?.value}</p>
-                </div>
-
-                {/* condtionally rendering icons to handle graphs visibility */}
-                {visibleGraphs[label] ?
-                  <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
-                  :
-                  <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
-                }
-              </div>
-            ))}
-          </div>
-          {/* graphs container*/}
-          <div className="graphs-data-container">
-            {/* Condtionly rendering the graphs based on visibility */}
-            {Object.entries(telemetryData).map(([label, data], index) =>
-              visibleGraphs[label] ? (
-                <div className="graph">
-                  <div className="graph-header">
-                    <p>{label}</p>
-                    <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
-                      <i className="bi bi-three-dots-vertical" style={{ fontSize: "18px" }} ></i>
-                    </button>
-
-                    {/* conditionally rendering graph options */}
-                    {graphOptionsOpendLables[label] && (
-                      <div className="graph-options-menu">
-                        <ul>
-                          {graphOptions.map((item, index) => (
-                            <li>
-                              <button onClick={() => removeGraph(label, item)} className="graph-options-menu-item" > {item} </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+            <div className="labels-data-container">
+              {Object.entries(telemetryData).map(([label, data], index) => (
+                <div className="labels-data">
+                  <p className="label-text">{label}</p>
+                  <div>
+                    <p className="label-text">{data[data.length - 1]?.value}</p>
                   </div>
-                  <LineChartComponent data={data} />
+
+                  {/* condtionally rendering icons to handle graphs visibility */}
+                  {visibleGraphs[label] ?
+                    <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
+                    :
+                    <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
+                  }
                 </div>
-              ) : null
-            )}
+              ))}
+            </div>
+            {/* graphs container*/}
+            <div className="graphs-data-container">
+              {/* Condtionly rendering the graphs based on visibility */}
+              {Object.entries(telemetryData).map(([label, data], index) =>
+                visibleGraphs[label] ? (
+                  <div className="graph">
+                    <div className="graph-header">
+                      <p>{label}</p>
+                      <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
+                        <i className="bi bi-three-dots-vertical" style={{ fontSize: "18px" }} ></i>
+                      </button>
+
+                      {/* conditionally rendering graph options */}
+                      {graphOptionsOpendLables[label] && (
+                        <div className="graph-options-menu">
+                          <ul>
+                            {graphOptions.map((item, index) => (
+                              <li>
+                                <button onClick={() => removeGraph(label, item)} className="graph-options-menu-item" > {item} </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <LineChartComponent data={data} />
+                  </div>
+                ) : null
+              )}
+            </div>
           </div>
-        </div>
         </div>
 
 
@@ -553,7 +560,7 @@ const Dashboard: React.FC = () => {
                   }}
                 ></div>
                 <p className="step-text">
-                  {data.telecmd_type_value} &nbsp; : &nbsp; {data.teleCmdPacket}
+                  {data.telecmd_type_value} : {data.teleCmdPacket}
                 </p>
               </div>
             ))}

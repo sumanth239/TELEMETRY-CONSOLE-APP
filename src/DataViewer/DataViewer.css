@@ -136,7 +136,7 @@
     gap: 15px;
     color: var(--primary-color);
     align-items: center;
-    height: 37.5px;
+    height: 37px;
     justify-content: space-between;
 
   }
@@ -163,6 +163,7 @@
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     padding: 5px;
     border-radius: 5px;
+    text-align: center;
   }
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data div{
     background-color: white;
@@ -196,7 +197,7 @@
    .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph {
     color: black;
     background-color: white;
-    width: 520px;
+    width: 500px;
     height: 183px;
     margin-bottom: 10px;
     padding: 0;

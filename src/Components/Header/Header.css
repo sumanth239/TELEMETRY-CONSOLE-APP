@@ -7,6 +7,7 @@
     font-size: 20px;
     background-color: var(--buttons-color);
     color: white;
+
   }
 .logo-container {
     display: flex;
@@ -25,8 +26,8 @@
   }
 
   .header-main-container .date-time-container{
-    display: flex;
-    justify-content: space-between;
+    /* display: flex;
+    justify-content: space-between; */
     width: 300px;
 
   }
@@ -36,8 +37,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: white;
-    color: var(--primary-color);
+    /* background-color: white; */
+    /* color: var(--primary-color); */
     padding: 3px 10PX;
     border-radius: 5PX;
   }
@@ -47,8 +48,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: white;
-    color: var(--primary-color);
+    /* background-color: white; */
+    /* color: var(--primary-color); */
     padding: 3px 10PX;
     border-radius: 5PX;
   }

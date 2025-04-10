@@ -32,7 +32,7 @@ const LineChartComponent: React.FC <ChildProps > = ({data}) => {
   // console.log("data",data);
   return (
     <ResponsiveContainer width="100%" height="78%">
-    <LineChart data={data}   margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
+    <LineChart data={data} >
       <CartesianGrid strokeDasharray="3 3" />
       <YAxis />
       <Tooltip />

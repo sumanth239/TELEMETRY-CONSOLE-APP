@@ -1,6 +1,6 @@
 import React from "react";
 import "./DataViewer.css";
-import { labelsData, graphOptions, allLables, systemLogs } from "../Utils/Constant";
+import {  graphOptions, allLables, systemLogs } from "../Utils/Constant";
 import { useState, useRef } from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";

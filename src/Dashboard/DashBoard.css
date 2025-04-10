@@ -95,7 +95,7 @@
   border-radius: 5px;
   /* margin-right: 10px; */
   margin: 0px 10px 12px 0;
-  width: 140px;
+  width: 200px;
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container #commands-apply-button {
@@ -137,9 +137,9 @@
   font-size: 12px;
   font-weight: bold;
   /* margin-top: 5px; */
-  right: 41%;
+  right: 162px;
   width: 150px;
-  bottom: 85px;
+  bottom: 80px;
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container .input-error {
@@ -251,7 +251,7 @@
   text-align: right;
 }
 
-.dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-text:hover {
+/* .dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-text:hover {
   overflow: visible;
   white-space: normal;
   background: #fff;
@@ -261,7 +261,7 @@
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   padding: 5px;
   border-radius: 5px;
-}
+} */
 
 .dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data div {
   background-color: white;
@@ -482,7 +482,7 @@
     font-size: 12px;
   }
 
-  .dashboard-container1  .commands-main-container .labels-data-container .labels-data .label-text:hover {
+  /* .dashboard-container1  .commands-main-container .labels-data-container .labels-data .label-text:hover {
     cursor: help;
     overflow: visible;
     white-space: normal;
@@ -491,9 +491,9 @@
     z-index: 10;
     width: 100px;
     max-width: 50px;
-    /* Set max width for hover display */
+    Set max width for hover display
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     padding: 2px;
     border-radius: 5px;
-  }
+  } */
 }
