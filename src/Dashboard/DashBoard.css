@@ -310,19 +310,25 @@
   padding: 0;
 }
 
-.dashboard-container2  .graph-header .graph-options-menu ul li button {
-  padding: 0;
-  border: 0;
-  color: black;
-  background-color: white;
-  font-size: var(--font-size-body);
+
+.graph-options-menu-item {
+  border: none;
+  margin-bottom: 4px;
   cursor: pointer;
+  font-size: 14px;
+  color: black;
 }
 
-.dashboard-container2  .graph-header .graph-options-menu ul li button:hover {
-  background-color: var(--greay-background);
-  padding: 5px 3px;
+.graph-options-menu-item:hover {
+  background-color: #e0e0e0;
 }
+
+.graph-options-menu-item.selected {
+  /* background-color: #007bff; */
+  color: #007bff;
+  font-weight: 600;
+}
+
 
 .dashboard-container2  .graphs-data-container .graph .graph-header .view-more-button {
   border: 0;
@@ -414,7 +420,7 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  width: 212px;
+  width: 220px;
   box-sizing: border-box;
   position: absolute;
   left: 220px;

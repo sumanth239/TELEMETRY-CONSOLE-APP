@@ -113,9 +113,10 @@ export const teleCommands = [
       "cmdId": 50,
       "inputType": 1,
       "inputValues": [
-        { "label": "Pointing", "value": 0 },
-        { "label": "Acquisition", "value": 1 },
-        { "label": "Tracking", "value": 2 },
+        { "label": "Stand-By", "value": 0 },
+        { "label": "Pointing", "value": 1 },
+        { "label": "Acquisition", "value": 2 },
+        { "label": "Tracking", "value": 3 },
       ],
     },
     {
@@ -149,34 +150,6 @@ export const teleCommands = [
     },
   ];
   
-  
-
-  export const teleCommands2 = [
-    {"cmd": "Shutdown", "cmdId": 6},
-    {"cmd": "System Mode", "cmdId": 7},
-    {"cmd": "Data Transfer Toggle", "cmdId": 8},
-    {"cmd": "Data Speed Configuration", "cmdId": 9},
-  
-    {"cmd": "TEC Toggle", "cmdId": 10},
-    {"cmd": "Laser Driver Control", "cmdId": 11},
-  
-    {"cmd": "Beacon Camera Exposure", "cmdId": 20},
-    {"cmd": "Beacon Camera ROI", "cmdId": 21},
-  
-    {"cmd": "FSM Driver Toggle", "cmdId": 30},
-    {"cmd": "FSM Commanding", "cmdId": 31},
-    {"cmd": "FSM Status", "cmdId": 32},
-  
-    {"cmd": "Motor Command", "cmdId": 40},
-    {"cmd": "Motor Driver Toggle", "cmdId": 41},
-  
-    {"cmd": "Pat Mode", "cmdId": 50},
-  
-    {"cmd": "EDFA Power", "cmdId": 90},
-    {"cmd": "EDFA Gain", "cmdId": 91},
-    {"cmd": "EDFA Current", "cmdId": 92},
-    {"cmd": "EDFA Mode", "cmdId": 93}
-  ]
 
 export const systemLogs = [
     { timestamp: "21-02-2025 10:07 UTC", message: "System is undergoing software update" },
@@ -196,7 +169,7 @@ export const systemModes = [
 
   
 export const settingsMenu = ["Import Data","Export Data","Settings Options","Date & Time Options","Sign Out"]
-export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlines","[Graph Option]"]
+export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlines"]  as const;
 
 
 export const  allLables = [

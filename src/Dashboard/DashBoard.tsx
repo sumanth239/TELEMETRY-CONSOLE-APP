@@ -9,8 +9,20 @@ import { data } from "react-router-dom";
 import { exportToExcel } from "../Utils/HelperFunctions";
 import temperatureIcon from "../assets/temperature_icon.png";
 import powerIcon from "../assets/bolt_icon.png";
-import AlertPopup from "../Components/AlertPopUp";
+import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
 
+//types 
+
+type GraphOptions = {
+  "Logarithmic Scale": boolean;
+  "Axis Titles": boolean;
+  "Gridlines": boolean;
+};
+
+type GraphState = {
+  visibility: boolean;
+  graphOptions: GraphOptions;
+};
 
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
@@ -55,12 +67,24 @@ const Dashboard: React.FC = () => {
     "teleCmdValue": [""],
 
   })
-  const [visibleGraphs, setVisibleGraphs] = useState<{ [key: string]: boolean }>(     //to handle the  graphs visibility
-    () => allLables.reduce((acc, label) => {
-      acc[label] = true;      // Initialize each label as visible (true)
-      return acc;
-    }, {} as { [key: string]: boolean })
-  );
+  const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
+    const initialState: { [label: string]: GraphState } = {};
+
+    allLables.forEach((label) => {
+      initialState[label] = {
+        visibility: true,
+        graphOptions: {
+          "Logarithmic Scale": false,
+          "Axis Titles": false,
+          "Gridlines": false,
+        } as const, 
+      };
+    });
+
+    return initialState;
+  });
+
+
   // console.log("telemetry data",telemetryData)
 
   //function to fetch the telecmds data along with telecmd values and system counters  
@@ -121,7 +145,7 @@ const Dashboard: React.FC = () => {
 
             allLables.forEach((label, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index] };
+                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[label] = [...(prevData[label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
               }
             });
@@ -341,17 +365,60 @@ const Dashboard: React.FC = () => {
   };
 
   const toggleGraph = (label: string) => {      // to toggle graph visibility
-    setVisibleGraphs((prev) => ({ ...prev, [label]: !prev[label] }));
+    setVisibleGraphs((prev) => ({
+      ...prev,
+      [label]: {
+        ...prev[label],
+        visibility: !prev[label].visibility
+      }
+    }));
   };
 
   const removeGraph = (label: string, option: string) => {    //to toggle graph visibilty through graph option
     if (option === "Remove") {
-      setVisibleGraphs((prev) => ({ ...prev, [label]: false }));
+      setVisibleGraphs((prev) => ({
+        ...prev,
+        [label]: {
+          ...prev[label],
+          visibility: !prev[label].visibility
+        }
+      }));
       setgraphOptionsOpendLables((prev) => ({
         ...prev,
         [label]: !prev[label],
       }));
     }
+  };
+
+  const changeGraphOption = (label: string, option: string) => {
+    if (option === "Remove") {
+      setVisibleGraphs((prev) => ({
+        ...prev,
+        [label]: {
+          ...prev[label],
+          visibility: !prev[label].visibility
+        }
+      }));
+      setgraphOptionsOpendLables((prev) => ({
+        ...prev,
+        [label]: !prev[label],
+      }));
+    }
+
+    type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
+
+    if (!graphOptions.includes(option as keyof GraphOptions)) return;
+
+    setVisibleGraphs((prev) => ({
+      ...prev,
+      [label]: {
+        ...prev[label],
+        graphOptions: {
+          ...prev[label].graphOptions,
+          [option]: !prev[label].graphOptions[option as keyof GraphOptions],
+        },
+      },
+    }));
   };
 
   const graphOptionsButtonHandler = (label: string) => {    //to handle graph options visibility
@@ -412,7 +479,7 @@ const Dashboard: React.FC = () => {
           {inputOptions.map((item, index) => (
 
             <div>
-              <input value={teleCmdsFormData.teleCmdValue[index]} onChange={(e) => TeleCmdValueHandler(e, index)} placeholder={item.name} className={teleCmdValueError[index] ? "input-error" : ""} type="text" />&nbsp;<b>  dBm</b>
+              <input value={teleCmdsFormData.teleCmdValue[index]} onChange={(e) => TeleCmdValueHandler(e, index)} placeholder={item.name} className={teleCmdValueError[index] ? "input-error" : ""} type="text" />&nbsp;<b>  {item.units}</b>
               {teleCmdValueError[index] && <div className="error">{teleCmdValueError[index]}</div>}
             </div>
 
@@ -421,15 +488,14 @@ const Dashboard: React.FC = () => {
       );
     }
 
-
-    const alertMessages = [
-      'Network connection lost.',
-      'Failed to load data.',
-      'New update available.',
-      'Your session will expire soon.',
-    ];
-
   }
+
+  const alertMessages = [
+    'Network connection lost.',
+    'Failed to load data.',
+    'New update available.',
+    'Your session will expire soon.',
+  ];
   // console.log("data", teleCmdsFormData)
   return (
     <>
@@ -459,16 +525,15 @@ const Dashboard: React.FC = () => {
           <div className="status-item">
             <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i></span>
             <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i></span>
-            {showAlert && (
-              <AlertPopup
-                message="This is a success alert!"
-                type="success"
-                onClose={() => setShowAlert(false)}
-              />
-            )}
+
           </div>
         </div>
-
+        {showAlert && (
+          <AlertPopup
+            alerts={alertMessages}
+            onClose={() => setShowAlert(false)}
+          />
+        )}
 
         <div className="commands-main-container">
           {/* comands data container */}
@@ -550,7 +615,7 @@ const Dashboard: React.FC = () => {
                   </div>
 
                   {/* condtionally rendering icons to handle graphs visibility */}
-                  {visibleGraphs[label] ?
+                  {visibleGraphs[label].visibility ?
                     <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
                     :
                     <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
@@ -562,7 +627,7 @@ const Dashboard: React.FC = () => {
             <div className="graphs-data-container">
               {/* Condtionly rendering the graphs based on visibility */}
               {Object.entries(telemetryData).map(([label, data], index) =>
-                visibleGraphs[label] ? (
+                visibleGraphs[label].visibility ? (
                   <div className="graph">
                     <div className="graph-header">
                       <p>{label}</p>
@@ -575,15 +640,16 @@ const Dashboard: React.FC = () => {
                         <div className="graph-options-menu">
                           <ul>
                             {graphOptions.map((item, index) => (
-                              <li>
-                                <button onClick={() => removeGraph(label, item)} className="graph-options-menu-item" > {item} </button>
+                              <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                              }`}>
+                            {item}
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
                     </div>
-                    <LineChartComponent data={data} />
+                    <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} />
                   </div>
                 ) : null
               )}

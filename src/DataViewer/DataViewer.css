@@ -246,19 +246,24 @@
     padding: 0;
   }
   
-    .dataviewer-main-container .graphs-main-container  .graphs-container .graph-header  .graph-options-menu ul  li button {
-    padding: 0;
-    border: 0;
-    color: black;
-    background-color: white;
-    font-size: var(--font-size-body);
+  .graph-options-menu-item {
+    border: none;
+    margin-bottom: 4px;
     cursor: pointer;
+    font-size: 14px;
+    color: black;
   }
-
-    .dataviewer-main-container .graphs-main-container  .graphs-container .graph-header  .graph-options-menu ul  li button:hover {
-    background-color: var(--greay-background);
-    padding: 0  5px 0 3px ;
+  
+  .graph-options-menu-item:hover {
+    background-color: #e0e0e0;
   }
+  
+  .graph-options-menu-item.selected {
+    /* background-color: #007bff; */
+    color: #007bff;
+    font-weight: 600;
+  }
+  
 
  .dataviewer-main-container .graphs-main-container .system-log-container{
     height: 620px;

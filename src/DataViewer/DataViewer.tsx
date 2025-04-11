@@ -1,10 +1,24 @@
 import React from "react";
 import "./DataViewer.css";
-import {  graphOptions, allLables, systemLogs } from "../Utils/Constant";
+import { graphOptions, allLables, systemLogs } from "../Utils/Constant";
 import { useState, useRef } from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
 import * as XLSX from "xlsx";
+import { Label } from "recharts";
+
+
+//types 
+type GraphOptions = {
+    "Logarithmic Scale": boolean;
+    "Axis Titles": boolean;
+    "Gridlines": boolean;
+};
+
+type GraphState = {
+    visibility: boolean;
+    graphOptions: GraphOptions;
+};
 
 //Interfaces
 
@@ -36,7 +50,22 @@ const DataViewer: React.FC = () => {
     //states 
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
-    const [visibleGraphs, setVisibleGraphs] = useState(initialVisibility);      //to handle the  graphs visibility 
+    const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
+        const initialState: { [label: string]: GraphState } = {};
+
+        allLables.forEach((label) => {
+            initialState[label] = {
+                visibility: true,
+                graphOptions: {
+                    "Logarithmic Scale": false,
+                    "Axis Titles": false,
+                    "Gridlines": false,
+                } as const,
+            };
+        });
+
+        return initialState;
+    });      //to handle the  graphs visibility 
     const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
@@ -48,12 +77,24 @@ const DataViewer: React.FC = () => {
 
     //handler functions
     const toggleGraph = (label: string) => {        // to Toggle graph visibility
-        setVisibleGraphs((prev) => ({ ...prev, [label]: !prev[label] }));
+        setVisibleGraphs((prev) => ({
+            ...prev,
+            [label]: {
+                ...prev[label],
+                visibility: !prev[label].visibility
+            }
+        }));
     };
 
     const removeGraph = (label: string, option: string) => {    //toggle  graph visibility through graph option
         if (option === "Remove") {
-            setVisibleGraphs((prev) => ({ ...prev, [label]: false }));
+            setVisibleGraphs((prev) => ({
+                ...prev,
+                [label]: {
+                    ...prev[label],
+                    visibility: !prev[label].visibility
+                }
+            }));
             setgraphOptionsOpendLables((prev) => ({
                 ...prev,
                 [label]: !prev[label],
@@ -66,6 +107,36 @@ const DataViewer: React.FC = () => {
         setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: !prev[label] }));
     };
 
+    const changeGraphOption = (label: string, option: string) => {
+        if (option === "Remove") {
+            setVisibleGraphs((prev) => ({
+                ...prev,
+                [label]: {
+                    ...prev[label],
+                    visibility: !prev[label].visibility
+                }
+            }));
+            setgraphOptionsOpendLables((prev) => ({
+                ...prev,
+                [label]: !prev[label],
+            }));
+        }
+
+        type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
+
+        if (!graphOptions.includes(option as keyof GraphOptions)) return;
+
+        setVisibleGraphs((prev) => ({
+            ...prev,
+            [label]: {
+                ...prev[label],
+                graphOptions: {
+                    ...prev[label].graphOptions,
+                    [option]: !prev[label].graphOptions[option as keyof GraphOptions],
+                },
+            },
+        }));
+    };
 
     const handleCheckboxChange = (label: string) => {   //for labels dropdown selection
         setSelectedOptions((prev) =>
@@ -73,17 +144,55 @@ const DataViewer: React.FC = () => {
                 ? prev.filter((item) => item !== label)
                 : [label, ...prev]
         );
-        setVisibleGraphs((prev) => ({ ...prev, [label]: !prev[label] }));
+        setVisibleGraphs((prev) => ({
+            ...prev,
+            [label]: {
+                ...prev[label],
+                visibility: !prev[label].visibility
+            }
+        }));
     };
 
 
     const handleAllSelectbBoxChange = (event: React.ChangeEvent<HTMLInputElement>) => {     //for dorpdown all selector
         if (event.target.checked) {
             setSelectedOptions(initialDropdownOptions);     // Select all labels and show all graphs
-            setVisibleGraphs(initialVisibility);        // Select all labels and show all graphs
+            setVisibleGraphs(() => {
+                const initialState: { [label: string]: GraphState } = {};
+
+                allLables.forEach((label) => {
+                    initialState[label] = {
+                        visibility: true,
+                        graphOptions: {
+                            "Logarithmic Scale": false,
+                            "Axis Titles": false,
+                            "Gridlines": false,
+                        },
+                    };
+                });
+
+                return initialState;
+            });
+            // Select all labels and show all graphs
         } else {
             setSelectedOptions([]);      // Clear selection and hide all graphs
-            setVisibleGraphs({});        // Clear selection and hide all graphs
+            setVisibleGraphs(() => {
+                const initialState: { [label: string]: GraphState } = {};
+
+                allLables.forEach((label) => {
+                    initialState[label] = {
+                        visibility: false,
+                        graphOptions: {
+                            "Logarithmic Scale": false,
+                            "Axis Titles": false,
+                            "Gridlines": false,
+                        },
+                    };
+                });
+
+                return initialState;
+            });
+            // Clear selection and hide all graphs
         }
     };
 
@@ -212,7 +321,7 @@ const DataViewer: React.FC = () => {
                                     </div>
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
-                                    {visibleGraphs[label] ? (
+                                    {visibleGraphs[label].visibility ? (
                                         <i
                                             onClick={() => toggleGraph(label)}
                                             className="bi bi-eye"
@@ -241,7 +350,7 @@ const DataViewer: React.FC = () => {
                         <div className="graphs-data-container">
                             {/* Condtionly rendering the graphs based on visibility */}
                             {Object.entries(telemetryData).map(([label, data], index) =>
-                                visibleGraphs[label] ? (
+                                visibleGraphs[label]?.visibility ? (
                                     <div className="graph">
                                         <div className="graph-header">
                                             <p>{label}</p>
@@ -260,20 +369,16 @@ const DataViewer: React.FC = () => {
                                                 <div className="graph-options-menu">
                                                     <ul>
                                                         {graphOptions.map((item, index) => (
-                                                            <li>
-                                                                <button
-                                                                    onClick={() => removeGraph(label, item)}
-                                                                    className="graph-options-menu-item"
-                                                                >
-                                                                    {item}
-                                                                </button>
+                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                                                                }`}>
+                                                                {item}
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent data={data} />
+                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} />
                                     </div>
                                 ) : null
                             )}
