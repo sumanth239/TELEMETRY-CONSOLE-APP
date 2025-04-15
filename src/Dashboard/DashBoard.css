@@ -370,7 +370,7 @@
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container p {
   font-size: var(--font-size-body);
-  color: grey;
+  /* color: grey; */
 }
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item {
@@ -406,7 +406,7 @@
   background-color: var(--primary-color);
   position: absolute;
   left: 5px;
-  top: 5px;
+  top: 17px;
   box-sizing: border-box;
   overflow: hidden;
 }

@@ -494,7 +494,7 @@ const Dashboard: React.FC = () => {
     'Network connection lost.',
     'Failed to load data.',
     'New update available.',
-    'Your session will expire soon.',
+    'alert message with more than one line text',
   ];
   // console.log("data", teleCmdsFormData)
   return (
@@ -568,7 +568,7 @@ const Dashboard: React.FC = () => {
 
             </div>
             {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
-            <button id="commands-apply-button" disabled={teleCmdValueError.length > 0 && teleCmdValueError.every(item => item === " ") ? true : false} onClick={CommandsDataHandler}>{" "}Apply Now</button>
+            <button id="commands-apply-button" disabled={teleCmdValueError.length == 0 || teleCmdValueError.every(item => item === "") ? false : true} onClick={CommandsDataHandler}>{" "}Apply Now</button>
           </div>
 
           {/* commands output container */}

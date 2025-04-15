@@ -1,18 +1,24 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "../Components/Header/Header";
 import Sidebar from "../Components/SideBar/SideBar";
 
 const Layout: React.FC = () => {
-    return (
-        <>
-        <Sidebar />
-            <Header />
-            <div className="content" >
-                <Outlet />  {/* This is where the routed component will be rendered */}
-            </div>
-        </>
-    );
+  const location = useLocation();
+  const hideForRoutes = ["/signin", "/signup"];
+
+  const shouldHideLayout = hideForRoutes.includes(location.pathname);
+
+  return (
+    <>
+      {!shouldHideLayout && <Sidebar />}
+      {!shouldHideLayout && <Header />}
+      <div className="content">
+        <Outlet />
+      </div>
+    </>
+  );
 };
 
 export default Layout;
+
