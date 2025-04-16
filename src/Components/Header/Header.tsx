@@ -14,7 +14,7 @@ const Header: React.FC = () => {
     const [exportDataBtnIsClicked, setExportDataBtnIsClicked] = useState(false); //states for setting options
 
     
-    const { formattedDate, formattedTime , currentUtcTime } = useCurrentTime();  //custom hook for utc date and time
+    const { formattedDate, formattedTime, currentUtcTime, localDate, localTime } = useCurrentTime();  //custom hook for utc date and time
 
 
     //handlar functions
@@ -46,6 +46,7 @@ const Header: React.FC = () => {
             {/* Date and time contianer */}
             <div className="date-time-container">
                 <p>{formattedDate} &nbsp;  | &nbsp; {formattedTime} UTC </p>
+                <p> {localDate} &nbsp;  | &nbsp; {localTime} IST</p>
             </div>
 
             <div className="settings-help-container">

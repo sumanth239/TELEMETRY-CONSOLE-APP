@@ -20,21 +20,6 @@
     background-repeat: no-repeat;
     /* height: 91.7vh; */
   }
-  .forgot-password {
-    text-align: right;
-    margin-top: 0.25rem;
-    margin-bottom: 1rem;
-  }
-  
-  .forgot-password a {
-    font-size: 0.875rem;
-    color: #3b82f6;
-    text-decoration: none;
-  }
-  
-  .forgot-password a:hover {
-    color: #1d4ed8;
-  }
   
   
   .signup-container .signup-box {
@@ -45,7 +30,7 @@
     /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   }
   .signup-container .signup-box h1 {
-    color: var(--primary-color);
+    color: var(--buttons-color);
     font-weight: bold;
     margin-left: 3px;
   }
@@ -163,7 +148,7 @@
   }
   
   .signup-container .signup-footer a {
-    color: #3b82f6;
+    color: var(--buttons-color);
     text-decoration: none;
   }
   

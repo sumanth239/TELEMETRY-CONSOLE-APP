@@ -132,7 +132,7 @@
 
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data{
     display: grid;
-    grid-template-columns:  58% 22% 10%;
+    grid-template-columns:  80% 10%;
     gap: 15px;
     color: var(--primary-color);
     align-items: center;
@@ -152,19 +152,18 @@
     text-align: right;
   }
 
-  .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text:hover{
+  /* .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text:hover{
     overflow: visible;
     white-space: normal;
     background: #fff;
-    /* position: absolute; */
     z-index: 1;
     width: 300px;
-    max-width: 300px; /* Set max width for hover display */
+    max-width: 300px; 
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     padding: 5px;
     border-radius: 5px;
     text-align: center;
-  }
+  } */
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data div{
     background-color: white;
     width: auto;

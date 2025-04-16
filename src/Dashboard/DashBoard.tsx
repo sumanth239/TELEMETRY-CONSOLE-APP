@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
         graphOptions: {
           "Logarithmic Scale": false,
           "Axis Titles": false,
-          "Gridlines": false,
+          "Gridlines": true,
         } as const, 
       };
     });
@@ -573,7 +573,7 @@ const Dashboard: React.FC = () => {
 
           {/* commands output container */}
           <div className="commands-output-container">
-            <span>System Log</span>
+            <span>Session Log</span>
             <ul>
               <li>
                 <button className="system-log-buttons">Export Log</button>
@@ -590,9 +590,9 @@ const Dashboard: React.FC = () => {
                   {data.message}
                 </p>
               ))} */}
-              {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
+              {/* {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
                 <p>{data.telecmd_type_value} &nbsp; : &nbsp;{data.telecmd_value}</p>
-              ))}
+              ))} */}
             </div>
           </div>
         </div>
@@ -601,8 +601,8 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-container2">
         <div className="telemetry-main-container" >
           <div className="logs-button-container">
-            <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
-            <button className="logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!isLogging}>Stop Logging</button>
+            <button className="start-logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
+            <button className="stop-logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!isLogging}>Stop Logging</button>
             {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
           </div>
           <div className="labels-and-graphs-container">
@@ -664,7 +664,7 @@ const Dashboard: React.FC = () => {
           <p>Time Tag Command Queue</p>
           <div className="time-tag-commands-container">
             {/* Time tags with steppers */}
-            {tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").map((data: any, index) => (
+            {tmtData.map((data: any, index) => (
               <div key={index} className="step-item">
 
                 <div className="step-circle" style={{
@@ -677,7 +677,7 @@ const Dashboard: React.FC = () => {
                     backgroundColor: data.status === 'Pending' ? '#666666' :
                       data.status === 'Failed' ? '#B85450' :
                         data.status === 'Success' ? '#82B366' : '#666666',
-                    display: index === tmtData.filter((data: any) => data.systemCounter > systemCounter && data.telecmd_type == "Time Tagged").length - 1 ? "none" : "block",
+                    display: index === tmtData.length - 1 ? "none" : "block",
                   }}
                 ></div>
                 <p className="step-text">

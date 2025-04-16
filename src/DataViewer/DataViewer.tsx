@@ -59,7 +59,7 @@ const DataViewer: React.FC = () => {
                 graphOptions: {
                     "Logarithmic Scale": false,
                     "Axis Titles": false,
-                    "Gridlines": false,
+                    "Gridlines": true,
                 } as const,
             };
         });
@@ -215,11 +215,28 @@ const DataViewer: React.FC = () => {
         setFile(selectedFile);
     };
 
+    const parseCustomTimestamp = (timestampStr: string): number | null => {
+        // Expected format: "16/04/2025, 6:42:16 am"
+        const [datePart, timePart, meridian] = timestampStr
+            .replace(",", "")
+            .split(" "); // ["16/04/2025", "6:42:16", "am"]
+    
+        const [day, month, year] = datePart.split("/").map(Number);
+        let [hours, minutes, seconds] = timePart.split(":").map(Number);
+    
+        if (meridian.toLowerCase() === "pm" && hours !== 12) hours += 12;
+        if (meridian.toLowerCase() === "am" && hours === 12) hours = 0;
+    
+        const formatted = new Date(year, month - 1, day, hours, minutes, seconds);
+        return isNaN(formatted.getTime()) ? null : formatted.getTime();
+    };
+    
     const readExcelData = () => {
         if (!file) {
             console.warn("No file selected.");
             return;
         }
+    
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -228,19 +245,55 @@ const DataViewer: React.FC = () => {
             const sheet = workbook.Sheets[sheetName];
             const jsonData: any = XLSX.utils.sheet_to_json(sheet);
             const transformedData: any = {};
-            jsonData.forEach((row: any) => {
+    
+            let firstTimestamp: number | null = null;
+    
+            jsonData.forEach((row: any, index: number) => {
+                const timestampStr = row["Timestamp"];
+                const timestamp = parseCustomTimestamp(timestampStr);
+    
+                if (timestamp === null) {
+                    console.warn("Invalid timestamp:", timestampStr);
+                    return;
+                }
+    
+                if (index === 0) {
+                    firstTimestamp = timestamp;
+                }
+    
                 Object.keys(row).forEach((key) => {
+                    if (key === "Timestamp") return;
+    
                     if (!transformedData[key]) {
                         transformedData[key] = [];
                     }
-                    transformedData[key].push({ "value": row[key] });
+    
+                    let timeInfo = {};
+    
+                    if (index === 0 || index === jsonData.length - 1) {
+                        timeInfo = { timestamp: timestampStr };
+                    } else if (firstTimestamp !== null) {
+                        const diffSeconds = (timestamp - firstTimestamp) / 1000;
+                        timeInfo = { timestamp:timestampStr };
+                    }
+    
+                    transformedData[key].push({
+                        value: row[key],
+                        ...timeInfo,
+                    });
                 });
             });
-
+    
+            console.log(transformedData["TEMP"], "→ telemetry with fixed timestamps");
             setTelemetryData(transformedData);
         };
+    
         reader.readAsArrayBuffer(file);
     };
+    
+    
+    
+    
 
     const getLabelRecentData = (label: string): any => {
         const labelArray = telemetryData[label];
@@ -316,9 +369,6 @@ const DataViewer: React.FC = () => {
                             {selectedOptions.map((label: any) => (
                                 <div className="labels-data">
                                     <p className="label-text">{label}</p>
-                                    <div>
-                                        <p className="label-text">{getLabelRecentData(label)}</p>
-                                    </div>
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
                                     {visibleGraphs[label].visibility ? (
@@ -388,7 +438,7 @@ const DataViewer: React.FC = () => {
                     {/*system log container */}
                     <div className="system-log-container">
 
-                        <p>System Log</p>
+                        <p>Session Log</p>
                         <div className="logs-container">
                             {systemLogs.map((data) => (
                                 <p>

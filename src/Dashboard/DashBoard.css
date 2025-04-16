@@ -388,6 +388,12 @@
   margin-bottom: 10px;
   margin-right: 0;
 }
+.logs-button-container .start-logging-button {
+  background-color: rgba(142, 238, 171, 0.795);
+}
+.logs-button-container .stop-logging-button {
+  background-color: #B85450;
+}
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item .step-circle {
   width: 12px;
@@ -423,7 +429,7 @@
   width: 220px;
   box-sizing: border-box;
   position: absolute;
-  left: 220px;
+  left: 225px;
   top: 52px;
 }
 

@@ -26,10 +26,17 @@
   }
 
   .header-main-container .date-time-container{
-    /* display: flex;
-    justify-content: space-between; */
-    width: 300px;
+    display: flex;
+    justify-content: space-between;
+    /* width: 300px; */
+    gap: 10px;
 
+  }
+  .header-main-container .date-time-container p{
+    background-color: white;
+    color: var(--buttons-color);
+    border-radius: 3px;
+    padding: 3px;
   }
 
   .header-main-container .date-time-container .date {

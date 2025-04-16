@@ -142,7 +142,7 @@ export default function SignUp() {
 
         <div className="signup-footer">
           <p>
-            Already have an account?<Link to="/signin">Login</Link> 
+            Already have an account?&nbsp; <Link to="/signin">Login</Link> 
           </p>
         </div>
       </div>
