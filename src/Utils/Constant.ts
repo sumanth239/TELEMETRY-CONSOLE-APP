@@ -172,37 +172,64 @@ export const settingsMenu = ["Import Data","Export Data","Settings Options","Dat
 export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlines"]  as const;
 
 
-export const  allLables = [
-    "System Mode",
-    "Azimuth Angle",
-    "Elevation Angle",
-    "Motor Current Comsumption",
-    "ODT Temperature",
-    "Gimbal Temperature",
-    "Quadcell Channel 1",
-    "Quadcell Channel 2",
-    "Quadcell Channel 3",
-    "Quadcell Channel 4",
-    "EDFA Mode",
-    "EDFA Power",
-    "EDFA Gain",
-    "EDFA Current",
-    "EDFA Alarms",
-    "EDFA Laser Temperature",
-    "EDFA Internal Temperature",
-    "Beacon Status",
-    "Beacon Exposure Time",
-    "Beacon Sensor Temperature",
-    "TEC Laser Temperature",
-    "TEC Voltage",
-    "TEC Current",
-    "ODT 5V Rail",
-    "SOC 3.3V Rail",
-    "SOC 1.8V Rail",
-    "SOC 1.35V Rail",
-    "SOC 1V Rail",
-    "SOC Temperature"
-  ];
+export const allLabels = [
+  { label: "System Mode", units: "" }, // 0: Safe, 1: Maintenance, 2: Stand-By, 3: Downlink
+  { label: "PAT Mode", units: "" }, // 0: Standby, 1:Pointing, 2: Acquisition, 3: Tracking
+  { label: "Azimuth Angle", units: "dg" },
+  { label: "Elevation Angle", units: "dg" },
+  { label: "Motor Current Comsumption", units: "A" },
+  { label: "ODT Temperature", units: "°C" },
+  { label: "Gimbal Temperature", units: "°C" },
+  { label: "Quadcell Channel 1", units: "" },
+  { label: "Quadcell Channel 2", units: "" },
+  { label: "Quadcell Channel 3", units: "" },
+  { label: "Quadcell Channel 4", units: "" },
+  { label: "EDFA Mode", units: "" }, // 0: PC, 1: GC, 2: CC, 3: OFF
+  { label: "EDFA Power", units: "W" },
+  { label: "EDFA Gain", units: "dB" },
+  { label: "EDFA Current", units: "mA" },
+  { label: "EDFA Alarms", units: "" },
+  { label: "EDFA Laser Temperature", units: "°C" },
+  { label: "EDFA Internal Temperature", units: "°C" },
+  { label: "Beacon Status", units: "" }, // Detected , Not Detected
+  { label: "Beacon Exposure", units: "°C" },
+  { label: "Beacon Sensor Temperature", units: "°C" },
+  { label: "TEC Laser Temperature", units: "°C" },
+  { label: "TEC Voltage", units: "V" },
+  { label: "TEC Current", units: "A" },
+  { label: "ODT 5V Rail", units: "V" },
+  { label: "SOC 3.3V Rail", units: "V" },
+  { label: "SOC 1.8V Rail", units: "V" },
+  { label: "SOC 1.35V Rail", units: "V" },
+  { label: "SOC 1V Rail", units: "V" },
+  { label: "SOC Temperature", units: "°C" }
+];
+
+export const labelValueMappings: Record<string, Record<number | string, string>> = {
+  "System Mode": {
+    0: "Safe",
+    1: "Maintenance",
+    2: "Stand-By",
+    3: "Downlink"
+  },
+  "PAT Mode": {
+    0: "Standby",
+    1: "Pointing",
+    2: "Acquisition",
+    3: "Tracking"
+  },
+  "EDFA Mode": {
+    0: "PC",
+    1: "GC",
+    2: "CC",
+    3: "OFF"
+  },
+  "Beacon Status": {
+    0: "Not Detected",
+    1: "Detected"
+  }
+  // Add more mappings as needed
+};
 
 
 export function convertToUtcFormat(date: Date): string {

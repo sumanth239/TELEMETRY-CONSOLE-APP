@@ -1,12 +1,13 @@
 import React from "react";
 import "./DataViewer.css";
-import { graphOptions, allLables, systemLogs } from "../Utils/Constant";
+import { graphOptions, allLabels, systemLogs } from "../Utils/Constant";
 import { useState, useRef } from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
 import * as XLSX from "xlsx";
 import { Label } from "recharts";
-
+import * as types from "../Utils/types";
+import * as helperFunctions  from "../Utils/HelperFunctions";
 
 //types 
 type GraphOptions = {
@@ -33,16 +34,16 @@ const initialGraphOptionsState: { [key: string]: boolean } = {};
 const initialDropdownOptions: string[] = [];
 
 //Modifying intial states  
-allLables.forEach((label) => {    //graphs visiblilty
-    initialVisibility[label] = true;
+allLabels.forEach((item) => {    //graphs visiblilty
+    initialVisibility[item.label] = true;
 });
 
-allLables.forEach((label) => {    //graph options
-    initialGraphOptionsState[label] = false;
+allLabels.forEach((item) => {    //graph options
+    initialGraphOptionsState[item.label] = false;
 });
 
-allLables.forEach((label) => (    //dropdown options
-    initialDropdownOptions.push(label)
+allLabels.forEach((item) => (    //dropdown options
+    initialDropdownOptions.push(`${item.label}${item.units && `(${item.units})`}`)
 ))
 
 const DataViewer: React.FC = () => {
@@ -53,8 +54,9 @@ const DataViewer: React.FC = () => {
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
         const initialState: { [label: string]: GraphState } = {};
 
-        allLables.forEach((label) => {
-            initialState[label] = {
+        allLabels.forEach((item) => {
+            let fullLabel = `${item.label}${item.units && `(${item.units})`}`
+            initialState[fullLabel] = {
                 visibility: true,
                 graphOptions: {
                     "Logarithmic Scale": false,
@@ -138,17 +140,18 @@ const DataViewer: React.FC = () => {
         }));
     };
 
-    const handleCheckboxChange = (label: string) => {   //for labels dropdown selection
+    const handleCheckboxChange = (item:types.LabelInfo) => {   //for labels dropdown selection
+        let fullLabel = `${item.label}${item.units && `(${item.units})`}`
         setSelectedOptions((prev) =>
-            prev.includes(label)
-                ? prev.filter((item) => item !== label)
-                : [label, ...prev]
+            prev.includes(fullLabel)
+                ? prev.filter((item) => item !== fullLabel)
+                : [fullLabel, ...prev]
         );
         setVisibleGraphs((prev) => ({
             ...prev,
-            [label]: {
-                ...prev[label],
-                visibility: !prev[label].visibility
+            [item.label]: {
+                ...prev[item.label],
+                visibility: !prev[item.label].visibility
             }
         }));
     };
@@ -160,8 +163,8 @@ const DataViewer: React.FC = () => {
             setVisibleGraphs(() => {
                 const initialState: { [label: string]: GraphState } = {};
 
-                allLables.forEach((label) => {
-                    initialState[label] = {
+                allLabels.forEach((item) => {
+                    initialState[item.label] = {
                         visibility: true,
                         graphOptions: {
                             "Logarithmic Scale": false,
@@ -179,8 +182,8 @@ const DataViewer: React.FC = () => {
             setVisibleGraphs(() => {
                 const initialState: { [label: string]: GraphState } = {};
 
-                allLables.forEach((label) => {
-                    initialState[label] = {
+                allLabels.forEach((item) => {
+                    initialState[item.label] = {
                         visibility: false,
                         graphOptions: {
                             "Logarithmic Scale": false,
@@ -198,7 +201,7 @@ const DataViewer: React.FC = () => {
 
     const handleDateChange = (date: Date | null) => {       //to handle date change in child component
         setSelectedDateTime(date);
-        console.log("Selected Date & Time in Parent:", date);
+        // console.log("Selected Date & Time in Parent:", date);
     };
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,6 +247,7 @@ const DataViewer: React.FC = () => {
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
             const jsonData: any = XLSX.utils.sheet_to_json(sheet);
+            console.log("josn data",jsonData)
             const transformedData: any = {};
     
             let firstTimestamp: number | null = null;
@@ -284,7 +288,8 @@ const DataViewer: React.FC = () => {
                 });
             });
     
-            console.log(transformedData["TEMP"], "→ telemetry with fixed timestamps");
+            // console.log(transformedData["TEMP"], "→ telemetry with fixed timestamps");
+            console.log("TEY",transformedData)
             setTelemetryData(transformedData);
         };
     
@@ -303,7 +308,7 @@ const DataViewer: React.FC = () => {
         return labelArray[labelArray.length - 1].value;
     };
 
-    console.log(telemetryData)
+  
     return (
         <>
             {/* data viewer main container*/}
@@ -330,13 +335,13 @@ const DataViewer: React.FC = () => {
                                         />
 
                                     </li>
-                                    {allLables.map((label, index) => (
-                                        <li key={label} className="dropdown-item">
-                                            <label>{label}</label>
+                                    {allLabels.map((item, index) => (
+                                        <li key={item.label} className="dropdown-item">
+                                            <label>{item.label}</label>
                                             <input
                                                 type="checkbox"
-                                                checked={selectedOptions.includes(label)}
-                                                onChange={() => handleCheckboxChange(label)}
+                                                checked={selectedOptions.includes(`${item.label}${item.units && `(${item.units})`}`)}
+                                                onChange={() => handleCheckboxChange(item)}
                                             />
 
                                         </li>
@@ -366,14 +371,14 @@ const DataViewer: React.FC = () => {
                 <div className="graphs-main-container">
                     <div className="labels-container">
                         <div className="labels-data-container">
-                            {selectedOptions.map((label: any) => (
+                            {selectedOptions.map((item) => (
                                 <div className="labels-data">
-                                    <p className="label-text">{label}</p>
+                                    <p className="label-text">{item} </p>
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
-                                    {visibleGraphs[label].visibility ? (
+                                    {visibleGraphs[item].visibility ? (
                                         <i
-                                            onClick={() => toggleGraph(label)}
+                                            onClick={() => toggleGraph(item)}
                                             className="bi bi-eye"
                                             style={{
                                                 cursor: "pointer",
@@ -383,7 +388,7 @@ const DataViewer: React.FC = () => {
                                         ></i>
                                     ) : (
                                         <i
-                                            onClick={() => toggleGraph(label)}
+                                            onClick={() => toggleGraph(item)}
                                             className="bi bi-eye-slash-fill"
                                             style={{
                                                 cursor: "pointer",
@@ -428,7 +433,7 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} />
+                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions}  timeSlider ={true}/>
                                     </div>
                                 ) : null
                             )}

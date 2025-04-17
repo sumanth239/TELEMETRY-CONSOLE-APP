@@ -1,27 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "./DashBoard.css"; // Import the CSS file
-import { teleCommandType, systemModes, teleCommands, graphOptions, allLables, } from "../Utils/Constant";
+import { teleCommandType, systemModes, teleCommands, graphOptions, allLabels, } from "../Utils/Constant";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
 import useCurrentTime from "../Utils/useCurrentTime";
 import axios from "axios";
 import { data } from "react-router-dom";
-import { exportToExcel } from "../Utils/HelperFunctions";
+import * as helperFunctions  from "../Utils/HelperFunctions";
 import temperatureIcon from "../assets/temperature_icon.png";
 import powerIcon from "../assets/bolt_icon.png";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
-
+import * as types from '../Utils/types'; 
+import {confirmAction} from "../Components/PopUps/ConfirmAction";
+import { inputModalAction } from "../Components/PopUps/InputAction";
 //types 
-
-type GraphOptions = {
-  "Logarithmic Scale": boolean;
-  "Axis Titles": boolean;
-  "Gridlines": boolean;
-};
 
 type GraphState = {
   visibility: boolean;
-  graphOptions: GraphOptions;
+  graphOptions: types.GraphOptions;
 };
 
 //Intials states of useState
@@ -31,14 +27,14 @@ const intialTelemeteryData: { [key: string]: { value: number }[] } = {};
 
 
 //Modifying intial state of graphs as visible
-allLables.forEach((label) => {
-  initialVisibility[label] = true;
-  intialTelemeteryData[label] = [];
+allLabels.forEach((item) => {
+  initialVisibility[item.label] = true;
+  intialTelemeteryData[item.label] = [];
 });
 
 //Modifying intial state of grpahs options of label as false
-allLables.forEach((label) => {
-  initialGraphOptionsState[label] = false;
+allLabels.forEach((item) => {
+  initialGraphOptionsState[item.label] = false;
 });
 
 const MAX_POINTS = 10;
@@ -70,8 +66,8 @@ const Dashboard: React.FC = () => {
   const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
     const initialState: { [label: string]: GraphState } = {};
 
-    allLables.forEach((label) => {
-      initialState[label] = {
+    allLabels.forEach((item) => {
+      initialState[item.label] = {
         visibility: true,
         graphOptions: {
           "Logarithmic Scale": false,
@@ -124,8 +120,8 @@ const Dashboard: React.FC = () => {
           const data = JSON.parse(event.data);
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-            ...allLables.reduce((acc, label, index) => {
-              acc[label] = data[index] || null;
+            ...allLabels.reduce((acc, item, index) => {
+              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
             }, {} as { [key: string]: any })
           };
@@ -143,10 +139,10 @@ const Dashboard: React.FC = () => {
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLables.forEach((label, index) => {
+            allLabels.forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
-                updatedData[label] = [...(prevData[label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
+                updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
               }
             });
 
@@ -407,7 +403,7 @@ const Dashboard: React.FC = () => {
 
     type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
 
-    if (!graphOptions.includes(option as keyof GraphOptions)) return;
+    if (!graphOptions.includes(option as keyof types.GraphOptions)) return;
 
     setVisibleGraphs((prev) => ({
       ...prev,
@@ -415,7 +411,7 @@ const Dashboard: React.FC = () => {
         ...prev[label],
         graphOptions: {
           ...prev[label].graphOptions,
-          [option]: !prev[label].graphOptions[option as keyof GraphOptions],
+          [option]: !prev[label].graphOptions[option as keyof types.GraphOptions],
         },
       },
     }));
@@ -497,6 +493,43 @@ const Dashboard: React.FC = () => {
     'alert message with more than one line text',
   ];
   // console.log("data", teleCmdsFormData)
+
+
+  const handleLogging = () => {        //to handle stop logging action
+    confirmAction({
+      title: 'Stop logging?',
+      text: 'Logging will be stopped and data collection will end.',
+      confirmButtonText: 'Stop',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#e53e3e',
+      onConfirm: () => {
+        setIsLogging(false);
+      },
+    });
+    
+  };
+
+  const handleExportData = () => {
+    inputModalAction({
+      title: 'Export Telemetry Data',
+      text: 'Enter a filename for the Excel export:',
+      confirmButtonText: 'Export',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#2563eb', // blue
+      inputType: 'text',
+      inputPlaceholder: 'e.g. TelemetryData',
+      onConfirm: (fileName) => {
+        helperFunctions.exportToExcel({ data: logsData, fileName });
+        setLogsData([]);
+      },
+    });
+  
+    // helperFunctions.exportToExcel();
+    setLogsData([]);
+  };
+  
+  
+
   return (
     <>
 
@@ -554,8 +587,6 @@ const Dashboard: React.FC = () => {
             </div>
 
 
-            {/* <p>TELE COMMAND</p> */}
-
             <div>
               <select onChange={CommandHandler}>
                 {/* <option selected> TeleCmd</option> */}
@@ -574,25 +605,7 @@ const Dashboard: React.FC = () => {
           {/* commands output container */}
           <div className="commands-output-container">
             <span>Session Log</span>
-            <ul>
-              <li>
-                <button className="system-log-buttons">Export Log</button>
-              </li>
-              <li>
-                <button className="system-log-buttons">Clear Log</button>
-              </li>
-            </ul>
-
             <div className="system-logs-container">
-              {/* {systemLogs.map((data) => (
-                <p>
-                  {data.timestamp} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{" "}
-                  {data.message}
-                </p>
-              ))} */}
-              {/* {tmtData && tmtData.filter((data: any) => (data.telecmd_type == "Real Time" || data.systemCounter <= systemCounter)).map((data: any) => (
-                <p>{data.telecmd_type_value} &nbsp; : &nbsp;{data.telecmd_value}</p>
-              ))} */}
             </div>
           </div>
         </div>
@@ -602,16 +615,16 @@ const Dashboard: React.FC = () => {
         <div className="telemetry-main-container" >
           <div className="logs-button-container">
             <button className="start-logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
-            <button className="stop-logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!isLogging}>Stop Logging</button>
-            {logsData.length > 0 && !isLogging && <button className="export-button" onClick={() => { exportToExcel(logsData); setLogsData([]); }}>Export Data</button>}
+            <button className="stop-logging-button" onClick={handleLogging} disabled={!isLogging}>Stop Logging</button>
+            {logsData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
           </div>
           <div className="labels-and-graphs-container">
             <div className="labels-data-container">
               {Object.entries(telemetryData).map(([label, data], index) => (
                 <div className="labels-data">
-                  <p className="label-text">{label}</p>
+                  <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
                   <div>
-                    <p className="label-text">{data[data.length - 1]?.value}</p>
+                    <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
                   </div>
 
                   {/* condtionally rendering icons to handle graphs visibility */}
@@ -630,7 +643,7 @@ const Dashboard: React.FC = () => {
                 visibleGraphs[label].visibility ? (
                   <div className="graph">
                     <div className="graph-header">
-                      <p>{label}</p>
+                      <p>{label} {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`}</p>
                       <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
                         <i className="bi bi-three-dots-vertical" style={{ fontSize: "18px" }} ></i>
                       </button>
@@ -640,7 +653,7 @@ const Dashboard: React.FC = () => {
                         <div className="graph-options-menu">
                           <ul>
                             {graphOptions.map((item, index) => (
-                              <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                              <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                               }`}>
                             {item}
                               </li>
@@ -649,7 +662,7 @@ const Dashboard: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} />
+                    <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider ={false}/>
                   </div>
                 ) : null
               )}

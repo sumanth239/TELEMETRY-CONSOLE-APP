@@ -19,11 +19,12 @@ type GraphOptions = {
 interface ChildProps {
   data: DataPoint[]
   graphOptions: GraphOptions
+  timeSlider:Boolean
 }
 
 
 
-const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions }) => {
+const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlider}) => {
   const [zoomDomain, setZoomDomain] = useState({ startIndex: 0, endIndex: data.length - 1 });
 
 
@@ -50,15 +51,15 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions }) => {
 
   // console.log("data",data);
   return (
-    <ResponsiveContainer width="98%" height="80%">
+    <ResponsiveContainer width="98%" height="88%">
       <LineChart data={data}>
         {graphOptions.Gridlines && <CartesianGrid strokeDasharray="3 3" />}
 
         <XAxis
           dataKey="timestamp"
           fontSize={12}
-          domain={[zoomDomain.startIndex, zoomDomain.endIndex]}
-          tickFormatter={(value) => value} // format timestamp if needed
+          // domain={[zoomDomain.startIndex, zoomDomain.endIndex]}
+          // tickFormatter={(value) => value} // format timestamp if needed
         >
           {graphOptions["Axis Titles"] && (
             <Label value="timestamp" offset={13} position="insideBottom" />
@@ -90,14 +91,14 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions }) => {
         />
 
         {/* 🔍 Zoom control */}
-        <Brush
+        { timeSlider && <Brush
           dataKey="timestamp"
           height={20}
           stroke="#8884d8"
           startIndex={zoomDomain.startIndex}
           endIndex={zoomDomain.endIndex}
           onChange={handleBrushChange}
-        />
+        />}
       </LineChart>
     </ResponsiveContainer>
 

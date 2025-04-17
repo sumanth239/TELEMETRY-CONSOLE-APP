@@ -218,20 +218,31 @@
 .dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data {
   display: grid;
   grid-template-columns: 58% 22% 10%;
-  gap: 15px;
+  gap: 10px;
   color: var(--primary-color);
   align-items: center;
   height: 33px;
   justify-content: space-between;
 }
 
-.dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-text {
+.dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-key {
   width: auto;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
-  font-size: var(--font-size-body);
+  font-size: 13px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-value {
+  width: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  font-size: 11px;
   font-weight: bold;
   text-align: right;
 }
@@ -268,7 +279,7 @@
   color: black;
   background-color: white;
   width: 490px;
-  height: 156px;
+  height: 240px;
   margin-bottom: 10px;
   padding: 0;
   margin-left: 0;
