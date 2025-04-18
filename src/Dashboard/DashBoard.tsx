@@ -2,23 +2,17 @@ import React, { useState, useEffect } from "react";
 import "./DashBoard.css"; // Import the CSS file
 import { teleCommandType, systemModes, teleCommands, graphOptions, allLabels, } from "../Utils/Constant";
 import LineChartComponent from "../Components/Charts/LineChart";
-import CalendarComponent from "../Components/Calender";
 import useCurrentTime from "../Utils/useCurrentTime";
 import axios from "axios";
-import { data } from "react-router-dom";
-import * as helperFunctions  from "../Utils/HelperFunctions";
+import * as helperFunctions from "../Utils/HelperFunctions";
 import temperatureIcon from "../assets/temperature_icon.png";
 import powerIcon from "../assets/bolt_icon.png";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
-import * as types from '../Utils/types'; 
-import {confirmAction} from "../Components/PopUps/ConfirmAction";
+import * as types from '../Utils/types';
+import { confirmAction } from "../Components/PopUps/ConfirmAction";
 import { inputModalAction } from "../Components/PopUps/InputAction";
-//types 
 
-type GraphState = {
-  visibility: boolean;
-  graphOptions: types.GraphOptions;
-};
+
 
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
@@ -55,7 +49,8 @@ const Dashboard: React.FC = () => {
   const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
-  const [logsData, setLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
+  const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
+  const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
     "teleCmdType": "Real Time",
@@ -63,8 +58,8 @@ const Dashboard: React.FC = () => {
     "teleCmdValue": [""],
 
   })
-  const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
-    const initialState: { [label: string]: GraphState } = {};
+  const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {
+    const initialState: { [label: string]: types.GraphState } = {};
 
     allLabels.forEach((item) => {
       initialState[item.label] = {
@@ -73,7 +68,7 @@ const Dashboard: React.FC = () => {
           "Logarithmic Scale": false,
           "Axis Titles": false,
           "Gridlines": true,
-        } as const, 
+        } as const,
       };
     });
 
@@ -108,7 +103,31 @@ const Dashboard: React.FC = () => {
     fetchTmtCmds()
   }, [startSystem]); // Dependency array remains empty to avoid re-creating intervals
 
-  // console.log("logs", logsData)
+  useEffect(() => {
+    const handleSessionLogsUpdated = () => {
+      const sessionStr = sessionStorage.getItem("sessionStorage");
+      if (!sessionStr) return;
+  
+      try {
+        const sessionData = JSON.parse(sessionStr);
+        if (Array.isArray(sessionData.Logs)) {
+          setSessionLogsData(sessionData.Logs);
+        }
+      } catch (err) {
+        console.error("Failed to parse session logs:", err);
+      }
+    };
+  
+    // 👂 Listen for custom event
+    window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+  
+    // Cleanup
+    return () => {
+      window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+    };
+  }, []);
+  
+
   useEffect(() => {
     if (startSystem) {
       const ws = new WebSocket(`ws://127.0.0.1:8000/ws`);
@@ -128,7 +147,7 @@ const Dashboard: React.FC = () => {
 
 
 
-          setLogsData((prevState) => [...prevState, newData]);
+          setExportTelemetryData((prevState) => [...prevState, newData]);
           console.log("new data", newData)
         }
 
@@ -189,6 +208,7 @@ const Dashboard: React.FC = () => {
 
   const CommandsDataHandler = async (event: any) => {     //to handle commands data on apply telecmd form
     event.preventDefault() //prevent default form submission
+    helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
 
     let teleCommand = teleCmdsFormData.teleCmd
     let teleCommandValue = teleCmdsFormData.teleCmdValue
@@ -200,6 +220,7 @@ const Dashboard: React.FC = () => {
 
         if (teleCommandValue[0] == "2") {
           setStartSystem(!startSystem);
+          helperFunctions.updateSessionLogs("System started  successfully ")
           // setUtcCounter(0); 
           // setSystemCounter(0);
           setSystemStartedTime(new Date())
@@ -256,6 +277,7 @@ const Dashboard: React.FC = () => {
       });
 
       if (response) {
+        helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command is  executed successfully `)
         setTeleCmdData((prevData) => [...prevData, response.data.data]); // Correct way to update state
         fetchTmtCmds()
       }
@@ -263,6 +285,7 @@ const Dashboard: React.FC = () => {
       // console.log("Response from API:", response.data);
       // console.log("tele", teleCmdData)
     } catch (error) {
+      helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command is failed to execute`)
       console.error("API call failed:", error);
     }
   };
@@ -370,21 +393,7 @@ const Dashboard: React.FC = () => {
     }));
   };
 
-  const removeGraph = (label: string, option: string) => {    //to toggle graph visibilty through graph option
-    if (option === "Remove") {
-      setVisibleGraphs((prev) => ({
-        ...prev,
-        [label]: {
-          ...prev[label],
-          visibility: !prev[label].visibility
-        }
-      }));
-      setgraphOptionsOpendLables((prev) => ({
-        ...prev,
-        [label]: !prev[label],
-      }));
-    }
-  };
+
 
   const changeGraphOption = (label: string, option: string) => {
     if (option === "Remove") {
@@ -503,13 +512,15 @@ const Dashboard: React.FC = () => {
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#e53e3e',
       onConfirm: () => {
+        helperFunctions.updateSessionLogs(`User stopped logging telemetry data`);
         setIsLogging(false);
       },
     });
-    
+
   };
 
   const handleExportData = () => {
+    helperFunctions.updateSessionLogs(`User started exporting telemetry data`);
     inputModalAction({
       title: 'Export Telemetry Data',
       text: 'Enter a filename for the Excel export:',
@@ -519,16 +530,16 @@ const Dashboard: React.FC = () => {
       inputType: 'text',
       inputPlaceholder: 'e.g. TelemetryData',
       onConfirm: (fileName) => {
-        helperFunctions.exportToExcel({ data: logsData, fileName });
-        setLogsData([]);
+        helperFunctions.exportToExcel({ telemetryData: exportTelemetryData, logsData:sessionLogsData, fileName });
+        setExportTelemetryData([]);
       },
     });
-  
+
     // helperFunctions.exportToExcel();
-    setLogsData([]);
+    setExportTelemetryData([]);
   };
-  
-  
+
+
 
   return (
     <>
@@ -547,7 +558,7 @@ const Dashboard: React.FC = () => {
 
           <div className="status-item">
             <span className="icon"><img id="temperature-icon" src={temperatureIcon} alt="Temperature" /></span>
-            <span className="text">37.5</span>
+            <span className="text">37 °C</span>
           </div>
 
           <div className="status-item">
@@ -572,7 +583,6 @@ const Dashboard: React.FC = () => {
           {/* comands data container */}
           <div className="commands-data-container">
             <div>
-              {/* <p>TELECOMMAND</p> */}
               <select onChange={CommandTypeHandler}>
                 <option value="" disabled selected hidden>TeleCmd Type</option>
                 {teleCommandType.map((value, index) => (
@@ -589,7 +599,6 @@ const Dashboard: React.FC = () => {
 
             <div>
               <select onChange={CommandHandler}>
-                {/* <option selected> TeleCmd</option> */}
                 <option value="" disabled selected hidden>TeleCmd</option>
                 {teleCommands.map((data, index) => (
                   <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
@@ -598,7 +607,6 @@ const Dashboard: React.FC = () => {
               {renderTeleCmdsExtraFields()}
 
             </div>
-            {/* <input type="text" placeholder="Value" onChange={TeleCmdValueHandler} value={teleCmdsFormData.teleCmdValue} ></input> */}
             <button id="commands-apply-button" disabled={teleCmdValueError.length == 0 || teleCmdValueError.every(item => item === "") ? false : true} onClick={CommandsDataHandler}>{" "}Apply Now</button>
           </div>
 
@@ -606,6 +614,11 @@ const Dashboard: React.FC = () => {
           <div className="commands-output-container">
             <span>Session Log</span>
             <div className="system-logs-container">
+              {sessionLogsData.map((log, index) => (
+                <div key={index} className="log-entry">
+                  <p>{log.TimeStamp} &nbsp; : &nbsp; {log.Action}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -614,9 +627,9 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-container2">
         <div className="telemetry-main-container" >
           <div className="logs-button-container">
-            <button className="start-logging-button" onClick={() => setIsLogging(!isLogging)} disabled={!startSystem}>Start Logging</button>
+            <button className="start-logging-button" onClick={() => { setIsLogging(!isLogging); helperFunctions.updateSessionLogs(`User started logging telemetry data`) }} disabled={!startSystem || isLogging} >Start Logging</button>
             <button className="stop-logging-button" onClick={handleLogging} disabled={!isLogging}>Stop Logging</button>
-            {logsData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
+            {exportTelemetryData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
           </div>
           <div className="labels-and-graphs-container">
             <div className="labels-data-container">
@@ -654,15 +667,15 @@ const Dashboard: React.FC = () => {
                           <ul>
                             {graphOptions.map((item, index) => (
                               <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
-                              }`}>
-                            {item}
+                                }`}>
+                                {item}
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
                     </div>
-                    <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider ={false}/>
+                    <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider={false} />
                   </div>
                 ) : null
               )}
@@ -674,7 +687,7 @@ const Dashboard: React.FC = () => {
         {/*Time tag container */}
         <div className="time-tag-container">
 
-          <p>Time Tag Command Queue</p>
+          <p>Command Queue</p>
           <div className="time-tag-commands-container">
             {/* Time tags with steppers */}
             {tmtData.map((data: any, index) => (

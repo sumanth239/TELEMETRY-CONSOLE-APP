@@ -7,7 +7,7 @@ import CalendarComponent from "../Components/Calender";
 import * as XLSX from "xlsx";
 import { Label } from "recharts";
 import * as types from "../Utils/types";
-import * as helperFunctions  from "../Utils/HelperFunctions";
+import * as helperFunctions from "../Utils/HelperFunctions";
 
 //types 
 type GraphOptions = {
@@ -73,6 +73,7 @@ const DataViewer: React.FC = () => {
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
+    const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
     const [file, setFile] = useState<File>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,22 +87,6 @@ const DataViewer: React.FC = () => {
                 visibility: !prev[label].visibility
             }
         }));
-    };
-
-    const removeGraph = (label: string, option: string) => {    //toggle  graph visibility through graph option
-        if (option === "Remove") {
-            setVisibleGraphs((prev) => ({
-                ...prev,
-                [label]: {
-                    ...prev[label],
-                    visibility: !prev[label].visibility
-                }
-            }));
-            setgraphOptionsOpendLables((prev) => ({
-                ...prev,
-                [label]: !prev[label],
-            }));
-        }
     };
 
 
@@ -140,7 +125,7 @@ const DataViewer: React.FC = () => {
         }));
     };
 
-    const handleCheckboxChange = (item:types.LabelInfo) => {   //for labels dropdown selection
+    const handleCheckboxChange = (item: types.LabelInfo) => {   //for labels dropdown selection
         let fullLabel = `${item.label}${item.units && `(${item.units})`}`
         setSelectedOptions((prev) =>
             prev.includes(fullLabel)
@@ -223,23 +208,23 @@ const DataViewer: React.FC = () => {
         const [datePart, timePart, meridian] = timestampStr
             .replace(",", "")
             .split(" "); // ["16/04/2025", "6:42:16", "am"]
-    
+
         const [day, month, year] = datePart.split("/").map(Number);
         let [hours, minutes, seconds] = timePart.split(":").map(Number);
-    
+
         if (meridian.toLowerCase() === "pm" && hours !== 12) hours += 12;
         if (meridian.toLowerCase() === "am" && hours === 12) hours = 0;
-    
+
         const formatted = new Date(year, month - 1, day, hours, minutes, seconds);
         return isNaN(formatted.getTime()) ? null : formatted.getTime();
     };
-    
+
     const readExcelData = () => {
         if (!file) {
             console.warn("No file selected.");
             return;
         }
-    
+
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -247,58 +232,67 @@ const DataViewer: React.FC = () => {
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
             const jsonData: any = XLSX.utils.sheet_to_json(sheet);
-            console.log("josn data",jsonData)
+            console.log("josn data", jsonData)
             const transformedData: any = {};
-    
+
             let firstTimestamp: number | null = null;
-    
+
             jsonData.forEach((row: any, index: number) => {
                 const timestampStr = row["Timestamp"];
                 const timestamp = parseCustomTimestamp(timestampStr);
-    
+
                 if (timestamp === null) {
                     console.warn("Invalid timestamp:", timestampStr);
                     return;
                 }
-    
+
                 if (index === 0) {
                     firstTimestamp = timestamp;
                 }
-    
+
                 Object.keys(row).forEach((key) => {
                     if (key === "Timestamp") return;
-    
+
                     if (!transformedData[key]) {
                         transformedData[key] = [];
                     }
-    
+
                     let timeInfo = {};
-    
+
                     if (index === 0 || index === jsonData.length - 1) {
                         timeInfo = { timestamp: timestampStr };
                     } else if (firstTimestamp !== null) {
                         const diffSeconds = (timestamp - firstTimestamp) / 1000;
-                        timeInfo = { timestamp:timestampStr };
+                        timeInfo = { timestamp: timestampStr };
                     }
-    
+
                     transformedData[key].push({
                         value: row[key],
                         ...timeInfo,
                     });
                 });
             });
-    
+
             // console.log(transformedData["TEMP"], "→ telemetry with fixed timestamps");
-            console.log("TEY",transformedData)
+            console.log("TEY", transformedData)
             setTelemetryData(transformedData);
+
+
+
+            //to store excel logs data into state
+            const logsSheetName = workbook.SheetNames[1]
+            const logsSheet = workbook.Sheets[logsSheetName];
+            const logsJsonData: any = XLSX.utils.sheet_to_json(logsSheet);
+            setSessionLogsData(logsJsonData);
+
         };
-    
+
         reader.readAsArrayBuffer(file);
     };
-    
-    
-    
-    
+
+
+
+
 
     const getLabelRecentData = (label: string): any => {
         const labelArray = telemetryData[label];
@@ -308,7 +302,7 @@ const DataViewer: React.FC = () => {
         return labelArray[labelArray.length - 1].value;
     };
 
-  
+
     return (
         <>
             {/* data viewer main container*/}
@@ -433,7 +427,7 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions}  timeSlider ={true}/>
+                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} />
                                     </div>
                                 ) : null
                             )}
@@ -445,10 +439,11 @@ const DataViewer: React.FC = () => {
 
                         <p>Session Log</p>
                         <div className="logs-container">
-                            {systemLogs.map((data) => (
-                                <p>
-                                    {data.timestamp}  &nbsp; : &nbsp; {data.message}
-                                </p>
+                            {sessionLogsData.map((log, index) => (
+                                <div key={index} className="log-entry">
+                                    <p className="timestamp">{log.TimeStamp} UTC :</p>
+                                    <p>{log.Action}</p>
+                                </div>
                             ))}
                         </div>
                     </div>
