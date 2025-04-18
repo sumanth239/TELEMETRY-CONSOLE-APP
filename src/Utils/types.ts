@@ -16,6 +16,12 @@ export type ExcelDataPoint = {
   [key:string]:any
 }
 export  type  ExportToExcelProps  = {
-  data: any[];
+  telemetryData: any[];
+  logsData:any[];
   fileName: string | undefined;
 }
+
+export type GraphState = {
+  visibility: boolean;
+  graphOptions: GraphOptions;
+};
