@@ -1,12 +1,11 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./SignIn.css";
-import logo from "./assets/logo.png";
 import indexline from "../assets/index_line.jpeg";
 import astrologo from "../assets/astrogate_labs_logo.png";
-import bg from "../assets/bg.jpeg";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import * as helperFunctions from "../Utils/HelperFunctions";
 
 interface FormData {
   name: string;
@@ -43,6 +42,16 @@ export default function SignIn() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const logsData = {
+      userName :formData.name,
+      singedInTime:new Date(),
+      userId : 2,
+      product:selectedProduct,
+      Logs : []
+    }
+
+    sessionStorage.setItem("sessionStorage",JSON.stringify(logsData));
+    helperFunctions.updateSessionLogs(`${formData.name} sucessfully loged into ${selectedProduct}`)
     navigate("/dashboard");
     console.log(
       "Form submitted:",
@@ -149,10 +158,10 @@ export default function SignIn() {
                   <option value="" disabled>
                     Select a product
                   </option>
-                  <option value="product1">AstroLink 10G ODT</option>
-                  <option value="product2">AstroLink Nano</option>
-                  <option value="product3">AstroBeam</option>
-                  <option value="product4">P2PLink-10G</option>
+                  <option value="AstroLink 10G ODT">AstroLink 10G ODT</option>
+                  <option value="AstroLink Nano">AstroLink Nano</option>
+                  <option value="AstroBeam">AstroBeam</option>
+                  <option value="P2PLink-10G">P2PLink-10G</option>
                 </select>
               </div>
 
