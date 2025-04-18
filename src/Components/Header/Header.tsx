@@ -3,7 +3,6 @@ import "./Header.css";
 import logo from "../../assets/logo.png"
 import { settingsMenu } from "../../Utils/Constant";
 import useCurrentTime from "../../Utils/useCurrentTime";
-import CalendarComponent from "../Calender";
 
 
 //A Header component which is placed in top most of the page
