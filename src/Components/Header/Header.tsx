@@ -50,43 +50,6 @@ const Header: React.FC = () => {
 
             <div className="settings-help-container">
                 <p id="username">Hello, [User Name]</p>
-                {/* <button className="settings-button" onClick={SettingsButtonHandler}>
-                    <i className="bi bi-gear-fill" style={{ fontSize: "25px" }}  ></i>
-                </button> */}
-
-                {/*settings button conditional render */}
-                {/* {settingsButtonIsOpen &&
-                    <div className="settings-menu">
-                        <ul>
-                            {settingsMenu.map((item, index) => (
-                                <li><button onClick={() => SettingOptionsHandlers(item)} className="settings-menu-item">{item}</button></li>
-                            ))}
-                        </ul>
-                    </div>
-                } */}
-                {/* {settingsButtonIsOpen && exportDataBtnIsClicked &&
-                    <div className="export-data-container">
-                        <div className="export-options-container">
-                            <span>Export Data</span>
-                            <label>
-                                <input type="radio" name="exportOption" value="All TeleCmds" /> All TeleCmds
-                            </label>
-                            <label>
-                                <input type="radio" name="exportOption" value="Selected TeleCmds" /> Selected TeleCmds
-                            </label>
-                        </div>
-
-                        <div className="export-calender-container">
-                            <CalendarComponent onDateChange={handleDateChange} />
-                            <CalendarComponent onDateChange={handleDateChange} />
-
-                        </div>
-                        <button > Export Data</button>
-                    </div>
-                } */}
-
-                {/* Help icon*/}
-                {/* <button className="help-button"><i className="bi bi-question-circle-fill" style={{ fontSize: "25px" }} ></i></button> */}
             </div>
         </div>
     );

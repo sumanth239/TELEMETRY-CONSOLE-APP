@@ -14,7 +14,9 @@ import { inputModalAction } from "../Components/PopUps/InputAction";
 
 
 
-//Intials states of useState
+// =============================================
+// Initialization and State Management
+// =============================================
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
 const intialTelemeteryData: { [key: string]: { value: number }[] } = {};
@@ -78,7 +80,9 @@ const Dashboard: React.FC = () => {
 
   // console.log("telemetry data",telemetryData)
 
-  //function to fetch the telecmds data along with telecmd values and system counters  
+  // =============================================
+  // WebSocket and Data Handling
+  // =============================================
   const fetchTmtCmds = async () => {
     try {
       const response: any = await axios.get("http://127.0.0.1:8000/dashboard/get_sheduled_commands", {
@@ -107,7 +111,7 @@ const Dashboard: React.FC = () => {
     const handleSessionLogsUpdated = () => {
       const sessionStr = sessionStorage.getItem("sessionStorage");
       if (!sessionStr) return;
-  
+
       try {
         const sessionData = JSON.parse(sessionStr);
         if (Array.isArray(sessionData.Logs)) {
@@ -117,16 +121,16 @@ const Dashboard: React.FC = () => {
         console.error("Failed to parse session logs:", err);
       }
     };
-  
+
     // 👂 Listen for custom event
     window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
-  
+
     // Cleanup
     return () => {
       window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
     };
   }, []);
-  
+
 
   useEffect(() => {
     if (startSystem) {
@@ -197,42 +201,33 @@ const Dashboard: React.FC = () => {
   }, [teleCmdsFormData.teleCmd]);
 
 
-  //Handlar functions
-
-  const handleDateChange = (event: any) => {   //to handle date change in child component
-    const date = new Date(event.target.value);
-    setSelectedDateTime(date);
-    // setSelectedDateTime(event.target.value);
-    // console.log(event.target.value)
-  };
-
-  const CommandsDataHandler = async (event: any) => {     //to handle commands data on apply telecmd form
-    event.preventDefault() //prevent default form submission
+  // =============================================
+  // Command Processing
+  // =============================================
+  const CommandsDataHandler = async (event: any) => {
+    event.preventDefault()
     helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
 
     let teleCommand = teleCmdsFormData.teleCmd
     let teleCommandValue = teleCmdsFormData.teleCmdValue
 
-    if (teleCmdsFormData.teleCmdType == "Real Time") {  //updating system mode state and system started time
+    if (teleCmdsFormData.teleCmdType == "Real Time") {
       if (teleCommand.cmd == "System Mode") {
         setSystemMode(teleCommandValue[0])
-
 
         if (teleCommandValue[0] == "2") {
           setStartSystem(!startSystem);
           helperFunctions.updateSessionLogs("System started  successfully ")
-          // setUtcCounter(0); 
-          // setSystemCounter(0);
           setSystemStartedTime(new Date())
         }
-      } else if (teleCommand.cmd == "Shutdown System") {  //updating system mode state and system started time
+      } else if (teleCommand.cmd == "Shutdown System") {
         setStartSystem(!startSystem);
         setUtcCounter(0);
         setSystemCounter(0);
         setSystemStartedTime(new Date())
-
       }
     }
+
     const formatDateTime = (date: Date) => {
       const day = date.toLocaleString("en-GB", { day: "2-digit" });
       const month = date.toLocaleString("en-GB", { month: "2-digit" });
@@ -247,9 +242,6 @@ const Dashboard: React.FC = () => {
       return `${day}-${month}-${year} ${time}`;
     };
 
-
-
-    //cmd data i.e request to send backend API
     const cmdData = {
       "telecmd_type": teleCmdsFormData.teleCmdType,
       "telecmd_type_value":
@@ -258,18 +250,16 @@ const Dashboard: React.FC = () => {
           : selectedDateTime
             ? formatDateTime(selectedDateTime)
             : "",
-      "telecmd": teleCommand.cmd,   // Extract cmd from selectedCommand object
+      "telecmd": teleCommand.cmd,
       "telecmd_value": `$${teleCmdsFormData.teleCmdType == "Real Time" ? `RLT,${formattedDate} ${formattedTime}` : `TMT,${selectedDateTime
         ? formatDateTime(selectedDateTime)
         : ""}`},${teleCommand.cmdId},${teleCommandValue.toString()}*\r\n`,
       "telecmd_id": teleCommand.cmdId,
-      "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime) // Convert cmdId to string if needed
+      "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime)
     };
-    console.log("Sending command data:", cmdData);
-    // return ;
 
     try {
-      const response: any = await axios.post("http://127.0.0.1:8000/dashboard/get_telecmds", cmdData, {   //API to convert the telecmd into packet format along with system counter
+      const response: any = await axios.post("http://127.0.0.1:8000/dashboard/get_telecmds", cmdData, {
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
@@ -278,7 +268,7 @@ const Dashboard: React.FC = () => {
 
       if (response) {
         helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command is  executed successfully `)
-        setTeleCmdData((prevData) => [...prevData, response.data.data]); // Correct way to update state
+        setTeleCmdData((prevData) => [...prevData, response.data.data]);
         fetchTmtCmds()
       }
 
@@ -290,100 +280,10 @@ const Dashboard: React.FC = () => {
     }
   };
 
-
-  const CommandHandler = (event: any) => {      //to handle entered telecommand
-    const selectedData = JSON.parse(event.target.value);
-    setTeleCmdsFormData((prevState) => (
-      {
-        ...prevState,
-        ["teleCmd"]: selectedData,
-        ["teleCmdValue"]: ["", "", ""]
-      }
-    ))
-    console.log("ay", teleCmdsFormData.teleCmdValue)
-  };
-
-  const CommandTypeHandler = (event: any) => {      //to handle telecmd type i.e realtime or time tagged
-    setTeleCmdsFormData((prevstate) => ({
-      ...prevstate,
-      ["teleCmdType"]: event.target.value
-    }))
-  };
-
-  const TeleCmdValueHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index?: number) => {     //to handle telecmd value i.e input by user
-
-    const value = event.target.value;
-    const numValue = parseFloat(value);
-
-
-    setTeleCmdsFormData((prevState) => {
-      const updatedValues = [...prevState.teleCmdValue];
-
-      // If index is passed, update specific input
-      if (typeof index === "number") {
-        updatedValues[index] = value;
-      } else {
-        // Else replace the entire value array (for select dropdown)
-        return {
-          ...prevState,
-          teleCmdValue: [value],
-        };
-      }
-
-      return {
-        ...prevState,
-        teleCmdValue: updatedValues,
-      };
-    });
-
-    // console.log(numValue,teleCmdsFormData.teleCmdValue)
-
-
-    // Dynamic validation based on range
-    const cmdInfo = teleCommands.find(
-      (item) => item.cmd === teleCmdsFormData.teleCmd.cmd
-    );
-
-    if (!cmdInfo) return;
-
-    if (cmdInfo.inputType === 2 && typeof index === "number") {
-      const inputConfig = (cmdInfo.inputValues as {
-        name: string;
-        units: string;
-        range?: [number, number];
-      }[])[index];
-
-      var error = "";
-      // Basic numeric check
-      if (isNaN(numValue) && value != "") {
-        error = `Value must be a number.`;
-        return;
-      }
-
-      // If range is defined and valid
-      const [min, max] = inputConfig.range || [];
-      if (
-        inputConfig.range &&
-        (typeof min === "number" && typeof max === "number")
-      ) {
-        if (numValue < min || numValue > max) {
-          error = `Value must be between ${min} and ${max}.`;
-        }
-      }
-    }
-    // Update error array
-    if (typeof index === "number") {
-      setTeleCmdValueError((prevErrors) => {
-        const newErrors = [...prevErrors];
-        newErrors[index] = error;
-        return newErrors;
-      });
-    }
-
-
-  };
-
-  const toggleGraph = (label: string) => {      // to toggle graph visibility
+  // =============================================
+  // Graph Management
+  // =============================================
+  const toggleGraph = (label: string) => {
     setVisibleGraphs((prev) => ({
       ...prev,
       [label]: {
@@ -392,8 +292,6 @@ const Dashboard: React.FC = () => {
       }
     }));
   };
-
-
 
   const changeGraphOption = (label: string, option: string) => {
     if (option === "Remove") {
@@ -426,22 +324,25 @@ const Dashboard: React.FC = () => {
     }));
   };
 
-  const graphOptionsButtonHandler = (label: string) => {    //to handle graph options visibility
+  const graphOptionsButtonHandler = (label: string) => {
     setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
+  // =============================================
+  // Utility Functions
+  // =============================================
   function getTimeDifferenceInSeconds(startTime: Date, endTime: any) {
-    const start = new Date(startTime.getTime() - (5.5 * 60 * 60 * 1000))      // Converting start time string to a Date object (in UTC)
-    const end = new Date(endTime); // Assuming endTime is already in UTC format
+    const start = new Date(startTime.getTime() - (5.5 * 60 * 60 * 1000))
+    const end = new Date(endTime);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       throw new Error("Invalid date format. Use 'DD-MM-YYYY HH:mm:ss' for startTime and a valid UTC format for endTime.");
     }
 
-    return Math.abs((end.getTime() - start.getTime()) / 1000);    // Calculating the difference in seconds
+    return Math.abs((end.getTime() - start.getTime()) / 1000);
   }
 
-  const systemModeIcon = (mode: string) => {        // to return system mode icon based on system mode
+  const systemModeIcon = (mode: string) => {
     if (mode == "Safe Mode") {
       return <i className="bi bi-pause-circle"></i>
     } else if (mode == "Maintenance Mode") {
@@ -453,6 +354,127 @@ const Dashboard: React.FC = () => {
     }
   }
 
+  // =============================================
+  // Event Handlers
+  // =============================================
+  const handleDateChange = (event: any) => {
+    const date = new Date(event.target.value);
+    setSelectedDateTime(date);
+  };
+
+  const CommandHandler = (event: any) => {
+    const selectedData = JSON.parse(event.target.value);
+    setTeleCmdsFormData((prevState) => (
+      {
+        ...prevState,
+        ["teleCmd"]: selectedData,
+        ["teleCmdValue"]: ["", "", ""]
+      }
+    ))
+  };
+
+  const CommandTypeHandler = (event: any) => {
+    setTeleCmdsFormData((prevstate) => ({
+      ...prevstate,
+      ["teleCmdType"]: event.target.value
+    }))
+  };
+
+  const TeleCmdValueHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index?: number) => {
+    const value = event.target.value;
+    const numValue = parseFloat(value);
+
+    setTeleCmdsFormData((prevState) => {
+      const updatedValues = [...prevState.teleCmdValue];
+
+      if (typeof index === "number") {
+        updatedValues[index] = value;
+      } else {
+        return {
+          ...prevState,
+          teleCmdValue: [value],
+        };
+      }
+
+      return {
+        ...prevState,
+        teleCmdValue: updatedValues,
+      };
+    });
+
+    const cmdInfo = teleCommands.find(
+      (item) => item.cmd === teleCmdsFormData.teleCmd.cmd
+    );
+
+    if (!cmdInfo) return;
+
+    if (cmdInfo.inputType === 2 && typeof index === "number") {
+      const inputConfigs = cmdInfo.inputValues as Array<{
+        name: string;
+        units: string;
+        range?: [number, number];
+      }>;
+      
+      const inputConfig = inputConfigs[index];
+
+      var error = "";
+      if (isNaN(numValue) && value != "") {
+        error = `Value must be a number.`;
+        return;
+      }
+
+      const [min, max] = inputConfig.range || [];
+      if (
+        inputConfig.range &&
+        (typeof min === "number" && typeof max === "number")
+      ) {
+        if (numValue < min || numValue > max) {
+          error = `Value must be between ${min} and ${max}.`;
+        }
+      }
+    }
+
+    if (typeof index === "number") {
+      setTeleCmdValueError((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[index] = error;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleLogging = () => {
+    confirmAction({
+      title: 'Stop logging?',
+      text: 'Logging will be stopped and data collection will end.',
+      confirmButtonText: 'Stop',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#e53e3e',
+      onConfirm: () => {
+        helperFunctions.updateSessionLogs(`User stopped logging telemetry data`);
+        setIsLogging(false);
+      },
+    });
+  };
+
+  const handleExportData = () => {
+    helperFunctions.updateSessionLogs(`User started exporting telemetry data`);
+    inputModalAction({
+      title: 'Export Telemetry Data',
+      text: 'Enter a filename for the Excel export:',
+      confirmButtonText: 'Export',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#2563eb',
+      inputType: 'text',
+      inputPlaceholder: 'e.g. TelemetryData',
+      onConfirm: (fileName) => {
+        helperFunctions.exportToExcel({ telemetryData: exportTelemetryData, logsData: sessionLogsData, fileName });
+        setExportTelemetryData([]);
+      },
+    });
+
+    setExportTelemetryData([]);
+  };
 
   const renderTeleCmdsExtraFields = () => {         //function to render different input fields for different commands
     let cmd = teleCmdsFormData.teleCmd.cmd;
@@ -504,50 +526,13 @@ const Dashboard: React.FC = () => {
   // console.log("data", teleCmdsFormData)
 
 
-  const handleLogging = () => {        //to handle stop logging action
-    confirmAction({
-      title: 'Stop logging?',
-      text: 'Logging will be stopped and data collection will end.',
-      confirmButtonText: 'Stop',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#e53e3e',
-      onConfirm: () => {
-        helperFunctions.updateSessionLogs(`User stopped logging telemetry data`);
-        setIsLogging(false);
-      },
-    });
-
-  };
-
-  const handleExportData = () => {
-    helperFunctions.updateSessionLogs(`User started exporting telemetry data`);
-    inputModalAction({
-      title: 'Export Telemetry Data',
-      text: 'Enter a filename for the Excel export:',
-      confirmButtonText: 'Export',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#2563eb', // blue
-      inputType: 'text',
-      inputPlaceholder: 'e.g. TelemetryData',
-      onConfirm: (fileName) => {
-        helperFunctions.exportToExcel({ telemetryData: exportTelemetryData, logsData:sessionLogsData, fileName });
-        setExportTelemetryData([]);
-      },
-    });
-
-    // helperFunctions.exportToExcel();
-    setExportTelemetryData([]);
-  };
-
-
-
   return (
     <>
-
+      <div className="dashboard">
       <div className="dashboard-container1">
         <div className="system-status-container">
           <div className="status-item">
-            <span className="icon"><i className="bi bi-power" style={{ fontSize: "25px", color: startSystem ? "#66FF66" : "grey" }} ></i></span>
+            <span className="icon"><i className="bi bi-power" style={{ color: startSystem ? "#66FF66" : "grey" }} ></i></span>
             <span className="text">{startSystem ? "System ON" : "System OFF"}</span>
           </div>
 
@@ -567,7 +552,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="status-item">
-            <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i></span>
+            <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ color: "#FF6666" }} ></i></span>
             <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i></span>
 
           </div>
@@ -642,9 +627,9 @@ const Dashboard: React.FC = () => {
 
                   {/* condtionally rendering icons to handle graphs visibility */}
                   {visibleGraphs[label].visibility ?
-                    <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
+                    <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
                     :
-                    <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", fontSize: "18px", color: "black", }}></i>
+                    <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
                   }
                 </div>
               ))}
@@ -658,7 +643,7 @@ const Dashboard: React.FC = () => {
                     <div className="graph-header">
                       <p>{label} {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`}</p>
                       <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
-                        <i className="bi bi-three-dots-vertical" style={{ fontSize: "18px" }} ></i>
+                        <i className="bi bi-three-dots-vertical"  ></i>
                       </button>
 
                       {/* conditionally rendering graph options */}
@@ -713,6 +698,7 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </>
 

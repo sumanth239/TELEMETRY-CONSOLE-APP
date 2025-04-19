@@ -1,157 +1,71 @@
 .header-main-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #e5e7eb;
-    padding: 0 40px 0 100px;
-    font-size: var(--font-size-heading);
-    background-color: var(--buttons-color);
-    color: white;
-
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0 40px 0 100px;
+  font-size: var(--font-size-heading);
+  background-color: var(--buttons-color);
+  color: white;
+}
 .logo-container {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    align-items: center;
-    z-index: 2;
-    
-  }
-  .header-main-container  #astro-logo-image{
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-    
-    
-  }
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+.header-main-container #astro-logo-image {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
 
-  .header-main-container .date-time-container{
-    display: flex;
-    justify-content: space-between;
-    /* width: 300px; */
-    gap: 10px;
+.header-main-container .date-time-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.header-main-container .date-time-container p {
+  background-color: white;
+  color: var(--buttons-color);
+  border-radius: 3px;
+  padding: 3px;
+  font-size: var(--font-size-body);
+}
 
+.header-main-container .settings-help-container #username {
+  font-style: bold;
+  font-weight: 500;
+}
+
+@media screen and (width < 600px) {
+  .header-main-container {
+    border-bottom: 2px solid #e5e7eb;
+    padding: 0 10px 0 40px;
   }
-  .header-main-container .date-time-container p{
-    background-color: white;
-    color: var(--buttons-color);
-    border-radius: 3px;
-    padding: 3px;
+  .header-main-container #astro-logo-image {
+    width: 15px;
+    height: 15px;
+  }
+  .logo-container {
+    gap: 5px;
+  }
+  .header-main-container .date-time-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1px;
+  }
+  
+  .header-main-container .date-time-container p {
+    border-radius: 2px;
+    padding: 2px;
   }
 
   .header-main-container .date-time-container .date {
     height: 30px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    /* background-color: white; */
-    /* color: var(--primary-color); */
-    padding: 3px 10PX;
-    border-radius: 5PX;
+    padding: 3px 10px;
+    border-radius: 5px;
   }
-
-  .header-main-container .date-time-container .time {
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* background-color: white; */
-    /* color: var(--primary-color); */
-    padding: 3px 10PX;
-    border-radius: 5PX;
-  }
-
-  .header-main-container .settings-help-container {
-    display: flex;
-    gap: 14px;
-    justify-content: space-between;
-    align-items: center;
-    /* position: relative; */
-  }
-
-  .header-main-container .settings-help-container .settings-menu {
-    width: 150px;
-    text-overflow: ellipsis;
-    /* height: auto; */
-    background-color:white;
-    color: black;
-    padding: 5px 15px;
-    position: absolute;
-    top: 60px;
-    right: 110px;
-    border-radius: var(--primary-border-radius);
-    overflow-y: scroll;
-    height: 150px;
-    z-index: 10;
-    border: 1px solid var(--greay-background);
-    box-shadow: 1px 1px  1px 1px #888888;
-
-  }
-
-  .header-main-container .settings-help-container .settings-menu ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .header-main-container .settings-help-container .settings-menu ul  li button {
-    padding: 0;
-    border: 0;
-    color: black;
-    background-color: white;
-    font-size: var(--font-size-body);
-    cursor: pointer;
-  }
-
-  .header-main-container .settings-help-container .settings-menu ul  li button:hover {
-    background-color: var(--greay-background);
-    padding:  5px 3px ;
-  }
-  .header-main-container .settings-help-container #username{
-    height: 35px;
-    font-style: bold;
-    font-weight: 500;
-  }
-  .header-main-container .settings-help-container .settings-button{
-    background-color: inherit;
-    border: 0;
-    cursor: pointer;
-  }
-  .header-main-container .settings-help-container .help-button{
-    background-color: inherit;
-    display: flex;
-    /* border: 0; */
-    border: 0;
-    cursor: pointer;
-  }
-
-  .header-main-container .settings-help-container .export-data-container {
-    position:absolute;
-    height: 250px;
-    width: 300px;
-    background-color: white;
-    top: 100px;
-    right: 294px;
-    box-shadow: 1px 1px  1px 1px #888888;
-    z-index: 10;
-    color: black;
-    padding: 15px 25px;
-  }
-
-  .header-main-container .settings-help-container .export-data-container .export-options-container{
-    border-bottom: 1px solid grey;
-  }
-
-  .header-main-container .settings-help-container .export-data-container .export-options-container label{
-    font-size: var(--font-size-body);
-    /* display: block; */
-    display: flex;
-    align-items: center;
-    margin-top: 5px;
-    margin-bottom: 10px;
-  }
-
-
-  .header-main-container .settings-help-container .export-data-container .export-calender-container{
-    border-bottom: 1px solid grey;
-  }
+}

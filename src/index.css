@@ -58,3 +58,19 @@ button {
 button:disabled{
   cursor: not-allowed;
 }
+
+@media screen  and (width < 600px) {
+  :root {
+  --font-size-heading: 8px;
+  --font-size-body: 5px;
+  --font-size-span:4px;
+  --primary-border-radius:2px;
+  }
+  
+  button {
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-size: 4px;
+  }
+  
+}
