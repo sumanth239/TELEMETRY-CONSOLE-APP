@@ -54,99 +54,99 @@ export default function SignUp() {
 
   return (
     <div className='signup-main-container'>
-       <div className="signup-side-container">
-          {/* <img src={bg}></img> */}
-        </div>
-    <div className="signup-container">
-      <div className="signup-box">
-        <div className="signup-logo">
-          <img src={logo} alt="Logo" />
-        </div>
-        <h1>Sign Up</h1>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            {shouldShowLegend('name') && (
-              <label htmlFor="name" className="floating-label">Name</label>
-            )}
-            <input
-              className="input-field"
-              id="name"
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onFocus={() => handleFocus('name')}
-              onBlur={handleBlur}
-              placeholder={shouldShowLegend('name') ? '' : 'Name'}
-              required
-            />
+      <div className="signup-side-container">
+        {/* <img src={bg}></img> */}
+      </div>
+      <div className="signup-container">
+        <div className="signup-box">
+          <div className="signup-logo">
+            <img src={logo} alt="Logo" />
           </div>
+          <h1>Sign Up</h1>
 
-          <div className="form-group">
-            {shouldShowLegend('email') && (
-              <label htmlFor="email" className="floating-label">Email</label>
-            )}
-            <input
-              className="input-field"
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              onFocus={() => handleFocus('email')}
-              onBlur={handleBlur}
-              placeholder={shouldShowLegend('email') ? '' : 'Email'}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            {shouldShowLegend('password') && (
-              <label htmlFor="password" className="floating-label">Password</label>
-            )}
-            <div className="password-wrapper">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              {shouldShowLegend('name') && (
+                <label htmlFor="name" className="floating-label">Name</label>
+              )}
               <input
-                className="input-field input-with-icon"
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
+                className="input-field"
+                id="name"
+                type="text"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                onFocus={() => handleFocus('password')}
+                onFocus={() => handleFocus('name')}
                 onBlur={handleBlur}
-                placeholder={shouldShowLegend('password') ? '' : 'Password'}
+                placeholder={shouldShowLegend('name') ? '' : 'Name'}
                 required
               />
-              <button
-                type="button"
-                className="password-toggle-btn"
-                onClick={togglePasswordVisibility}
-                aria-label="Toggle password visibility"
-              >
-                <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+            </div>
+
+            <div className="form-group">
+              {shouldShowLegend('email') && (
+                <label htmlFor="email" className="floating-label">Email</label>
+              )}
+              <input
+                className="input-field"
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onFocus={() => handleFocus('email')}
+                onBlur={handleBlur}
+                placeholder={shouldShowLegend('email') ? '' : 'Email'}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              {shouldShowLegend('password') && (
+                <label htmlFor="password" className="floating-label">Password</label>
+              )}
+              <div className="password-wrapper">
+                <input
+                  className="input-field input-with-icon"
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onFocus={() => handleFocus('password')}
+                  onBlur={handleBlur}
+                  placeholder={shouldShowLegend('password') ? '' : 'Password'}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={togglePasswordVisibility}
+                  aria-label="Toggle password visibility"
+                >
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                </button>
+              </div>
+            </div>
+
+            <div className="image-preview">
+              <img src={indexline} alt="Sign Up Visual" />
+            </div>
+
+            <div className="form-submit">
+              <button className="submit-btn" type="submit">
+                Sign Up
               </button>
             </div>
-          </div>
+          </form>
 
-          <div className="image-preview">
-            <img src={indexline} alt="Sign Up Visual" />
+          <div className="signup-footer">
+            <p>
+              Already have an account?&nbsp; <Link to="/signin">Login</Link>
+            </p>
           </div>
-
-          <div className="form-submit">
-            <button className="submit-btn" type="submit">
-              Sign Up
-            </button>
-          </div>
-        </form>
-
-        <div className="signup-footer">
-          <p>
-            Already have an account?&nbsp; <Link to="/signin">Login</Link> 
-          </p>
         </div>
       </div>
-    </div>
     </div>
   );
 }

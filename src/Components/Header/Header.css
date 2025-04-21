@@ -39,7 +39,7 @@
   font-weight: 500;
 }
 
-@media screen and (width < 600px) {
+@media screen and (width < 780px) {
   .header-main-container {
     border-bottom: 2px solid #e5e7eb;
     padding: 0 10px 0 40px;
@@ -67,5 +67,22 @@
     display: flex;
     padding: 3px 10px;
     border-radius: 5px;
+  }
+}
+
+@media screen and (min-width: 780px) and (max-width: 1300px) {
+  .header-main-container {
+    border-bottom: 2px solid #e5e7eb;
+    padding: 0 10px 0 70px;
+  }
+  .header-main-container #astro-logo-image {
+    width: 20px;
+    height: 20px;
+  }
+  .logo-container {
+    gap: 10px;
+  }
+  .header-main-container .date-time-container {
+    gap: 5px;
   }
 }

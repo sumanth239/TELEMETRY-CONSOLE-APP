@@ -214,3 +214,18 @@
     text-decoration: none;
     color: grey;
   }
+  @media screen  and (width < 680px) { 
+    .signin-main-container {
+      display: grid;
+      grid-template-columns: 0 auto ; 
+      height: 100vh;
+    }
+   }
+
+   @media screen and (min-width: 680px) and (max-width: 1288px)  {
+    .signin-main-container {
+      display: grid;
+      grid-template-columns: 50% auto ; 
+      height: 100vh;
+    }
+   }

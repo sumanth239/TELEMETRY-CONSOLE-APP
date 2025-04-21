@@ -190,6 +190,7 @@
   background-color: white;
   overflow-y: auto; /* auto shows scroll only when needed */
   margin-top: 13px;
+  height: calc(30vh - 97px);
   font-size: var(--font-size-body);
 }
 
@@ -465,46 +466,48 @@
   top: 52px;
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@media screen and (min-width: 780px) and (max-width: 1288px) {
   .dashboard {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
     flex: 1;
-    height: 100%;
+    height:  calc(100vh - 90px);
   }
 
   .dashboard-container1 {
     flex: 0 0 30%;
     gap: 10px;
-    padding: 10px 10px 10px 40px;
-    grid-template-columns: 25% auto;
+    padding: 10px 10px 10px 60px;
+    grid-template-columns: 23% auto;
+    height: calc(30vh - 50px);
   }
 
   .dashboard-container1 .system-status-container {
-    padding: 4px 6px;
+    padding: 8px 17px;
     gap: 0.3rem;
+    height: calc(30vh - 45px);
   }
 
   .dashboard-container1 .system-status-container .status-item .icon {
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
   }
 
   .dashboard-container1 .system-status-container .status-item .icon i {
-    font-size: 10px;
+    font-size: 20px;
     line-height: 1;
   }
 
   .dashboard-container1 .system-status-container .status-item .icon img {
-    width: 10px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
   }
 
   #temperature-icon {
-    height: 20px;
-    width: 20px;
+    height: 30px;
+    width: 30px;
     margin-left: 0;
     padding: 0;
   }
@@ -512,33 +515,37 @@
   .dashboard-container1 .system-status-container .status-item {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 25px;
   }
 
   .dashboard-container1 .system-status-container .status-item .text {
-    font-size: 8px;
+    font-size: 13px;
   }
 
   .dashboard-container1 .system-status-container div {
-    height: 18px;
-    margin-top: 4px;
+    height: 25px;
+    margin-top: 8px;
   }
 
   .dashboard-container1 .commands-main-container {
     padding: 10px 15px 10px 10px;
     gap: 10px;
+    height: calc(30vh - 50px);
+    grid-template-columns: 40% 60%;
   }
 
   .dashboard-container1 .commands-main-container .commands-data-container {
     padding: 3px;
+    flex: 1;
+    height: 100%;
   }
 
   .dashboard-container1 .commands-main-container .commands-data-container select {
     padding: 3px 4px;
     border-radius: 3px;
     margin: 3px 2px;
-    width: 80%;
-    font-size: 6px;
+    width: auto;
+    font-size: 10px;
   }
 
   .dashboard-container1 .commands-main-container .commands-data-container #commands-apply-button {
@@ -563,17 +570,24 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 60px;
+    width: auto;
     box-sizing: border-box;
     position: absolute;
-    left: 5px;
-    bottom: 12px;
+    left: 160px;
+    top: 32px;
+    /* bottom: 120px !important; */
+  }
+
+  .dynamic-inputs-container div input {
+    width: calc(100% - 10px);
+    /* padding: 2px !important; */
+    /* height: 13px !important; */
   }
 
   .dashboard-container1 .commands-main-container .commands-output-container {
     padding: 5px 8px;
     flex: 1;
-    height: calc(35vh - 30px);
+    height: calc(30vh - 60px);
     display: flex;
     flex-direction: column;
   }
@@ -601,6 +615,7 @@
     padding: 6px 12px;
     margin-top: 5px;
     flex: 1;
+    height: 100%;
   }
 
   .dashboard-container1 .commands-main-container .commands-output-container .system-logs-container p {
@@ -610,17 +625,16 @@
   .dashboard-container2 {
     gap: 10px;
     background-color: #DAE8FC;
-    padding: 0 15px 0 40px;
-    flex: 1;
-    height: 100%;
+    padding: 0 20px 0 60px;
   }
 
   .telemetry-main-container {
-    padding: 8px 15px 8px 10px;
+    padding: 8px 15px 0px 10px;
   }
 
   .labels-and-graphs-container {
     gap: 10px;
+    padding-bottom: 0px;
   }
 
   .logs-button-container {
@@ -631,7 +645,10 @@
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container {
     padding: 4px 8px;
-    height: calc(70vh - 55px);
+    height: calc(70vh - 150px);
+    /* flex: 1;
+    height: 100%; */
+    /* height: calc(70vh - 55px); */
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data {
@@ -641,21 +658,21 @@
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data .label-key {
-    font-size: 6px;
+    font-size: 9px;
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data .label-value {
-    font-size: 4.5px;
+    font-size: 6px;
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data div {
     border-radius: 2px;
-    height: 6px;
+    height: 8px;
     padding-left: 0;
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data i {
-    font-size: 6px;
+    font-size: 10px;
   }
 
   .dashboard-container2 .graphs-data-container .graph {
@@ -668,7 +685,9 @@
   }
 
   .dashboard-container2 .graphs-data-container {
-    height: calc(70vh - 60px);
+    /* flex: 1;
+    height: 100%; */
+    height: calc(70vh - 150px);
     padding: 5px;
     gap: 5px;
     display: flex;
@@ -719,34 +738,35 @@
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container {
     padding: 4px 8px;
+    height: calc(70vh - 138px);
   }
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container .step-item .step-circle {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
     top: 2px;
   }
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container .step-item .step-line {
-    width: 1px !important;
+    width: 2px !important;
     height: 100%;
     background-color: var(--primary-color);
     position: absolute;
-    left: 2px;
-    top: 5px;
+    left: 4px;
+    top: 10px;
     box-sizing: border-box;
     overflow: hidden;
   }
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container .step-item .step-text {
-    margin-left: 8px;
-    font-size: 6px;
+    margin-left: 14px;
+    font-size: 10px;
     color: #666666;
   }
 }
 
 
-@media screen  and (width < 600px) { 
+@media screen  and (width < 780px) { 
   .dashboard {
     display: flex;
     flex-direction: column;
@@ -806,6 +826,9 @@
     gap: 5px;
     /* height: 100px !important; */
     /* height: calc(30vh - 10px) */
+    display: grid;
+    grid-template-columns: 100%;
+    /* flex-direction: row; */
   }
 
 
