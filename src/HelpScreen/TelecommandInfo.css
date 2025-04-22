@@ -1,0 +1,108 @@
+ /* Make the body fixed */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevents the whole page from scrolling */
+    height: 100vh;
+  }
+  
+  /* Make the container take full height and scroll independently */
+  .telecommand-container {
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    /* background-color: #f5f7fa; */
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Enable scrolling for this container only */
+    position: relative; /* Establish positioning context */
+    margin-left: 50px;
+  }
+  
+  /* Rest of your CSS remains the same */
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .page-title {
+    text-align: center;
+    margin: 30px 0;
+    color:  #2c3e50;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .telecommand-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-bottom: 40px;
+  }
+  
+  .command-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); */
+    gap: 20px;
+  }
+  
+  .command-section {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fafafa;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .command-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .command-section h2 {
+    color:  #2c3e50;
+    font-size: 18px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .units {
+    color:  #3498db;
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .description {
+    line-height: 1.6;
+    color: #666;
+    margin: 10px 0;
+    font-size: 14px;
+  }
+  
+  .command-id {
+    font-size: 12px;
+    color:  #3498db;
+    text-align: right;
+    font-family: monospace;
+    margin-top: 10px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .command-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .telecommand-card {
+      padding: 15px;
+    }
+
+    .telecommand-container { 
+        margin-left: 20px;
+    }
+  }

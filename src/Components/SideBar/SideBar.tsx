@@ -55,7 +55,7 @@ const Sidebar: React.FC = () => {
           isActive={location.pathname === "/logout"}
         />
         <SidebarItem
-          to="/"
+          to="/help"
           icon="bi bi-question-circle-fill"
           label="Help"
           isOpen={isOpen}

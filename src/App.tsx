@@ -6,6 +6,7 @@ import DataViewer from './DataViewer/DataViewer';
 import Layout from './HeaderLayout/layout';
 import SignIn from './SignIn/SignIn';
 import SignUp from './SignUp/SignUp';
+import TelecommandInfo from './HelpScreen/TelecommandInfo';
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           <Route path='/data-viewer' element={<DataViewer />}/>
           <Route path='/signin' element={<SignIn />} />
           <Route path='/signup' element={<SignUp />} />
-          {/* <Route path='/title2' element={<BarGraphChart />} /> */}
+          <Route path='/help' element={<TelecommandInfo /> } />
         </Route>
       </Routes>
     </Router>
