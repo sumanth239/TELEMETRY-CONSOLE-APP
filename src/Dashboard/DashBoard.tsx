@@ -38,6 +38,9 @@ const MAX_POINTS = 10;
 const Dashboard: React.FC = () => {
 
   //states
+  const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
+  const DEFAULT_ZOOM = 1; // 1x zoom (default view), higher means zoom in (fewer points)
+
   const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);   //to handle real time telemetry data 
   const [startSystem, setStartSystem] = useState(false);    //to know system is live or not
   const [systemCounter, setSystemCounter] = useState(0);    //for system counter
@@ -293,6 +296,21 @@ const Dashboard: React.FC = () => {
     }));
   };
 
+  const handleWheelZoom = (e: React.WheelEvent<HTMLDivElement>, label: string) => {
+    // These two lines are correct, but might not be sufficient in all browsers
+    e.preventDefault(); 
+    e.stopPropagation();
+    
+    // Add this to ensure the parent doesn't scroll
+    if (e.currentTarget.contains(e.target as Node)) {
+      setZoomLevels((prev) => {
+        const current = prev[label] || DEFAULT_ZOOM;
+        const delta = e.deltaY < 0 ? 1 : -1;
+        const next = Math.max(1, current + delta);
+        return { ...prev, [label]: next };
+      });
+    }
+  };
   const changeGraphOption = (label: string, option: string) => {
     if (option === "Remove") {
       setVisibleGraphs((prev) => ({
@@ -414,7 +432,7 @@ const Dashboard: React.FC = () => {
         units: string;
         range?: [number, number];
       }>;
-      
+
       const inputConfig = inputConfigs[index];
 
       var error = "";
@@ -517,6 +535,33 @@ const Dashboard: React.FC = () => {
 
   }
 
+  useEffect(() => {
+    const graphElements = document.querySelectorAll('.graph');
+
+    const wheelHandler = (e:any) => {
+      e.preventDefault();
+      const label = e.currentTarget.getAttribute('data-label');
+      if (label) {
+        const delta = e.deltaY < 0 ? 1 : -1;
+        setZoomLevels((prev) => {
+          const current = prev[label] || DEFAULT_ZOOM;
+          const next = Math.max(1, current + delta);
+          return { ...prev, [label]: next };
+        });
+      }
+    };
+
+    graphElements.forEach(el => {
+      el.addEventListener('wheel', wheelHandler, { passive: false });
+    });
+
+    return () => {
+      graphElements.forEach(el => {
+        el.removeEventListener('wheel', wheelHandler);
+      });
+    };
+  }, [visibleGraphs]); // Re-add listeners when visible graphs change
+
   const alertMessages = [
     'Network connection lost.',
     'Failed to load data.',
@@ -529,176 +574,181 @@ const Dashboard: React.FC = () => {
   return (
     <>
       <div className="dashboard">
-      <div className="dashboard-container1">
-        <div className="system-status-container">
-          <div className="status-item">
-            <span className="icon"><i className="bi bi-power" style={{ color: startSystem ? "#66FF66" : "grey" }} ></i></span>
-            <span className="text">{startSystem ? "System ON" : "System OFF"}</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon">{systemModeIcon(systemModes[Number(systemMode)])}</span>
-            <span className="text">{systemModes[Number(systemMode)]}</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><img id="temperature-icon" src={temperatureIcon} alt="Temperature" /></span>
-            <span className="text">37 °C</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><img src={powerIcon} alt="Power" id="power-icon" /></span>
-            <span className="text">45W Consumption</span>
-          </div>
-
-          <div className="status-item">
-            <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ color: "#FF6666" }} ></i></span>
-            <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i></span>
-
-          </div>
-        </div>
-        {showAlert && (
-          <AlertPopup
-            alerts={alertMessages}
-            onClose={() => setShowAlert(false)}
-          />
-        )}
-
-        <div className="commands-main-container">
-          {/* comands data container */}
-          <div className="commands-data-container">
-            <div>
-              <select onChange={CommandTypeHandler}>
-                <option value="" disabled selected hidden>TeleCmd Type</option>
-                {teleCommandType.map((value, index) => (
-                  <option id={value} key={index}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-
-              {/*condtionally rendering calender componenet based on command type */}
-              {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" onChange={handleDateChange} step="1"></input>}
+        <div className="dashboard-container1">
+          <div className="system-status-container">
+            <div className="status-item">
+              <span className="icon"><i className="bi bi-power" style={{ color: startSystem ? "#66FF66" : "grey" }} ></i></span>
+              <span className="text">{startSystem ? "System ON" : "System OFF"}</span>
             </div>
 
+            <div className="status-item">
+              <span className="icon">{systemModeIcon(systemModes[Number(systemMode)])}</span>
+              <span className="text">{systemModes[Number(systemMode)]}</span>
+            </div>
 
-            <div>
-              <select onChange={CommandHandler}>
-                <option value="" disabled selected hidden>TeleCmd</option>
-                {teleCommands.map((data, index) => (
-                  <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
-                ))}
-              </select>
-              {renderTeleCmdsExtraFields()}
+            <div className="status-item">
+              <span className="icon"><img id="temperature-icon" src={temperatureIcon} alt="Temperature" /></span>
+              <span className="text">37 °C</span>
+            </div>
+
+            <div className="status-item">
+              <span className="icon"><img src={powerIcon} alt="Power" id="power-icon" /></span>
+              <span className="text">45W Consumption</span>
+            </div>
+
+            <div className="status-item">
+              <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ color: "#FF6666" }} ></i></span>
+              <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i></span>
 
             </div>
-            <button id="commands-apply-button" disabled={teleCmdValueError.length == 0 || teleCmdValueError.every(item => item === "") ? false : true} onClick={CommandsDataHandler}>{" "}Apply Now</button>
           </div>
+          {showAlert && (
+            <AlertPopup
+              alerts={alertMessages}
+              onClose={() => setShowAlert(false)}
+            />
+          )}
 
-          {/* commands output container */}
-          <div className="commands-output-container">
-            <span>Session Log</span>
-            <div className="system-logs-container">
-              {sessionLogsData.map((log, index) => (
-                <div key={index} className="log-entry">
-                  <p>{log.TimeStamp} &nbsp; : &nbsp; {log.Action}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+          <div className="commands-main-container">
+            {/* comands data container */}
+            <div className="commands-data-container">
+              <div>
+                <select onChange={CommandTypeHandler}>
+                  <option value="" disabled selected hidden>TeleCmd Type</option>
+                  {teleCommandType.map((value, index) => (
+                    <option id={value} key={index}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
 
-      <div className="dashboard-container2">
-        <div className="telemetry-main-container" >
-          <div className="logs-button-container">
-            <button className="start-logging-button" onClick={() => { setIsLogging(!isLogging); helperFunctions.updateSessionLogs(`User started logging telemetry data`) }} disabled={!startSystem || isLogging} >Start Logging</button>
-            <button className="stop-logging-button" onClick={handleLogging} disabled={!isLogging}>Stop Logging</button>
-            {exportTelemetryData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
-          </div>
-          <div className="labels-and-graphs-container">
-            <div className="labels-data-container">
-              {Object.entries(telemetryData).map(([label, data], index) => (
-                <div className="labels-data">
-                  <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
-                  <div>
-                    <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
-                  </div>
-
-                  {/* condtionally rendering icons to handle graphs visibility */}
-                  {visibleGraphs[label].visibility ?
-                    <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
-                    :
-                    <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
-                  }
-                </div>
-              ))}
-            </div>
-            {/* graphs container*/}
-            <div className="graphs-data-container">
-              {/* Condtionly rendering the graphs based on visibility */}
-              {Object.entries(telemetryData).map(([label, data], index) =>
-                visibleGraphs[label].visibility ? (
-                  <div className="graph">
-                    <div className="graph-header">
-                      <p>{label} {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`}</p>
-                      <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
-                        <i className="bi bi-three-dots-vertical"  ></i>
-                      </button>
-
-                      {/* conditionally rendering graph options */}
-                      {graphOptionsOpendLables[label] && (
-                        <div className="graph-options-menu">
-                          <ul>
-                            {graphOptions.map((item, index) => (
-                              <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
-                                }`}>
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                    <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider={false} />
-                  </div>
-                ) : null
-              )}
-            </div>
-          </div>
-        </div>
-
-
-        {/*Time tag container */}
-        <div className="time-tag-container">
-
-          <p>Command Queue</p>
-          <div className="time-tag-commands-container">
-            {/* Time tags with steppers */}
-            {tmtData.map((data: any, index) => (
-              <div key={index} className="step-item">
-
-                <div className="step-circle" style={{
-                  backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
-                    data.status === 'Failed' ? '#F8CECC' :
-                      data.status === 'Success' ? '#D5E8D4' : '#666666'
-                }}></div>
-                <div className="step-line"
-                  style={{
-                    backgroundColor: data.status === 'Pending' ? '#666666' :
-                      data.status === 'Failed' ? '#B85450' :
-                        data.status === 'Success' ? '#82B366' : '#666666',
-                    display: index === tmtData.length - 1 ? "none" : "block",
-                  }}
-                ></div>
-                <p className="step-text">
-                  {data.telecmd_type_value} : {data.telecmd_value}
-                </p>
+                {/*condtionally rendering calender componenet based on command type */}
+                {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" onChange={handleDateChange} step="1"></input>}
               </div>
-            ))}
+
+
+              <div>
+                <select onChange={CommandHandler}>
+                  <option value="" disabled selected hidden>TeleCmd</option>
+                  {teleCommands.map((data, index) => (
+                    <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
+                  ))}
+                </select>
+                {renderTeleCmdsExtraFields()}
+
+              </div>
+              <button id="commands-apply-button" disabled={teleCmdValueError.length == 0 || teleCmdValueError.every(item => item === "") ? false : true} onClick={CommandsDataHandler}>{" "}Apply Now</button>
+            </div>
+
+            {/* commands output container */}
+            <div className="commands-output-container">
+              <span>Session Log</span>
+              <div className="system-logs-container">
+                {sessionLogsData.map((log, index) => (
+                  <div key={index} className="log-entry">
+                    <p>{log.TimeStamp} &nbsp; : &nbsp; {log.Action}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div className="dashboard-container2">
+          <div className="telemetry-main-container" >
+            <div className="logs-button-container">
+              <button className="start-logging-button" onClick={() => { setIsLogging(!isLogging); helperFunctions.updateSessionLogs(`User started logging telemetry data`) }} disabled={!startSystem || isLogging} >Start Logging</button>
+              <button className="stop-logging-button" onClick={handleLogging} disabled={!isLogging}>Stop Logging</button>
+              {exportTelemetryData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
+            </div>
+            <div className="labels-and-graphs-container">
+              <div className="labels-data-container">
+                {Object.entries(telemetryData).map(([label, data], index) => (
+                  <div className="labels-data">
+                    <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
+                    <div>
+                      <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
+                    </div>
+
+                    {/* condtionally rendering icons to handle graphs visibility */}
+                    {visibleGraphs[label].visibility ?
+                      <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
+                      :
+                      <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
+                    }
+                  </div>
+                ))}
+              </div>
+              {/* graphs container*/}
+              <div className="graphs-data-container">
+                {/* Condtionly rendering the graphs based on visibility */}
+                {Object.entries(telemetryData).map(([label, data], index) =>
+                  visibleGraphs[label].visibility ? (
+                    <div className="graph" onWheel={(e) => handleWheelZoom(e, label)}
+                    style={{ overflowY: 'hidden' }}>
+                      <div className="graph-header">
+                        <p>{label} {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`}</p>
+                        <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
+                          <i className="bi bi-three-dots-vertical"  ></i>
+                        </button>
+
+                        {/* conditionally rendering graph options */}
+                        {graphOptionsOpendLables[label] && (
+                          <div className="graph-options-menu">
+                            <ul>
+                              {graphOptions.map((item, index) => (
+                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
+                                  }`}>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                      <LineChartComponent
+                        data={data.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
+                        graphOptions={visibleGraphs[label].graphOptions}
+                        timeSlider={false}
+                      />
+                    </div>
+                  ) : null
+                )}
+              </div>
+            </div>
+          </div>
+
+
+          {/*Time tag container */}
+          <div className="time-tag-container">
+
+            <p>Command Queue</p>
+            <div className="time-tag-commands-container">
+              {/* Time tags with steppers */}
+              {tmtData.map((data: any, index) => (
+                <div key={index} className="step-item">
+
+                  <div className="step-circle" style={{
+                    backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
+                      data.status === 'Failed' ? '#F8CECC' :
+                        data.status === 'Success' ? '#D5E8D4' : '#666666'
+                  }}></div>
+                  <div className="step-line"
+                    style={{
+                      backgroundColor: data.status === 'Pending' ? '#666666' :
+                        data.status === 'Failed' ? '#B85450' :
+                          data.status === 'Success' ? '#82B366' : '#666666',
+                      display: index === tmtData.length - 1 ? "none" : "block",
+                    }}
+                  ></div>
+                  <p className="step-text">
+                    {data.telecmd_type_value} : {data.telecmd_value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </>
 
