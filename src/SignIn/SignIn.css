@@ -7,7 +7,7 @@
 
 .signin-side-container {
   margin-top: -1.6px;
-  background-image: url('/home/astroid/Desktop/console-app/src/assets/bg.jpeg');
+  background-image: url('../assets/bg.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

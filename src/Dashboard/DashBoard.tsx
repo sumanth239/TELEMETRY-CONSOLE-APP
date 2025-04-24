@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
   // =============================================
   const fetchTmtCmds = async () => {
     try {
-      const response: any = await axios.get("http://127.0.0.1:8000/dashboard/get_sheduled_commands", {
+      const response: any = await axios.get("http://192.168.0.124:8000/dashboard/get_sheduled_commands", {
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (startSystem) {
-      const ws = new WebSocket(`ws://127.0.0.1:8000/ws`);
+      const ws = new WebSocket(`ws://192.168.0.124:8000/ws`);
 
       ws.onmessage = (event) => {   //on websocket connection
 
@@ -262,7 +262,7 @@ const Dashboard: React.FC = () => {
     };
 
     try {
-      const response: any = await axios.post("http://127.0.0.1:8000/dashboard/get_telecmds", cmdData, {
+      const response: any = await axios.post("http://192.168.0.124:8000/dashboard/get_telecmds", cmdData, {
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
