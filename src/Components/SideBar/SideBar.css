@@ -126,7 +126,7 @@
 
 
 }
-@media screen and (min-width: 780px) and (max-width: 1300px) { 
+@media screen and (min-width: 780px) and (max-width: 1500px) { 
   .sidebar  .logo-container{
     gap: 8px;
    }

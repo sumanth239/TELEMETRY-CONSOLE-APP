@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (startSystem) {
-      const ws = new WebSocket(`ws://192.168.0.124:8000/ws`);
+      const ws = new WebSocket(`ws://192.168.0.124/ws`);
 
       ws.onmessage = (event) => {   //on websocket connection
 

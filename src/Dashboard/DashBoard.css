@@ -160,7 +160,7 @@
   border-radius: var(--primary-border-radius);
   padding: 13px 15px;
   flex: 1;
-  height: calc(30vh - 77px);
+  height: calc(23.2vh);
   display: flex;
   flex-direction: column;
 }
@@ -466,7 +466,7 @@
   top: 52px;
 }
 
-@media screen and (min-width: 780px) and (max-width: 1288px) {
+@media screen and (min-width: 780px) and (max-width: 1500px) {
   .dashboard {
     display: flex;
     flex-direction: column;

@@ -310,7 +310,7 @@
   }
 
 /* Small desktops and laptops (1024px - 1279px) */
-@media screen and (min-width : 780px) and (max-width: 1288px) {
+@media screen and (min-width : 780px) and (max-width: 1500px) {
   
   .dataviewer-main-container {
     padding: 15px 15px 0px 65px;
@@ -354,6 +354,7 @@
   }
   .dataviewer-main-container .calender-container .data-buttons-container {
     font-size: 10px;
+    margin-top: 0;
    }
    .dataviewer-main-container .graphs-main-container { 
     grid-template-columns: 20% 60% 18%;
