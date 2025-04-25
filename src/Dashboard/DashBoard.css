@@ -761,7 +761,7 @@
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container .step-item .step-text {
     margin-left: 14px;
-    font-size: 10px;
+    font-size: 13px !important;
     color: #666666;
   }
 }
