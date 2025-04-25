@@ -427,7 +427,7 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} />
+                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true}  graphType = {helperFunctions.getLabelGraphType(label)} />
                                     </div>
                                 ) : null
                             )}

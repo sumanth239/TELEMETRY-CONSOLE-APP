@@ -46,6 +46,15 @@ export function getLabelUnits(label: string): string | undefined {
   return labelData?.units;
 }
 
+export function getLabelGraphType(label: string): string {
+  const labelData = allLabels.find((item) => item.label === label);
+  if(labelData?.graphType) {
+    return labelData?.graphType
+  }
+
+  return "monotone"
+}
+
 export const getFormattedDateTime = (): string => {
   const now = new Date();
 

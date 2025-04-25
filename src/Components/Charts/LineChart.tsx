@@ -20,11 +20,12 @@ interface ChildProps {
   data: DataPoint[]
   graphOptions: GraphOptions
   timeSlider:Boolean
+  graphType:string
 }
 
 
 
-const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlider}) => {
+const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlider ,graphType}) => {
   const [zoomDomain, setZoomDomain] = useState({ startIndex: 0, endIndex: data.length - 1 });
 
 
@@ -48,7 +49,7 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlid
       setZoomDomain(newDomain);
     }
   };
-
+  var s = "step";
   // console.log("data",data);
   return (
     <ResponsiveContainer width="100%" height={timeSlider ? "85%" : "90%"}>
@@ -85,8 +86,8 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlid
 
         <Tooltip />
         <Line
-          type="monotone"
           dataKey="value"
+          type={graphType == "step" ? "step" : "monotone" }
           stroke="#8884d8"
           dot={<CustomDot />}
           isAnimationActive={false}

@@ -318,6 +318,7 @@
    }
    .dataviewer-main-container .calender-container {
     gap: 20px;
+    flex: 0 0 22.7%;
     }
 
    .dataviewer-main-container .calender-container .dropdown-container{

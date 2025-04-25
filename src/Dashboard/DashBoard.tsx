@@ -54,7 +54,22 @@ const Dashboard: React.FC = () => {
   const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
-  const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
+  const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>(() => {       //state to log the data 
+    const sessionStr = sessionStorage.getItem("sessionStorage");
+    if (!sessionStr) return [];
+  
+    try {
+      const sessionData = JSON.parse(sessionStr);
+      if (Array.isArray(sessionData.Logs)) {
+        return sessionData.Logs;
+      }
+    } catch (err) {
+      console.error("Failed to parse session logs:", err);
+    }
+  
+    return [];
+  });
+  
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
@@ -137,7 +152,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (startSystem) {
-      const ws = new WebSocket(`ws:/192.168.0.124/ws`);
+      const ws = new WebSocket(`ws:/192.168.0.124:8000/ws`);
 
       ws.onmessage = (event) => {   //on websocket connection
 
@@ -710,6 +725,7 @@ const Dashboard: React.FC = () => {
                         data={data.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
                         graphOptions={visibleGraphs[label].graphOptions}
                         timeSlider={false}
+                        graphType = {helperFunctions.getLabelGraphType(label)}
                       />
                     </div>
                   ) : null

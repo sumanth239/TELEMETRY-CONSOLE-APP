@@ -12,6 +12,7 @@ function App() {
   return (
     <Router>
       <Routes>
+      <Route path='/' element={<SignIn />} />
         <Route path='/' element={<Layout />} >
           <Route path='/dashboard' element={<Dashboard />}/>
           <Route path='/data-viewer' element={<DataViewer />}/>
