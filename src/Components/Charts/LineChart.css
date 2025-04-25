@@ -7,3 +7,6 @@
     animation: blink 1s infinite;
   }
   
+  .chart {
+  margin-left: -20px;
+  }

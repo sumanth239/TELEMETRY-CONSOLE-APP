@@ -51,30 +51,32 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlid
 
   // console.log("data",data);
   return (
-    <ResponsiveContainer width="98%" height="88%">
-      <LineChart data={data}>
+    <ResponsiveContainer width="100%" height={timeSlider ? "85%" : "90%"}>
+      <LineChart  className="chart" data={data}>
         {graphOptions.Gridlines && <CartesianGrid strokeDasharray="3 3" />}
 
         <XAxis
           dataKey="timestamp"
-          fontSize={12}
-          // domain={[zoomDomain.startIndex, zoomDomain.endIndex]}
-          // tickFormatter={(value) => value} // format timestamp if needed
+          fontSize={10}
+          domain={[zoomDomain.startIndex, zoomDomain.endIndex]}
+          tickFormatter={(value) => value} 
         >
           {graphOptions["Axis Titles"] && (
-            <Label value="timestamp" offset={13} position="insideBottom" />
+            <Label value="timestamp" offset={6} position="insideBottom"        fontSize={8} />
           )}
         </XAxis>
 
         <YAxis
+          fontSize={10}
           scale={graphOptions["Logarithmic Scale"] ? "log" : "linear"}
           domain={["auto", "auto"]}
         >
           {graphOptions["Axis Titles"] && (
             <Label
               value="Value"
-              offset={12}
+              offset={36}
               angle={-90}
+              fontSize={8}
               position="insideLeft"
               style={{ textAnchor: "middle" }}
             />

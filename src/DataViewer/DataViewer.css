@@ -6,7 +6,7 @@
   justify-content: space-between;
   gap: 50px;
   position: relative;
-  flex: 0 0 18%;
+  flex: 0 0 20%;
   /* height: 100%; */
 }
 
@@ -127,7 +127,7 @@
     gap: 25px;
     margin-top: 15px;
     border-radius: var(--primary-border-radius);
-    height:calc(70vh - 15px);
+    height:calc(80vh);
   }
 
   .dataviewer-main-container .graphs-main-container  .labels-data-container{
@@ -310,7 +310,7 @@
   }
 
 /* Small desktops and laptops (1024px - 1279px) */
-@media screen and (min-width : 780px) and (max-width: 1500px) {
+@media screen and (min-width : 780px) and (max-width: 1800px) {
   
   .dataviewer-main-container {
     padding: 15px 15px 0px 65px;
@@ -344,17 +344,17 @@
   .dataviewer-main-container .calender-container .time-range-container{
     gap: 5px;
     margin: 10px 20px;
-    height: 30px;
+    height: 35px;
     background-color: #DAE8FC;
     padding:  0 15px 8px 15px ;
     border-radius: var(--primary-border-radius);
   }
   .dataviewer-main-container .calender-container .time-range-container p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .dataviewer-main-container .calender-container .data-buttons-container {
     font-size: 10px;
-    margin-top: 0;
+    margin-top: 12px;
    }
    .dataviewer-main-container .graphs-main-container { 
     grid-template-columns: 20% 60% 18%;
@@ -366,11 +366,11 @@
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data{ 
     gap: 10px !important;
     padding: 0;
-    height: 22.5px;
+    height: 25px;
     
   }
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data .label-text{
-    font-size: 9px;
+    font-size: 13px;
   }
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data  i{ 
     font-size: 14px;
@@ -380,13 +380,18 @@
     padding: 10px 0 10px 10px;
     gap: 10px;
   }
+
+  .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph .graph-header p {
+      font-size: 12px;
+  }
+
   .dataviewer-main-container .graphs-main-container {
     gap: 10px;
     padding: 15px 10px;
    }
 
    .dataviewer-main-container .graphs-main-container .system-log-container{
-    padding: 5px 7px;
+    padding: 5px 11px;
    
 
   }
@@ -396,11 +401,20 @@
    }
 
    .dataviewer-main-container .graphs-main-container .system-log-container .logs-container p{
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .dataviewer-main-container .graphs-main-container .system-log-container .logs-container{ 
-    padding: 8px 10px;
+    padding: 10px 12px;
     gap: 5px;
+  }
+
+  .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph {
+    color: black;
+    background-color: white;
+    width: calc(50% - 10px);
+    height: calc(50% - 10px);
+    margin-bottom: 5px;
+    padding: 0;
   }
 }
