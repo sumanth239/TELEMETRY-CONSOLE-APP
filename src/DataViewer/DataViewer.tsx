@@ -386,7 +386,7 @@ const DataViewer: React.FC = () => {
                                             className="bi bi-eye-slash-fill"
                                             style={{
                                                 cursor: "pointer",
-                                                fontSize: "18px",
+                                                // fontSize: "18px",
                                                 color: "black",
                                             }}
                                         ></i>
