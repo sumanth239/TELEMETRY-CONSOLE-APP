@@ -174,8 +174,8 @@ export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlin
 
 export const allLabels = [
   { label: "System Mode", units: "", graphType: "step" },
-  { label: "PAT Mode", units: "", graphType: "monotoneX" },
-  { label: "Azimuth Angle", units: "dg", graphType: "step" },
+  { label: "PAT Mode", units: "", graphType: "step" },
+  { label: "Azimuth Angle", units: "dg", graphType: "monotone" },
   { label: "Elevation Angle", units: "dg", graphType: "monotoneX" },
   { label: "Motor Current Comsumption", units: "A", graphType: "monotoneX" },
   { label: "ODT Temperature", units: "°C", graphType: "monotoneX" },
@@ -184,10 +184,10 @@ export const allLabels = [
   { label: "Quadcell Channel 2", units: "", graphType: "monotoneX" },
   { label: "Quadcell Channel 3", units: "", graphType: "monotoneX" },
   { label: "Quadcell Channel 4", units: "", graphType: "monotoneX" },
-  { label: "EDFA Mode", units: "", graphType: null },
+  { label: "EDFA Mode", units: "", graphType: "step" },
   { label: "EDFA Power", units: "W", graphType: "monotoneX" },
   { label: "EDFA Gain", units: "dB", graphType: "monotoneX" },
-  { label: "EDFA Current", units: "mA", graphType: "step" },
+  { label: "EDFA Current", units: "mA", graphType: "monotone" },
   { label: "EDFA Alarms", units: "", graphType: "monotoneX" },
   { label: "EDFA Laser Temperature", units: "°C", graphType: "monotoneX" },
   { label: "EDFA Internal Temperature", units: "°C", graphType: "monotoneX" },

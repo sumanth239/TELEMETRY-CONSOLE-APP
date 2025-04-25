@@ -91,7 +91,7 @@ const DataViewer: React.FC = () => {
 
 
     const graphOptionsButtonHandler = (label: string) => {      //for Graph options visibilty
-        setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: !prev[label] }));
+        setgraphOptionsOpendLables((prev) => ({ ...prev, [label]:  prev[label] ? !prev[label] : true}));
     };
 
     const changeGraphOption = (label: string, option: string) => {
@@ -130,11 +130,11 @@ const DataViewer: React.FC = () => {
         setSelectedOptions((prev) =>
             prev.includes(fullLabel)
                 ? prev.filter((item) => item !== fullLabel)
-                : [fullLabel, ...prev]
+                : [...prev ,fullLabel ]
         );
         setVisibleGraphs((prev) => ({
             ...prev,
-            [item.label]: {
+            [fullLabel ]: {
                 ...prev[item.label],
                 visibility: !prev[item.label].visibility
             }
@@ -370,7 +370,7 @@ const DataViewer: React.FC = () => {
                                     <p className="label-text">{item} </p>
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
-                                    {visibleGraphs[item].visibility ? (
+                                    {visibleGraphs[item]?.visibility ? (
                                         <i
                                             onClick={() => toggleGraph(item)}
                                             className="bi bi-eye"
