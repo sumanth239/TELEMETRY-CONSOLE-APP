@@ -5,10 +5,11 @@ import { useState, useRef } from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
 import * as XLSX from "xlsx";
-import { Label } from "recharts";
+// import { Label } from "recharts";
 import * as types from "../Utils/types";
 import * as helperFunctions from "../Utils/HelperFunctions";
-
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label , Brush } from "recharts";
+import { time } from "console";
 //types 
 type GraphOptions = {
     "Logarithmic Scale": boolean;
@@ -49,6 +50,8 @@ allLabels.forEach((item) => (    //dropdown options
 const DataViewer: React.FC = () => {
 
     //states 
+
+
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
@@ -70,6 +73,9 @@ const DataViewer: React.FC = () => {
     });      //to handle the  graphs visibility 
     const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
+    const [timeSliderData,setTimeSliderData] = useState<any>([])
+    const [startIndex, setStartIndex] = useState(0);
+    const [endIndex, setEndIndex] = useState(timeSliderData?.length - 1);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
@@ -89,9 +95,14 @@ const DataViewer: React.FC = () => {
         }));
     };
 
+    const handleBrushChange = (e: any) => {
+        if (!e?.startIndex || !e?.endIndex) return;
+        setStartIndex(e.startIndex);
+        setEndIndex(e.endIndex);
+    };
 
     const graphOptionsButtonHandler = (label: string) => {      //for Graph options visibilty
-        setgraphOptionsOpendLables((prev) => ({ ...prev, [label]:  prev[label] ? !prev[label] : true}));
+        setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: prev[label] ? !prev[label] : true }));
     };
 
     const changeGraphOption = (label: string, option: string) => {
@@ -130,11 +141,11 @@ const DataViewer: React.FC = () => {
         setSelectedOptions((prev) =>
             prev.includes(fullLabel)
                 ? prev.filter((item) => item !== fullLabel)
-                : [...prev ,fullLabel ]
+                : [...prev, fullLabel]
         );
         setVisibleGraphs((prev) => ({
             ...prev,
-            [fullLabel ]: {
+            [fullLabel]: {
                 ...prev[item.label],
                 visibility: !prev[item.label].visibility
             }
@@ -251,7 +262,7 @@ const DataViewer: React.FC = () => {
                 }
 
                 Object.keys(row).forEach((key) => {
-                    if (key === "Timestamp") return;
+                    // if (key === "Timestamp") return;
 
                     if (!transformedData[key]) {
                         transformedData[key] = [];
@@ -274,8 +285,10 @@ const DataViewer: React.FC = () => {
             });
 
             // console.log(transformedData["TEMP"], "→ telemetry with fixed timestamps");
-            console.log("TEY", transformedData)
+            console.log("TEY", Object.entries(transformedData)[0][1])
+            setTimeSliderData(Object.entries(transformedData)[0][1]);
             setTelemetryData(transformedData);
+           
 
 
 
@@ -396,9 +409,22 @@ const DataViewer: React.FC = () => {
                         </div>
                     </div>
                     <div className="graphs-container">
+                        <LineChart width={600} height={50} data={timeSliderData}>
+                            {/* <XAxis dataKey="timestamp" /> */}
+                            <Brush
+                                dataKey="timestamp"
+                                height={30}
+                                stroke="#8884d8"
+                                onChange={handleBrushChange}
+                                startIndex={startIndex}
+                                endIndex={endIndex}
+                            />
+                        </LineChart>
+
                         <div className="graphs-data-container">
                             {/* Condtionly rendering the graphs based on visibility */}
-                            {Object.entries(telemetryData).map(([label, data], index) =>
+
+                            {Object.entries(telemetryData).slice(1).map(([label, data], index) =>
                                 visibleGraphs[label]?.visibility ? (
                                     <div className="graph">
                                         <div className="graph-header">
@@ -427,7 +453,7 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent data={data} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true}  graphType = {helperFunctions.getLabelGraphType(label)} />
+                                        <LineChartComponent data={data.slice(startIndex,endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                     </div>
                                 ) : null
                             )}

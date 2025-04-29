@@ -94,14 +94,14 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlid
         />
 
         {/* 🔍 Zoom control */}
-        { timeSlider && <Brush
+        {/* { timeSlider && <Brush
           dataKey="timestamp"
           height={20}
           stroke="#8884d8"
           startIndex={zoomDomain.startIndex}
           endIndex={zoomDomain.endIndex}
           onChange={handleBrushChange}
-        />}
+        />} */}
       </LineChart>
     </ResponsiveContainer>
 

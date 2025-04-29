@@ -309,6 +309,40 @@
 
   }
 
+  .vertical-time-slider {
+    width: 60px;
+    height: 100%;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    z-index: 10;
+  }
+
+  /* Custom styles for the vertical brush slider */
+.vertical-time-slider .recharts-brush {
+  shape-rendering: crispedges;
+}
+
+.vertical-time-slider .recharts-brush-slide {
+  fill: #8884d8;
+  fill-opacity: 0.2;
+}
+
+.vertical-time-slider .recharts-brush-traveller {
+  fill: #fff;
+  stroke: #8884d8;
+  stroke-width: 1px;
+}
+
+.vertical-time-slider .recharts-layer.recharts-brush-texts {
+  transform: rotate(-90deg);
+  text-anchor: start;
+}
+
+/* Ensure chart containers have proper dimensions */
+.recharts-wrapper, .recharts-surface {
+  width: 100% !important;
+  overflow: visible;
+}
 /* Small desktops and laptops (1024px - 1279px) */
 @media screen and (min-width : 780px) and (max-width: 1800px) {
   
