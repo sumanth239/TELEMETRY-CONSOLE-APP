@@ -131,7 +131,7 @@
     gap: 8px;
    }
   .sidebar.open {
-    width: 240px;
+    width: 250px;
     z-index: 2;
   }
   .sidebar.collapsed {

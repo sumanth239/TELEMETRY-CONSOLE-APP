@@ -67,3 +67,9 @@
     gap: 10px;
     align-items: center;
 }
+
+@media screen and (min-width: 780px) and (max-width: 1800px) {  
+  .alerts{
+    font-size: 14px;
+  }
+}

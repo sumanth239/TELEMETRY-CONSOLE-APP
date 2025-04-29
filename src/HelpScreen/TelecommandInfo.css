@@ -43,7 +43,7 @@ body {
   .command-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    /* gap: 15px; */
     /* display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); */
     gap: 20px;
@@ -104,5 +104,23 @@ body {
 
     .telecommand-container { 
         margin-left: 20px;
+    }
+  }
+
+  @media screen and (min-width:768px) and (max-width:1800px){
+    .main-content{
+      padding-top: 0;
+    }
+    .page-title { 
+      font-size: 20px;
+    }
+    .command-section h2 { 
+      font-size: 14px;
+    }
+    .description { 
+      font-size: 12px;
+    }
+    .command-list { 
+      gap: 10px;
     }
   }

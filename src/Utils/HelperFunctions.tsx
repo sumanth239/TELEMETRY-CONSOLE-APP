@@ -79,7 +79,7 @@ export const resolveLabelValue = (label: string, value: number | string): string
 };
 
 export function updateSessionLogs(action: string) {
-  const sessionStr: any = sessionStorage.getItem("sessionStorage");
+  const sessionStr: any = localStorage.getItem("sessionStorage");
   if (!sessionStr) {
     console.warn("awrta");
     return
@@ -96,7 +96,7 @@ export function updateSessionLogs(action: string) {
     Action: action
   });
 
-  sessionStorage.setItem("sessionStorage", JSON.stringify(sessionData));
+  localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
   // 🔥 Dispatch custom event
   window.dispatchEvent(new Event("sessionLogsUpdated"));
 }

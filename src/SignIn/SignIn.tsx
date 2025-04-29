@@ -50,7 +50,7 @@ export default function SignIn() {
       Logs : []
     }
 
-    sessionStorage.setItem("sessionStorage",JSON.stringify(logsData));
+    localStorage.setItem("sessionStorage",JSON.stringify(logsData));
     helperFunctions.updateSessionLogs(`${formData.name} sucessfully loged into ${selectedProduct}`)
     navigate("/dashboard");
     console.log(

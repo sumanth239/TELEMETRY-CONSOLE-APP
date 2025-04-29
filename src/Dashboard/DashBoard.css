@@ -478,7 +478,7 @@
   .dashboard-container1 {
     flex: 0 0 30%;
     gap: 10px;
-    padding: 13px 13px 13px 60px;
+    padding: 13px 13px 13px 63px;
     grid-template-columns: 14% auto;
     height: calc(30vh - 50px);
   }
@@ -528,8 +528,8 @@
   }
 
   .dashboard-container1 .commands-main-container {
-    padding: 10px 15px 10px 10px;
-    gap: 10px;
+    padding: 10px 16px 10px 8px;
+    gap: 8px;
     height: calc(30vh - 50px);
     grid-template-columns: 40% 60%;
   }
@@ -544,20 +544,21 @@
     padding: 3px 4px;
     border-radius: 3px;
     margin: 3px 2px;
-    width: auto;
+    width: 140px;
     font-size: 10px;
   }
 
   .dashboard-container1 .commands-main-container .commands-data-container #commands-apply-button {
     position: absolute;
-    bottom: 8px;
+    bottom: 10px;
     right: 12px;
   }
 
   .dashboard-container1 .commands-main-container .commands-data-container input {
-    padding: 2px;
+    padding: 3px 5px;
     color: #878787;
     border-radius: 3px;
+    margin-left: 3px;
   }
 
   .dashboard-container1 .commands-main-container .commands-data-container .error-icon {
@@ -573,7 +574,7 @@
     width: auto;
     box-sizing: border-box;
     position: absolute;
-    left: 160px;
+    left: 149px;
     top: 35px;
     /* bottom: 120px !important; */
   }
@@ -585,7 +586,7 @@
   }
 
   .dashboard-container1 .commands-main-container .commands-output-container {
-    padding: 5px 10px 10px 10px;
+    padding: 5px 8px 10px 8px;
     flex: 1;
     height: calc(30vh - 67px);
     display: flex;
@@ -625,15 +626,15 @@
   .dashboard-container2 {
     gap: 10px;
     background-color: #DAE8FC;
-    padding: 0 25px 0 60px;
+    padding: 0 25px 0 63px;
   }
 
   .telemetry-main-container {
-    padding: 8px 15px 0px 10px;
+    padding: 10px 16px 0px 8px;
   }
 
   .labels-and-graphs-container {
-    gap: 10px;
+    gap: 8px;
     padding-bottom: 10px;
   }
 
@@ -645,7 +646,7 @@
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container {
     padding: 4px 8px;
-    height: calc(70vh - 120px);
+    height: calc(70vh - 123px);
     /* flex: 1;
     height: 100%; */
     /* height: calc(70vh - 55px); */
@@ -669,7 +670,7 @@
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data div {
     border-radius: 2px;
     height: 12px;
-    padding-left: 0;
+    padding-left: 2px;
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data i {
@@ -678,7 +679,7 @@
 
   .dashboard-container2 .graphs-data-container .graph {
     width: calc(50% - 5px);
-    height: calc(50% - 5px);
+    height: calc(50% - 8px);
     margin-bottom: 10px;
     padding: 0;
     margin-left: 0;
@@ -730,7 +731,7 @@
   }
 
   .dashboard-container2 .time-tag-container {
-    padding: 5px 8px;
+    padding: 5px 8px 10px 8px;
   }
 
   .dashboard-container2 .time-tag-container p {
@@ -739,13 +740,13 @@
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container {
     padding: 4px 8px;
-    height: calc(70vh - 120px);
+    height: calc(70vh - 115px);
   }
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container .step-item .step-circle {
     width: 10px;
     height: 10px;
-    top: 2px;
+    top: 8px;
   }
 
   .dashboard-container2 .time-tag-container .time-tag-commands-container .step-item .step-line {
@@ -754,7 +755,7 @@
     background-color: var(--primary-color);
     position: absolute;
     left: 4px;
-    top: 10px;
+    top: 16px;
     box-sizing: border-box;
     overflow: hidden;
   }

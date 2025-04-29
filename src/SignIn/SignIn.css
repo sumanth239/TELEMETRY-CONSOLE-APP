@@ -222,10 +222,29 @@
     }
    }
 
-   @media screen and (min-width: 680px) and (max-width: 1288px)  {
+   @media screen and (min-width: 680px) and (max-width: 1800px)  {
     .signin-main-container {
       display: grid;
       grid-template-columns: 50% auto ; 
       height: 100vh;
+    }
+    .signin-logo-circle { 
+      font-size: 1.2rem;
+    }
+    .input-field { 
+      font-size: 0.7rem;
+    }
+    .floating-label { 
+      font-size: 0.45rem;
+    }
+    .password-toggle-btn { 
+      font-size: 0.7rem;
+    }
+    .submit-btn {
+      font-size: 0.8rem;
+    }
+    .signin-logo img { 
+      height: 70px;
+      width: 280px;
     }
    }

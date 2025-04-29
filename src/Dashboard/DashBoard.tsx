@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
   const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>(() => {       //state to log the data 
-    const sessionStr = sessionStorage.getItem("sessionStorage");
+    const sessionStr = localStorage.getItem("sessionStorage");
     if (!sessionStr) return [];
   
     try {
@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const handleSessionLogsUpdated = () => {
-      const sessionStr = sessionStorage.getItem("sessionStorage");
+      const sessionStr = localStorage.getItem("sessionStorage");
       if (!sessionStr) return;
 
       try {
@@ -700,7 +700,7 @@ const Dashboard: React.FC = () => {
                 {Object.entries(telemetryData).map(([label, data], index) =>
                   visibleGraphs[label].visibility ? (
                     <div className="graph" onWheel={(e) => handleWheelZoom(e, label)}
-                    style={{ overflowY: 'hidden' }}>
+                    style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                       <div className="graph-header">
                         <p>{label} {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`}</p>
                         <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
