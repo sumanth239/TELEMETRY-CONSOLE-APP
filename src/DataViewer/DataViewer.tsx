@@ -8,7 +8,7 @@ import * as XLSX from "xlsx";
 // import { Label } from "recharts";
 import * as types from "../Utils/types";
 import * as helperFunctions from "../Utils/HelperFunctions";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label , Brush } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, Brush } from "recharts";
 import { time } from "console";
 //types 
 type GraphOptions = {
@@ -28,7 +28,7 @@ interface LabelsData {
     [key: string]: { value: string }[];
 }
 
-const intialTelemeteryData: { [key: string]: { value: number }[] } = {};
+const intialTelemeteryData: { [key: string]: { value: number ,timestamp:string }[] } = {};
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
@@ -73,7 +73,7 @@ const DataViewer: React.FC = () => {
     });      //to handle the  graphs visibility 
     const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
-    const [timeSliderData,setTimeSliderData] = useState<any>([])
+    const [timeSliderData, setTimeSliderData] = useState<any>([])
     const [startIndex, setStartIndex] = useState(0);
     const [endIndex, setEndIndex] = useState(timeSliderData?.length - 1);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
@@ -288,7 +288,7 @@ const DataViewer: React.FC = () => {
             console.log("TEY", Object.entries(transformedData)[0][1])
             setTimeSliderData(Object.entries(transformedData)[0][1]);
             setTelemetryData(transformedData);
-           
+
 
 
 
@@ -409,17 +409,26 @@ const DataViewer: React.FC = () => {
                         </div>
                     </div>
                     <div className="graphs-container">
-                        <LineChart width={600} height={50} data={timeSliderData}>
-                            {/* <XAxis dataKey="timestamp" /> */}
-                            <Brush
-                                dataKey="timestamp"
-                                height={30}
-                                stroke="#8884d8"
-                                onChange={handleBrushChange}
-                                startIndex={startIndex}
-                                endIndex={endIndex}
-                            />
-                        </LineChart>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <div style={{ width: '65%' }}>
+                                <ResponsiveContainer width="100%" height={50} >
+                                    <LineChart data={timeSliderData} >
+                                        {/* <XAxis dataKey="timestamp" /> */}
+                                        <Brush
+                                            dataKey="timestamp"
+                                            height={30}
+                                            stroke="#8884d8"
+                                            onChange={handleBrushChange}
+                                            startIndex={startIndex}
+                                            endIndex={endIndex}
+                                            className="time-slider"
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+
 
                         <div className="graphs-data-container">
                             {/* Condtionly rendering the graphs based on visibility */}
@@ -453,7 +462,7 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent data={data.slice(startIndex,endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                        <LineChartComponent data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                     </div>
                                 ) : null
                             )}

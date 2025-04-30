@@ -1,11 +1,12 @@
 import React from "react";
 import { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label , Brush } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, Brush } from "recharts";
 import "./LineChart.css";
 
 //Type of data point data 
 interface DataPoint {
   "value": number,
+  "timestamp": string
 }
 
 //type of graph options 
@@ -19,13 +20,13 @@ type GraphOptions = {
 interface ChildProps {
   data: DataPoint[]
   graphOptions: GraphOptions
-  timeSlider:Boolean
-  graphType:string
+  timeSlider: Boolean
+  graphType: string
 }
 
 
 
-const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlider ,graphType}) => {
+const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, graphType }) => {
   const [zoomDomain, setZoomDomain] = useState({ startIndex: 0, endIndex: data.length - 1 });
 
 
@@ -53,17 +54,17 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlid
   // console.log("data",data);
   return (
     <ResponsiveContainer width="100%" height={timeSlider ? "85%" : "90%"}>
-      <LineChart  className="chart" data={data}>
+      <LineChart className="chart" data={data}>
         {graphOptions.Gridlines && <CartesianGrid strokeDasharray="3 3" />}
 
         <XAxis
           dataKey="timestamp"
           fontSize={10}
           domain={[zoomDomain.startIndex, zoomDomain.endIndex]}
-          tickFormatter={(value) => value} 
+          tickFormatter={(value) => value}
         >
           {graphOptions["Axis Titles"] && (
-            <Label value="timestamp" offset={6} position="insideBottom"        fontSize={8} />
+            <Label value="timestamp" offset={6} position="insideBottom" fontSize={8} />
           )}
         </XAxis>
 
@@ -85,13 +86,17 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions ,timeSlid
         </YAxis>
 
         <Tooltip />
-        <Line
-          dataKey="value"
-          type={graphType == "step" ? "step" : "monotone" }
-          stroke="#8884d8"
-          dot={<CustomDot />}
-          isAnimationActive={false}
-        />
+        {data && data[0] && Object.keys(data[0])?.filter((key) => key != "timestamp").map((line) =>
+          <Line
+            key={line}
+            dataKey={line.includes(" ") ? `['${line}']` : line}
+            type={graphType == "step" ? "step" : "monotone"}
+            stroke="#8884d8"
+            dot={<CustomDot />}
+            isAnimationActive={false}
+          />
+        )}
+
 
         {/* 🔍 Zoom control */}
         {/* { timeSlider && <Brush

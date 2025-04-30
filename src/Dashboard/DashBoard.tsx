@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./DashBoard.css"; // Import the CSS file
-import { teleCommandType, systemModes, teleCommands, graphOptions, allLabels, } from "../Utils/Constant";
+import { teleCommandType, systemModes, teleCommands, graphOptions, allLabels, combinedLabelGroups } from "../Utils/Constant";
 import LineChartComponent from "../Components/Charts/LineChart";
 import useCurrentTime from "../Utils/useCurrentTime";
 import axios from "axios";
@@ -19,7 +19,7 @@ import { inputModalAction } from "../Components/PopUps/InputAction";
 // =============================================
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
-const intialTelemeteryData: { [key: string]: { value: number }[] } = {};
+const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 
 
 //Modifying intial state of graphs as visible
@@ -36,7 +36,7 @@ allLabels.forEach((item) => {
 const MAX_POINTS = 10;
 
 const Dashboard: React.FC = () => {
-
+  const renderedLabels = new Set<string>();
   //states
   const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
   const DEFAULT_ZOOM = 1; // 1x zoom (default view), higher means zoom in (fewer points)
@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
   const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>(() => {       //state to log the data 
     const sessionStr = localStorage.getItem("sessionStorage");
     if (!sessionStr) return [];
-  
+
     try {
       const sessionData = JSON.parse(sessionStr);
       if (Array.isArray(sessionData.Logs)) {
@@ -66,10 +66,10 @@ const Dashboard: React.FC = () => {
     } catch (err) {
       console.error("Failed to parse session logs:", err);
     }
-  
+
     return [];
   });
-  
+
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
@@ -152,7 +152,8 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (startSystem) {
-      const ws = new WebSocket(`ws:/192.168.0.124:8000/ws`);
+      const ws = new WebSocket("ws:/192.168.0.124:8000/ws");
+
 
       ws.onmessage = (event) => {   //on websocket connection
 
@@ -313,9 +314,9 @@ const Dashboard: React.FC = () => {
 
   const handleWheelZoom = (e: React.WheelEvent<HTMLDivElement>, label: string) => {
     // These two lines are correct, but might not be sufficient in all browsers
-    e.preventDefault(); 
+    e.preventDefault();
     e.stopPropagation();
-    
+
     // Add this to ensure the parent doesn't scroll
     if (e.currentTarget.contains(e.target as Node)) {
       setZoomLevels((prev) => {
@@ -553,7 +554,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const graphElements = document.querySelectorAll('.graph');
 
-    const wheelHandler = (e:any) => {
+    const wheelHandler = (e: any) => {
       e.preventDefault();
       const label = e.currentTarget.getAttribute('data-label');
       if (label) {
@@ -585,6 +586,23 @@ const Dashboard: React.FC = () => {
   ];
   // console.log("data", teleCmdsFormData)
 
+  function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {
+    const mergedMap: { [timestamp: string]: any } = {};
+
+    labels.forEach(label => {
+      telemetryData[label]?.forEach((point: any) => {
+        const { timestamp, value } = point;
+        if (!mergedMap[timestamp]) {
+          mergedMap[timestamp] = { timestamp };
+        }
+        mergedMap[timestamp][label] = value;
+      });
+    });
+
+    // Convert map to sorted array
+    const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
+    return mergedArray;
+  }
 
   return (
     <>
@@ -697,8 +715,55 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(telemetryData).map(([label, data], index) =>
-                  visibleGraphs[label].visibility ? (
+                {Object.entries(telemetryData).map(([label, data]) => {
+                  if (renderedLabels.has(label)) return null;
+
+                  const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));
+
+
+                  if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
+                    groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
+                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);
+
+                    return (
+
+                      <div className="graph" onWheel={(e) => handleWheelZoom(e, label)}
+                        style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
+                        <div className="graph-header">
+                          <p>{groupObj.title}</p>
+                          <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
+                            <i className="bi bi-three-dots-vertical"  ></i>
+                          </button>
+
+                          {/* conditionally rendering graph options */}
+                          {graphOptionsOpendLables[label] && (
+                            <div className="graph-options-menu">
+                              <ul>
+                                {graphOptions.map((item, index) => (
+                                  <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
+                                    }`}>
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        <LineChartComponent
+
+                          data={mergedData.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
+                          graphOptions={visibleGraphs[label].graphOptions}
+                          timeSlider={false}
+                          graphType={helperFunctions.getLabelGraphType(label)}
+                        />
+                      </div>
+                    );
+                  }
+
+
+                  // Fallback: Render individual graph
+                  renderedLabels.add(label);
+                  return visibleGraphs[label]?.visibility ? (
                     <div className="graph" onWheel={(e) => handleWheelZoom(e, label)}
                     style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                       <div className="graph-header">
@@ -728,8 +793,8 @@ const Dashboard: React.FC = () => {
                         graphType = {helperFunctions.getLabelGraphType(label)}
                       />
                     </div>
-                  ) : null
-                )}
+                  ) : null;
+                })}
               </div>
             </div>
           </div>

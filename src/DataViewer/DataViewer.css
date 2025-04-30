@@ -175,12 +175,16 @@
     padding-left: 4%;
 
   }
+  .dataviewer-main-container .graphs-main-container  .graphs-container  {
+    background-color: var(--greay-background);
+    border-radius: var(--primary-border-radius);
+    text-align: center;
+  }
 
    .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container{
     flex: 1;
-    height:calc(70vh - 30px);
-    background-color: var(--greay-background);
-    border-radius: var(--primary-border-radius);
+    height:calc(70vh - 80px);
+   
     /* margin-bottom: 15px; */
     padding: 10px 15px;
     display: flex;
@@ -416,9 +420,8 @@
   .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container{ 
     padding: 10px 0 10px 10px;
     gap: 10px;
-    height: calc(70vh - 45px);
+    height: calc(70vh - 95px);
   }
-
   .dataviewer-main-container .graphs-main-container  .graphs-container  .graphs-data-container .graph .graph-header p {
       font-size: 12px;
   }

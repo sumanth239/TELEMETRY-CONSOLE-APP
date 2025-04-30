@@ -1,3 +1,5 @@
+import { title } from "process";
+
 export const teleCommandType = ["Real Time","Time Tagged"]
 export const teleCommands = [
     {
@@ -174,10 +176,12 @@ export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlin
 
 export const allLabels = [
   { label: "System Mode", units: "", graphType: "step" },
-  { label: "PAT Mode", units: "", graphType: "step" },
   { label: "Azimuth Angle", units: "dg", graphType: "monotone" },
   { label: "Elevation Angle", units: "dg", graphType: "monotoneX" },
-  { label: "Motor Current Comsumption", units: "A", graphType: "monotoneX" },
+  { label: "PAT Mode", units: "", graphType: "step" },
+  // { label: "FSM X angle", units: "dg", graphType: "monotoneX" },
+  // { label: "FSM Y angle", units: "dg", graphType: "monotoneX" },
+  { label: "Gimbal Current Comsumption", units: "A", graphType: "monotoneX" },
   { label: "ODT Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Gimbal Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Quadcell Channel 1", units: "", graphType: "monotoneX" },
@@ -206,6 +210,11 @@ export const allLabels = [
   { label: "Software Version", units: "", graphType: null }
 ];
 
+export const combinedLabelGroups = [
+  { title: "Motor Angles", labels: ["Azimuth Angle", "Elevation Angle"] },
+  { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
+  {title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
+];
 
 
 export const labelValueMappings: Record<string, Record<number | string, string>> = {
