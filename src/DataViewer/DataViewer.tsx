@@ -1,6 +1,6 @@
 import React from "react";
 import "./DataViewer.css";
-import { graphOptions, allLabels, systemLogs } from "../Utils/Constant";
+import { graphOptions, allLabels, systemLogs, combinedLabelGroupsWithUnits ,combinedLabelGroups} from "../Utils/Constant";
 import { useState, useRef } from "react";
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
@@ -28,7 +28,7 @@ interface LabelsData {
     [key: string]: { value: string }[];
 }
 
-const intialTelemeteryData: { [key: string]: { value: number ,timestamp:string }[] } = {};
+const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 //Intials states of useState
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
@@ -40,17 +40,40 @@ allLabels.forEach((item) => {    //graphs visiblilty
 });
 
 allLabels.forEach((item) => {    //graph options
-    initialGraphOptionsState[item.label] = false;
+    const grpahObject = combinedLabelGroups.find((graph) => graph.labels.includes(item.label))
+    if (grpahObject) {
+        initialGraphOptionsState[grpahObject.title] = false;
+    } else {
+        initialGraphOptionsState[item.label] = false;
+    }
 });
 
 allLabels.forEach((item) => (    //dropdown options
     initialDropdownOptions.push(`${item.label}${item.units && `(${item.units})`}`)
 ))
 
+function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {
+    const mergedMap: { [timestamp: string]: any } = {};
+
+    labels.forEach(label => {
+        telemetryData[label]?.forEach((point: any) => {
+            const { timestamp, value } = point;
+            if (!mergedMap[timestamp]) {
+                mergedMap[timestamp] = { timestamp };
+            }
+            mergedMap[timestamp][label] = value;
+        });
+    });
+
+    // Convert map to sorted array
+    const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
+    return mergedArray;
+}
+
 const DataViewer: React.FC = () => {
 
     //states 
-
+    const renderedLabels = new Set<string>();
 
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
@@ -432,9 +455,54 @@ const DataViewer: React.FC = () => {
 
                         <div className="graphs-data-container">
                             {/* Condtionly rendering the graphs based on visibility */}
+                            {Object.entries(telemetryData).map(([label, data]) => {
+                                if (renderedLabels.has(label)) return null;
+                                const groupObj = combinedLabelGroupsWithUnits.find(groupObj => groupObj.labels.includes(label));
 
-                            {Object.entries(telemetryData).slice(1).map(([label, data], index) =>
-                                visibleGraphs[label]?.visibility ? (
+                                if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
+                                    groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
+                                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);
+                                    const graphLineToggles: Boolean[] = []
+
+                                    groupObj.labels.map((obj) => (
+                                        graphLineToggles.push(visibleGraphs[obj].visibility)
+                                    ))
+
+                                    return (
+                                        <div className="graph">
+                                            <div className="graph-header">
+                                                <p>{groupObj.title}</p>
+                                                <button
+                                                    onClick={() => graphOptionsButtonHandler(label)}
+                                                    className="view-more-button"
+                                                >
+                                                    <i
+                                                        className="bi bi-three-dots-vertical"
+                                                        style={{ fontSize: "18px" }}
+                                                    ></i>
+                                                </button>
+
+                                                {/* conditionally rendering graph options */}
+                                                {graphOptionsOpendLables[groupObj.title] && (
+                                                    <div className="graph-options-menu">
+                                                        <ul>
+                                                            {graphOptions.map((item, index) => (
+                                                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                                                                    }`}>
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <LineChartComponent graphLineToggles={graphLineToggles} data={mergedData.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                        </div>
+                                    )
+                                }
+
+                                renderedLabels.add(label);
+                                return visibleGraphs[label]?.visibility ? (
                                     <div className="graph">
                                         <div className="graph-header">
                                             <p>{label}</p>
@@ -462,10 +530,44 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
+                                        <LineChartComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                    </div>
+                                ) : null
+
+                            })}
+                            {/* {Object.entries(telemetryData).slice(1).map(([label, data], index) =>
+                                visibleGraphs[label]?.visibility ? (
+                                    <div className="graph">
+                                        <div className="graph-header">
+                                            <p>{label}</p>
+                                            <button
+                                                onClick={() => graphOptionsButtonHandler(label)}
+                                                className="view-more-button"
+                                            >
+                                                <i
+                                                    className="bi bi-three-dots-vertical"
+                                                    style={{ fontSize: "18px" }}
+                                                ></i>
+                                            </button>
+
+                                            conditionally rendering graph options
+                                            {graphOptionsOpendLables[label] && (
+                                                <div className="graph-options-menu">
+                                                    <ul>
+                                                        {graphOptions.map((item, index) => (
+                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                                                                }`}>
+                                                                {item}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
                                         <LineChartComponent data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                     </div>
                                 ) : null
-                            )}
+                            )} */}
                         </div>
                     </div>
 

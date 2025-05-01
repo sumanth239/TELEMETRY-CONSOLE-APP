@@ -216,6 +216,11 @@ export const combinedLabelGroups = [
   {title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
 ];
 
+export const combinedLabelGroupsWithUnits = [
+  { title: "Motor Angles", labels: ["Azimuth Angle(dg)", "Elevation Angle(dg)"] },
+  { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
+  {title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
+];
 
 export const labelValueMappings: Record<string, Record<number | string, string>> = {
   "System Mode": {

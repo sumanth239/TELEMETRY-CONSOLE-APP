@@ -30,7 +30,13 @@ allLabels.forEach((item) => {
 
 //Modifying intial state of grpahs options of label as false
 allLabels.forEach((item) => {
-  initialGraphOptionsState[item.label] = false;
+  const grpahObject = combinedLabelGroups.find((graph) => graph.labels.includes(item.label))
+  if (grpahObject) {
+    initialGraphOptionsState[grpahObject.title] = false;
+  } else {
+    initialGraphOptionsState[item.label] = false;
+  }
+
 });
 
 const MAX_POINTS = 10;
@@ -329,17 +335,37 @@ const Dashboard: React.FC = () => {
   };
   const changeGraphOption = (label: string, option: string) => {
     if (option === "Remove") {
-      setVisibleGraphs((prev) => ({
-        ...prev,
-        [label]: {
-          ...prev[label],
-          visibility: !prev[label].visibility
-        }
-      }));
-      setgraphOptionsOpendLables((prev) => ({
-        ...prev,
-        [label]: !prev[label],
-      }));
+      const groupObj = combinedLabelGroups.find((graph) => graph.labels.includes(label));
+
+      if (groupObj) {
+        groupObj.labels.map((graphLabel) => {
+          setVisibleGraphs((prev) => ({
+            ...prev,
+            [graphLabel]: {
+              ...prev[graphLabel],
+              visibility: !prev[graphLabel].visibility
+            }
+          }));
+        })
+        setgraphOptionsOpendLables((prev) => ({
+          ...prev,
+          [groupObj.title]: !prev[groupObj.title],
+        }));
+
+      } else {
+        setVisibleGraphs((prev) => ({
+          ...prev,
+          [label]: {
+            ...prev[label],
+            visibility: !prev[label].visibility
+          }
+        }));
+        setgraphOptionsOpendLables((prev) => ({
+          ...prev,
+          [label]: !prev[label],
+        }));
+      }
+
     }
 
     type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
@@ -724,6 +750,11 @@ const Dashboard: React.FC = () => {
                   if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
                     groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
                     const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);
+                    const graphLineToggles: Boolean[] = []
+
+                    groupObj.labels.map((obj) => (
+                      graphLineToggles.push(visibleGraphs[obj].visibility)
+                    ))
 
                     return (
 
@@ -731,12 +762,12 @@ const Dashboard: React.FC = () => {
                         style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                         <div className="graph-header">
                           <p>{groupObj.title}</p>
-                          <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
+                          <button onClick={() => graphOptionsButtonHandler(groupObj.title)} className="view-more-button" >
                             <i className="bi bi-three-dots-vertical"  ></i>
                           </button>
 
                           {/* conditionally rendering graph options */}
-                          {graphOptionsOpendLables[label] && (
+                          {graphOptionsOpendLables[groupObj.title] && (
                             <div className="graph-options-menu">
                               <ul>
                                 {graphOptions.map((item, index) => (
@@ -750,7 +781,7 @@ const Dashboard: React.FC = () => {
                           )}
                         </div>
                         <LineChartComponent
-
+                          graphLineToggles={graphLineToggles}
                           data={mergedData.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
                           graphOptions={visibleGraphs[label].graphOptions}
                           timeSlider={false}
@@ -765,7 +796,7 @@ const Dashboard: React.FC = () => {
                   renderedLabels.add(label);
                   return visibleGraphs[label]?.visibility ? (
                     <div className="graph" onWheel={(e) => handleWheelZoom(e, label)}
-                    style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
+                      style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                       <div className="graph-header">
                         <p>{label} {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`}</p>
                         <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
@@ -787,10 +818,11 @@ const Dashboard: React.FC = () => {
                         )}
                       </div>
                       <LineChartComponent
+                        graphLineToggles={[visibleGraphs[label].visibility]}
                         data={data.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
                         graphOptions={visibleGraphs[label].graphOptions}
                         timeSlider={false}
-                        graphType = {helperFunctions.getLabelGraphType(label)}
+                        graphType={helperFunctions.getLabelGraphType(label)}
                       />
                     </div>
                   ) : null;
