@@ -9,7 +9,7 @@ import * as XLSX from "xlsx";
 import * as types from "../Utils/types";
 import * as helperFunctions from "../Utils/HelperFunctions";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, Brush } from "recharts";
-import { time } from "console";
+
 //types 
 type GraphOptions = {
     "Logarithmic Scale": boolean;
@@ -98,7 +98,7 @@ const DataViewer: React.FC = () => {
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
     const [timeSliderData, setTimeSliderData] = useState<any>([])
     const [startIndex, setStartIndex] = useState(0);
-    const [endIndex, setEndIndex] = useState(timeSliderData?.length - 1);
+    const [endIndex, setEndIndex] = useState(timeSliderData?.length - 1 || 10);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
@@ -107,12 +107,17 @@ const DataViewer: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
 
+    console.log("timesliderData",timeSliderData)
     //handler functions
     const toggleGraph = (label: string) => {        // to Toggle graph visibility
         setVisibleGraphs((prev) => ({
             ...prev,
             [label]: {
                 ...prev[label],
+                graphOptions: {
+                    ...prev[label].graphOptions,
+                    ["Remove"]: !prev[label].graphOptions["Remove" as keyof GraphOptions],
+                },
                 visibility: !prev[label].visibility
             }
         }));
@@ -125,22 +130,41 @@ const DataViewer: React.FC = () => {
     };
 
     const graphOptionsButtonHandler = (label: string) => {      //for Graph options visibilty
+        console.log("graphoptionsbuttonhandlerLable",label)
         setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: prev[label] ? !prev[label] : true }));
     };
 
     const changeGraphOption = (label: string, option: string) => {
         if (option === "Remove") {
-            setVisibleGraphs((prev) => ({
-                ...prev,
-                [label]: {
-                    ...prev[label],
-                    visibility: !prev[label].visibility
-                }
-            }));
-            setgraphOptionsOpendLables((prev) => ({
-                ...prev,
-                [label]: !prev[label],
-            }));
+            const groupObj = combinedLabelGroupsWithUnits.find((graph) => graph.labels.includes(label));
+            if(groupObj){
+                groupObj.labels.map((graphLabel) => {
+                    setVisibleGraphs((prev) => ({
+                        ...prev,
+                        [graphLabel]: {
+                            ...prev[graphLabel],
+                            visibility: !prev[graphLabel].visibility
+                        }
+                    }));
+                })
+                setgraphOptionsOpendLables((prev) => ({
+                    ...prev,
+                    [groupObj.title]: !prev[groupObj.title],
+                }));
+            }else{
+                setVisibleGraphs((prev) => ({
+                    ...prev,
+                    [label]: {
+                        ...prev[label],
+                        visibility: !prev[label].visibility
+                    }
+                }));
+                setgraphOptionsOpendLables((prev) => ({
+                    ...prev,
+                    [label]: !prev[label],
+                }));
+            }
+            
         }
 
         type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
@@ -220,7 +244,7 @@ const DataViewer: React.FC = () => {
 
     const handleDateChange = (date: Date | null) => {       //to handle date change in child component
         setSelectedDateTime(date);
-        // console.log("Selected Date & Time in Parent:", date);
+        
     };
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,7 +290,7 @@ const DataViewer: React.FC = () => {
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
             const jsonData: any = XLSX.utils.sheet_to_json(sheet);
-            console.log("josn data", jsonData)
+            
             const transformedData: any = {};
 
             let firstTimestamp: number | null = null;
@@ -307,8 +331,7 @@ const DataViewer: React.FC = () => {
                 });
             });
 
-            // console.log(transformedData["TEMP"], "→ telemetry with fixed timestamps");
-            console.log("TEY", Object.entries(transformedData)[0][1])
+           
             setTimeSliderData(Object.entries(transformedData)[0][1]);
             setTelemetryData(transformedData);
 
@@ -473,7 +496,7 @@ const DataViewer: React.FC = () => {
                                             <div className="graph-header">
                                                 <p>{groupObj.title}</p>
                                                 <button
-                                                    onClick={() => graphOptionsButtonHandler(label)}
+                                                    onClick={() => graphOptionsButtonHandler(groupObj.title)}
                                                     className="view-more-button"
                                                 >
                                                     <i
@@ -535,39 +558,6 @@ const DataViewer: React.FC = () => {
                                 ) : null
 
                             })}
-                            {/* {Object.entries(telemetryData).slice(1).map(([label, data], index) =>
-                                visibleGraphs[label]?.visibility ? (
-                                    <div className="graph">
-                                        <div className="graph-header">
-                                            <p>{label}</p>
-                                            <button
-                                                onClick={() => graphOptionsButtonHandler(label)}
-                                                className="view-more-button"
-                                            >
-                                                <i
-                                                    className="bi bi-three-dots-vertical"
-                                                    style={{ fontSize: "18px" }}
-                                                ></i>
-                                            </button>
-
-                                            conditionally rendering graph options
-                                            {graphOptionsOpendLables[label] && (
-                                                <div className="graph-options-menu">
-                                                    <ul>
-                                                        {graphOptions.map((item, index) => (
-                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
-                                                                }`}>
-                                                                {item}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <LineChartComponent data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
-                                    </div>
-                                ) : null
-                            )} */}
                         </div>
                     </div>
 

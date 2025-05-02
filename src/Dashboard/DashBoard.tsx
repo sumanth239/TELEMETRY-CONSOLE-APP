@@ -189,12 +189,13 @@ const Dashboard: React.FC = () => {
 
             allLabels.forEach((item, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
+                const newEntry = { value: parseFloat(incomingData[index]), timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
               }
             });
-
+            console.log(updatedData)
             return updatedData;
+            
           });
         } catch (error) {
           console.error("WebSocket Data Error:", error);
