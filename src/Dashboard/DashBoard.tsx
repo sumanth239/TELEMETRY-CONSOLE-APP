@@ -566,7 +566,7 @@ const Dashboard: React.FC = () => {
         <div className="dynamic-inputs-container" >
           {inputOptions.map((item, index) => (
 
-            <div>
+            <div key={item.name}>
               <input value={teleCmdsFormData.teleCmdValue[index]} onChange={(e) => TeleCmdValueHandler(e, index)} placeholder={item.name} className={teleCmdValueError[index] ? "input-error" : ""} type="text" />&nbsp;<b>  {item.units}</b>
               {teleCmdValueError[index] && <div className="error">{teleCmdValueError[index]}</div>}
             </div>
@@ -724,7 +724,7 @@ const Dashboard: React.FC = () => {
             <div className="labels-and-graphs-container">
               <div className="labels-data-container">
                 {Object.entries(telemetryData).map(([label, data], index) => (
-                  <div className="labels-data">
+                  <div className="labels-data" key={`${label}-${index}` }>
                     <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
                     <div>
                       <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
@@ -732,9 +732,9 @@ const Dashboard: React.FC = () => {
 
                     {/* condtionally rendering icons to handle graphs visibility */}
                     {visibleGraphs[label].visibility ?
-                      <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
+                      <i  onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
                       :
-                      <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
+                      <i  onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
                     }
                   </div>
                 ))}
@@ -759,7 +759,7 @@ const Dashboard: React.FC = () => {
 
                     return (
 
-                      <div className="graph" onWheel={(e) => handleWheelZoom(e, label)}
+                      <div className="graph" onWheel={(e) => handleWheelZoom(e, label)} key={label}
                         style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                         <div className="graph-header">
                           <p>{groupObj.title}</p>
@@ -772,7 +772,7 @@ const Dashboard: React.FC = () => {
                             <div className="graph-options-menu">
                               <ul>
                                 {graphOptions.map((item, index) => (
-                                  <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
+                                  <li key={item} onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                     }`}>
                                     {item}
                                   </li>
@@ -809,7 +809,7 @@ const Dashboard: React.FC = () => {
                           <div className="graph-options-menu">
                             <ul>
                               {graphOptions.map((item, index) => (
-                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
+                                <li key={item} onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                   }`}>
                                   {item}
                                 </li>

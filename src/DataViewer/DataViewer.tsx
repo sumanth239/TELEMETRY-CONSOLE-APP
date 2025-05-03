@@ -1,32 +1,23 @@
+//default imports
 import React from "react";
+import { useState, useRef ,useEffect} from "react";
+
+//style sheet imports
 import "./DataViewer.css";
-import { graphOptions, allLabels, systemLogs, combinedLabelGroupsWithUnits ,combinedLabelGroups} from "../Utils/Constant";
-import { useState, useRef } from "react";
+
+//components imports
 import LineChartComponent from "../Components/Charts/LineChart";
 import CalendarComponent from "../Components/Calender";
+
+//library imports
 import * as XLSX from "xlsx";
-// import { Label } from "recharts";
-import * as types from "../Utils/types";
 import * as helperFunctions from "../Utils/HelperFunctions";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, Brush } from "recharts";
+import { LineChart, ResponsiveContainer, Brush } from "recharts";
 
-//types 
-type GraphOptions = {
-    "Logarithmic Scale": boolean;
-    "Axis Titles": boolean;
-    "Gridlines": boolean;
-};
+//utilities imports
+import * as types from '../Utils/types';
+import { graphOptions, allLabels, combinedLabelGroupsWithUnits ,combinedLabelGroups} from "../Utils/Constant";
 
-type GraphState = {
-    visibility: boolean;
-    graphOptions: GraphOptions;
-};
-
-//Interfaces
-
-interface LabelsData {
-    [key: string]: { value: string }[];
-}
 
 const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 //Intials states of useState
@@ -77,8 +68,8 @@ const DataViewer: React.FC = () => {
 
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
-    const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: GraphState }>(() => {
-        const initialState: { [label: string]: GraphState } = {};
+    const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {
+        const initialState: { [label: string]: types.GraphState } = {};
 
         allLabels.forEach((item) => {
             let fullLabel = `${item.label}${item.units && `(${item.units})`}`
@@ -98,7 +89,7 @@ const DataViewer: React.FC = () => {
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
     const [timeSliderData, setTimeSliderData] = useState<any>([])
     const [startIndex, setStartIndex] = useState(0);
-    const [endIndex, setEndIndex] = useState(timeSliderData?.length - 1 || 10);
+    const [endIndex, setEndIndex] = useState(0);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
@@ -107,7 +98,6 @@ const DataViewer: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
 
-    console.log("timesliderData",timeSliderData)
     //handler functions
     const toggleGraph = (label: string) => {        // to Toggle graph visibility
         setVisibleGraphs((prev) => ({
@@ -116,12 +106,19 @@ const DataViewer: React.FC = () => {
                 ...prev[label],
                 graphOptions: {
                     ...prev[label].graphOptions,
-                    ["Remove"]: !prev[label].graphOptions["Remove" as keyof GraphOptions],
+                    ["Remove"]: !prev[label].graphOptions["Remove" as keyof types.GraphOptions],
                 },
                 visibility: !prev[label].visibility
             }
         }));
     };
+
+    useEffect(() => {
+        if (timeSliderData.length === 0) return;
+      
+        const index = timeSliderData.length > 60 ? 60 : timeSliderData.length - 1;
+        setEndIndex(index);
+      }, [timeSliderData]);
 
     const handleBrushChange = (e: any) => {
         if (!e?.startIndex || !e?.endIndex) return;
@@ -130,7 +127,7 @@ const DataViewer: React.FC = () => {
     };
 
     const graphOptionsButtonHandler = (label: string) => {      //for Graph options visibilty
-        console.log("graphoptionsbuttonhandlerLable",label)
+        // setEndIndex(timeSliderData.length > 100 ? 100 :timeSliderData.length - 1 )
         setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: prev[label] ? !prev[label] : true }));
     };
 
@@ -169,7 +166,7 @@ const DataViewer: React.FC = () => {
 
         type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
 
-        if (!graphOptions.includes(option as keyof GraphOptions)) return;
+        if (!graphOptions.includes(option as keyof types.GraphOptions)) return;
 
         setVisibleGraphs((prev) => ({
             ...prev,
@@ -177,7 +174,7 @@ const DataViewer: React.FC = () => {
                 ...prev[label],
                 graphOptions: {
                     ...prev[label].graphOptions,
-                    [option]: !prev[label].graphOptions[option as keyof GraphOptions],
+                    [option]: !prev[label].graphOptions[option as keyof types.GraphOptions],
                 },
             },
         }));
@@ -204,7 +201,7 @@ const DataViewer: React.FC = () => {
         if (event.target.checked) {
             setSelectedOptions(initialDropdownOptions);     // Select all labels and show all graphs
             setVisibleGraphs(() => {
-                const initialState: { [label: string]: GraphState } = {};
+                const initialState: { [label: string]: types.GraphState } = {};
 
                 allLabels.forEach((item) => {
                     initialState[item.label] = {
@@ -223,7 +220,7 @@ const DataViewer: React.FC = () => {
         } else {
             setSelectedOptions([]);      // Clear selection and hide all graphs
             setVisibleGraphs(() => {
-                const initialState: { [label: string]: GraphState } = {};
+                const initialState: { [label: string]: types.GraphState } = {};
 
                 allLabels.forEach((item) => {
                     initialState[item.label] = {
@@ -325,13 +322,13 @@ const DataViewer: React.FC = () => {
                     }
 
                     transformedData[key].push({
-                        value: row[key],
+                        value: parseFloat(row[key]),
                         ...timeInfo,
                     });
                 });
             });
 
-           
+            
             setTimeSliderData(Object.entries(transformedData)[0][1]);
             setTelemetryData(transformedData);
 
@@ -404,8 +401,8 @@ const DataViewer: React.FC = () => {
                         )}
                     </div>
                     <div className="time-range-container">
-                        <p>Select Start Date : <CalendarComponent onDateChange={handleDateChange} /></p>
-                        <p>Select End Date : <CalendarComponent onDateChange={handleDateChange} /></p>
+                        <span>Select Start Date : <CalendarComponent onDateChange={handleDateChange} /></span>
+                        <span>Select End Date : <CalendarComponent onDateChange={handleDateChange} /></span>
                     </div>
 
                     <ul className="data-buttons-container" >
@@ -425,7 +422,7 @@ const DataViewer: React.FC = () => {
                     <div className="labels-container">
                         <div className="labels-data-container">
                             {selectedOptions.map((item) => (
-                                <div className="labels-data">
+                                <div className="labels-data" key={item}>
                                     <p className="label-text">{item} </p>
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
@@ -510,7 +507,7 @@ const DataViewer: React.FC = () => {
                                                     <div className="graph-options-menu">
                                                         <ul>
                                                             {graphOptions.map((item, index) => (
-                                                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                                                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                                                     }`}>
                                                                     {item}
                                                                 </li>
@@ -544,7 +541,7 @@ const DataViewer: React.FC = () => {
                                                 <div className="graph-options-menu">
                                                     <ul>
                                                         {graphOptions.map((item, index) => (
-                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof GraphOptions] ? "selected" : ""
+                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                                                 }`}>
                                                                 {item}
                                                             </li>

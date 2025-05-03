@@ -113,10 +113,10 @@
   color: black;
   gap: 10px;
   margin: 10px 15px;
-  height: 45px;
+  height: 40px;
   /* color: white; */
   background-color: #DAE8FC;
-  padding:  0 15px 8px 15px ;
+  padding:  12px 15px 0px 15px ;
   border-radius: var(--primary-border-radius);
 }
 .dataviewer-main-container .graphs-main-container {
