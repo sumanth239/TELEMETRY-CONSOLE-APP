@@ -1,7 +1,12 @@
+//default imports
 import React, { useState } from "react";
-import DatePicker from "react-datepicker";
+
+//style sheet imports
 import "react-datepicker/dist/react-datepicker.css";
 import "../Dashboard/DashBoard.css";
+
+//library imports
+import DatePicker from "react-datepicker";
 
 interface CalendarComponentProps {
   onDateChange: (date: Date | null) => void; // Prop to send selected date to parent

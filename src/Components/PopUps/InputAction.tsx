@@ -1,7 +1,7 @@
-// utils/modalAction.ts
+// library imports
 import Swal, { SweetAlertOptions } from 'sweetalert2';
 
-interface InputModalOptions {
+interface InputModalOptions {   
   title?: string;
   text?: string;
   confirmButtonText?: string;
@@ -14,7 +14,7 @@ interface InputModalOptions {
   onConfirm: (inputValue?: string) => void | Promise<void>; // Callback with input value
 }
 
-export const inputModalAction = async ({
+export const inputModalAction = async ({      //pop up wchich contains input 
   title = 'Are you sure?',
   text = '',
   confirmButtonText = 'Yes',

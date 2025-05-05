@@ -1,23 +1,24 @@
-import React, { useState, ChangeEvent, FocusEvent, FormEvent } from 'react';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import './SignUp.css';
-import logo from '../assets/logo.png';
-import indexline from "../assets/index_line.jpeg";
-import astrologo from "../assets/astrogate_labs_logo.png";
+//default imports
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-}
+//style sheet imports
+import './SignUp.css';
+import 'bootstrap-icons/font/bootstrap-icons.css'
 
-type FieldName = keyof FormData | null;
+
+//utilities imports
+import logo from '../assets/logo.png';
+import indexline from "../assets/index_line.jpeg";
+import * as types from "../Utils/types";
+
+
+type FieldName = keyof types.FormData | null;
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<types.FormData>({
     name: '',
     email: '',
     password: '',
@@ -49,7 +50,7 @@ export default function SignUp() {
     setFocusedField(null);
   };
 
-  const shouldShowLegend = (fieldName: keyof FormData) =>
+  const shouldShowLegend = (fieldName: keyof types.FormData) =>
     formData[fieldName] !== '' || focusedField === fieldName;
 
   return (

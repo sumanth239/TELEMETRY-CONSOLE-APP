@@ -1,15 +1,15 @@
-// TelecommandInfo.tsx
+// deafult imports
 import React from 'react';
+
+//style sheet imports
 import './TelecommandInfo.css';
 
-interface CommandLabel {
-  label: string;
-  units: string;
-  description?: string;
-}
+//utilities import
+import * as types from '../Utils/types';
+
 
 const TelecommandInfo: React.FC = () => {
-  const allLabels: CommandLabel[] = [
+  const allLabels: types.CommandLabel[] = [
     { 
       label: "System Mode", 
       units: "", 

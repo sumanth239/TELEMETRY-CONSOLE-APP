@@ -1,4 +1,4 @@
-// utils/confirmAction.ts
+// library imports
 import Swal, { SweetAlertOptions } from 'sweetalert2';
 
 interface ConfirmOptions {
@@ -12,7 +12,7 @@ interface ConfirmOptions {
     onConfirm: () => void | Promise<void>;
 }
 
-export const confirmAction = async ({
+export const confirmAction = async ({           //confrimation pop up 
     title = 'Are you sure?',
     text = '',
     confirmButtonText = 'Yes',

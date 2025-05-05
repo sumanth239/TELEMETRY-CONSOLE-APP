@@ -5,7 +5,7 @@ import { allLabels, labelValueMappings } from "./Constant";
 import * as types from "../Utils/types"
 
 
-export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.ExportToExcelProps): void => {
+export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.ExportToExcelProps): void => {    //function to export the data into excel sheet
   if (telemetryData.length === 0 || logsData.length === 0) {
     console.warn("No data available for export!");
     return;
@@ -41,12 +41,12 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
   saveAs(file, FileName);
 };
 
-export function getLabelUnits(label: string): string | undefined {
+export function getLabelUnits(label: string): string | undefined {      //function to get the units of label
   const labelData = allLabels.find((item) => item.label === label);
   return labelData?.units;
 }
 
-export function getLabelGraphType(label: string): string {
+export function getLabelGraphType(label: string): string {      //function to get the graph type of label
   const labelData = allLabels.find((item) => item.label === label);
   if(labelData?.graphType) {
     return labelData?.graphType
@@ -78,10 +78,9 @@ export const resolveLabelValue = (label: string, value: number | string): string
   return String(value) ?? ""; // default case
 };
 
-export function updateSessionLogs(action: string) {
+export function updateSessionLogs(action: string) {     //to handle the session logs
   const sessionStr: any = localStorage.getItem("sessionStorage");
   if (!sessionStr) {
-    console.warn("awrta");
     return
   };
 

@@ -25,3 +25,20 @@ export type GraphState = {
   visibility: boolean;
   graphOptions: GraphOptions;
 };
+
+export interface FormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface CommandLabel {
+  label: string;
+  units: string;
+  description?: string;
+}
+
+export interface DataPoint {
+  "value": number,
+  "timestamp": string
+}

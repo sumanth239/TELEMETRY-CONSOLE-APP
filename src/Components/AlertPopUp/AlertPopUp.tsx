@@ -1,4 +1,7 @@
-import React, { useEffect } from 'react';
+//default imports
+import React from 'react';
+
+//style sheet imports
 import "./AlertPopUp.css"
 
 interface AlertPopupProps {

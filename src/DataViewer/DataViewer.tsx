@@ -19,8 +19,8 @@ import * as types from '../Utils/types';
 import { graphOptions, allLabels, combinedLabelGroupsWithUnits ,combinedLabelGroups} from "../Utils/Constant";
 
 
-const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 //Intials states of useState
+const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
 const initialDropdownOptions: string[] = [];
@@ -43,7 +43,7 @@ allLabels.forEach((item) => (    //dropdown options
     initialDropdownOptions.push(`${item.label}${item.units && `(${item.units})`}`)
 ))
 
-function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {
+function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {          //to merge the data points of combined graphs ,to single object
     const mergedMap: { [timestamp: string]: any } = {};
 
     labels.forEach(label => {
@@ -62,13 +62,12 @@ function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {
 }
 
 const DataViewer: React.FC = () => {
-
-    //states 
+    //constants 
     const renderedLabels = new Set<string>();
-
+    //states 
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
-    const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {
+    const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
         const initialState: { [label: string]: types.GraphState } = {};
 
         allLabels.forEach((item) => {
@@ -84,7 +83,7 @@ const DataViewer: React.FC = () => {
         });
 
         return initialState;
-    });      //to handle the  graphs visibility 
+    });      
     const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
     const [timeSliderData, setTimeSliderData] = useState<any>([])
@@ -96,6 +95,14 @@ const DataViewer: React.FC = () => {
     const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
     const [file, setFile] = useState<File>();
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    //use effetcts
+    useEffect(() => {
+        if (timeSliderData.length === 0) return;
+      
+        const index = timeSliderData.length > 60 ? 60 : timeSliderData.length - 1;
+        setEndIndex(index);
+      }, [timeSliderData]);
 
 
     //handler functions
@@ -113,29 +120,23 @@ const DataViewer: React.FC = () => {
         }));
     };
 
-    useEffect(() => {
-        if (timeSliderData.length === 0) return;
-      
-        const index = timeSliderData.length > 60 ? 60 : timeSliderData.length - 1;
-        setEndIndex(index);
-      }, [timeSliderData]);
+    
 
-    const handleBrushChange = (e: any) => {
+    const handleBrushChange = (e: any) => {     //to hadle brush(time slider) range
         if (!e?.startIndex || !e?.endIndex) return;
         setStartIndex(e.startIndex);
         setEndIndex(e.endIndex);
     };
 
     const graphOptionsButtonHandler = (label: string) => {      //for Graph options visibilty
-        // setEndIndex(timeSliderData.length > 100 ? 100 :timeSliderData.length - 1 )
         setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: prev[label] ? !prev[label] : true }));
     };
 
-    const changeGraphOption = (label: string, option: string) => {
+    const changeGraphOption = (label: string, option: string) => {      //to change the graph otption
         if (option === "Remove") {
-            const groupObj = combinedLabelGroupsWithUnits.find((graph) => graph.labels.includes(label));
+            const groupObj = combinedLabelGroupsWithUnits.find((graph) => graph.labels.includes(label));        //cobined graph labels object
             if(groupObj){
-                groupObj.labels.map((graphLabel) => {
+                groupObj.labels.map((graphLabel) => {       //disable all labels visibility of cobined graph  object
                     setVisibleGraphs((prev) => ({
                         ...prev,
                         [graphLabel]: {
@@ -149,7 +150,7 @@ const DataViewer: React.FC = () => {
                     [groupObj.title]: !prev[groupObj.title],
                 }));
             }else{
-                setVisibleGraphs((prev) => ({
+                setVisibleGraphs((prev) => ({       //disable only single label visibility
                     ...prev,
                     [label]: {
                         ...prev[label],
@@ -164,11 +165,9 @@ const DataViewer: React.FC = () => {
             
         }
 
-        type GraphOptionKey = "Logarithmic Scale" | "Axis Titles" | "Gridlines";
-
         if (!graphOptions.includes(option as keyof types.GraphOptions)) return;
 
-        setVisibleGraphs((prev) => ({
+        setVisibleGraphs((prev) => ({       //upadting label graph options
             ...prev,
             [label]: {
                 ...prev[label],
@@ -216,7 +215,7 @@ const DataViewer: React.FC = () => {
 
                 return initialState;
             });
-            // Select all labels and show all graphs
+            
         } else {
             setSelectedOptions([]);      // Clear selection and hide all graphs
             setVisibleGraphs(() => {
@@ -235,7 +234,7 @@ const DataViewer: React.FC = () => {
 
                 return initialState;
             });
-            // Clear selection and hide all graphs
+            
         }
     };
 
@@ -260,9 +259,7 @@ const DataViewer: React.FC = () => {
 
     const parseCustomTimestamp = (timestampStr: string): number | null => {
         // Expected format: "16/04/2025, 6:42:16 am"
-        const [datePart, timePart, meridian] = timestampStr
-            .replace(",", "")
-            .split(" "); // ["16/04/2025", "6:42:16", "am"]
+        const [datePart, timePart, meridian] = timestampStr.replace(",", "").split(" "); // ["16/04/2025", "6:42:16", "am"]
 
         const [day, month, year] = datePart.split("/").map(Number);
         let [hours, minutes, seconds] = timePart.split(":").map(Number);
@@ -329,7 +326,7 @@ const DataViewer: React.FC = () => {
             });
 
             
-            setTimeSliderData(Object.entries(transformedData)[0][1]);
+            setTimeSliderData(Object.entries(transformedData)[0][1]);       //data for the time slider 
             setTelemetryData(transformedData);
 
 
@@ -346,30 +343,13 @@ const DataViewer: React.FC = () => {
         reader.readAsArrayBuffer(file);
     };
 
-
-
-
-
-    const getLabelRecentData = (label: string): any => {
-        const labelArray = telemetryData[label];
-        if (!labelArray || labelArray.length === 0) {
-            return null;
-        }
-        return labelArray[labelArray.length - 1].value;
-    };
-
-
     return (
         <>
             {/* data viewer main container*/}
             <div className="dataviewer-main-container">
                 <div className="calender-container">
                     <div className="dropdown-container">
-                        <button
-                            type="button"
-                            className="dropdown-button"
-                            onClick={() => setIsOpen(!isOpen)}
-                        >
+                        <button type="button"   className="dropdown-button" onClick={() => setIsOpen(!isOpen)}  >
                             Select  labels &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i className={`bi ${isOpen ? "bi-caret-up-fill" : "bi-caret-down-fill"} dropdown-icon`}></i>
                         </button>
 
@@ -427,26 +407,12 @@ const DataViewer: React.FC = () => {
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
                                     {visibleGraphs[item]?.visibility ? (
-                                        <i
-                                            onClick={() => toggleGraph(item)}
-                                            className="bi bi-eye"
-                                            style={{
-                                                cursor: "pointer",
-                                                // fontSize: "18px",
-                                                color: "black",
-                                            }}
-                                        ></i>
-                                    ) : (
-                                        <i
-                                            onClick={() => toggleGraph(item)}
-                                            className="bi bi-eye-slash-fill"
-                                            style={{
-                                                cursor: "pointer",
-                                                // fontSize: "18px",
-                                                color: "black",
-                                            }}
-                                        ></i>
+                                        <i  onClick={() => toggleGraph(item)}   className="bi bi-eye"   style={{cursor: "pointer",color: "black"}} ></i>
+                                    ) : 
+                                    (
+                                        <i  onClick={() => toggleGraph(item)}   className="bi bi-eye-slash-fill"    style={{cursor: "pointer",color: "black",}}></i>
                                     )}
+
                                 </div>
                             ))}
                         </div>
@@ -477,12 +443,12 @@ const DataViewer: React.FC = () => {
                             {/* Condtionly rendering the graphs based on visibility */}
                             {Object.entries(telemetryData).map(([label, data]) => {
                                 if (renderedLabels.has(label)) return null;
-                                const groupObj = combinedLabelGroupsWithUnits.find(groupObj => groupObj.labels.includes(label));
+                                const groupObj = combinedLabelGroupsWithUnits.find(groupObj => groupObj.labels.includes(label));        //checking label is combined graph or not
 
                                 if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
                                     groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
-                                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);
-                                    const graphLineToggles: Boolean[] = []
+                                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);       //merging mutiple label data pooints 
+                                    const graphLineToggles: Boolean[] = []      //array which contains labels visiblity of combined graphs
 
                                     groupObj.labels.map((obj) => (
                                         graphLineToggles.push(visibleGraphs[obj].visibility)
@@ -492,18 +458,12 @@ const DataViewer: React.FC = () => {
                                         <div className="graph">
                                             <div className="graph-header">
                                                 <p>{groupObj.title}</p>
-                                                <button
-                                                    onClick={() => graphOptionsButtonHandler(groupObj.title)}
-                                                    className="view-more-button"
-                                                >
-                                                    <i
-                                                        className="bi bi-three-dots-vertical"
-                                                        style={{ fontSize: "18px" }}
-                                                    ></i>
+                                                <button onClick={() => graphOptionsButtonHandler(groupObj.title)}   className="view-more-button" >
+                                                    <i  className="bi bi-three-dots-vertical"   style={{ fontSize: "18px" }}></i>
                                                 </button>
 
                                                 {/* conditionally rendering graph options */}
-                                                {graphOptionsOpendLables[groupObj.title] && (
+                                                {graphOptionsOpendLables[groupObj.title] && (       //for combined graphs we send parameter title 
                                                     <div className="graph-options-menu">
                                                         <ul>
                                                             {graphOptions.map((item, index) => (
@@ -526,14 +486,8 @@ const DataViewer: React.FC = () => {
                                     <div className="graph">
                                         <div className="graph-header">
                                             <p>{label}</p>
-                                            <button
-                                                onClick={() => graphOptionsButtonHandler(label)}
-                                                className="view-more-button"
-                                            >
-                                                <i
-                                                    className="bi bi-three-dots-vertical"
-                                                    style={{ fontSize: "18px" }}
-                                                ></i>
+                                            <button onClick={() => graphOptionsButtonHandler(label)}    className="view-more-button" >
+                                                <i  className="bi bi-three-dots-vertical"   style={{ fontSize: "18px" }} />
                                             </button>
 
                                             {/* conditionally rendering graph options */}
@@ -541,8 +495,7 @@ const DataViewer: React.FC = () => {
                                                 <div className="graph-options-menu">
                                                     <ul>
                                                         {graphOptions.map((item, index) => (
-                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
-                                                                }`}>
+                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""}`}>
                                                                 {item}
                                                             </li>
                                                         ))}

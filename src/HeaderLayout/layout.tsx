@@ -1,5 +1,8 @@
+//deafult imports
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
+
+//components imports
 import Header from "../Components/Header/Header";
 import Sidebar from "../Components/SideBar/SideBar";
 

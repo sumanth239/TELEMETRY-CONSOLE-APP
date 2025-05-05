@@ -1,23 +1,27 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+//default imports
+import  { useState, ChangeEvent, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+//style sheet imports
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./SignIn.css";
+
+//library imports
 import indexline from "../assets/index_line.jpeg";
 import astrologo from "../assets/astrogate_labs_logo.png";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+
+//utilities imports
 import * as helperFunctions from "../Utils/HelperFunctions";
+import * as types from "../Utils/types";
 
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-}
 
-type FieldName = keyof FormData | null;
+
+type FieldName = keyof types.FormData | null;
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<types.FormData>({
     name: "",
     email: "",
     password: "",
@@ -69,7 +73,7 @@ export default function SignIn() {
     setFocusedField(null);
   };
 
-  const shouldShowLegend = (fieldName: keyof FormData) =>
+  const shouldShowLegend = (fieldName: keyof types.FormData) =>
     formData[fieldName] !== "" || focusedField === fieldName;
 
   return (

@@ -1,7 +1,9 @@
+//default imports
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+
+//style sheet imports
 import "./SideBar.css";
-import logo from "../../assets/logo.png";
 
 
 const Sidebar: React.FC = () => {
@@ -17,10 +19,6 @@ const Sidebar: React.FC = () => {
         {isOpen ? <i className="bi bi-x"></i> : <i className="bi bi-list"></i>}
        
       </button>
-      {/* {isOpen && <div className="logo-container">
-                <img id="astro-logo-image" src={logo} alt="AstroLink Logo" />
-                <p id="logo-text">AstroLink 10G ODT</p>
-            </div>} */}
 
       <div className="sidebar-top">
         <SidebarItem

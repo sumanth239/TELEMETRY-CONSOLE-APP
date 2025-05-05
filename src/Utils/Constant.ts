@@ -1,5 +1,4 @@
-import { title } from "process";
-
+//configuration file that contains and configure of a single sub system eg;astrolink v2 , astro beam etc..
 export const teleCommandType = ["Real Time","Time Tagged"]
 export const teleCommands = [
     {
@@ -161,6 +160,7 @@ export const systemLogs = [
     { timestamp: "21-02-2025 09:51 UTC", message: "System Mode changed to Stand-By" },
     
 ];
+
 export const systemModes = [
     "Safe Mode",
     "Maintenance Mode",
@@ -213,13 +213,13 @@ export const allLabels = [
 export const combinedLabelGroups = [
   { title: "Motor Angles", labels: ["Azimuth Angle", "Elevation Angle"] },
   { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
-  {title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
+  { title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
 ];
 
 export const combinedLabelGroupsWithUnits = [
   { title: "Motor Angles", labels: ["Azimuth Angle(dg)", "Elevation Angle(dg)"] },
   { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
-  {title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
+  { title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
 ];
 
 export const labelValueMappings: Record<string, Record<number | string, string>> = {
@@ -258,7 +258,7 @@ export function convertToUtcFormat(date: Date): string {
     const hours = utcDate.getHours() % 12 || 12; // Convert to 12-hour format
     const minutes = String(utcDate.getMinutes()).padStart(2, "0");
     const seconds = String(utcDate.getSeconds()).padStart(2, "0");
-    const ampm = utcDate.getHours() >= 12 ? "PM" : "AM";
+    // const ampm = utcDate.getHours() >= 12 ? "PM" : "AM";
 
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 }
