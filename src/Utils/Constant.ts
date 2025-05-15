@@ -23,8 +23,9 @@ export const teleCommands = [
       "cmdId": 8,
       "inputType": 1,
       "inputValues": [
-        { "label": "Enable", "value": 0 },
-        { "label": "Disable", "value": 1 },
+        { "label": "Disable", "value": 0 },
+        { "label": "Enable", "value": 1 },
+        
       ],
     },
     {
@@ -42,8 +43,9 @@ export const teleCommands = [
       "cmdId": 10,
       "inputType": 1,
       "inputValues": [
-        { "label": "Enable", "value": 0 },
-        { "label": "Disable", "value": 1 },
+        { "label": "Disable", "value": 0 },
+        { "label": "Enable", "value": 1 },
+        
       ],
     },
     {
@@ -72,8 +74,9 @@ export const teleCommands = [
       "cmdId": 30,
       "inputType": 1,
       "inputValues": [
-        { "label": "Enable", "value": 0 },
-        { "label": "Disable", "value": 1 },
+        { "label": "Disable", "value": 0 },
+        { "label": "Enable", "value": 1 },
+        
       ],
     },
     {
@@ -105,8 +108,9 @@ export const teleCommands = [
       "cmdId": 41,
       "inputType": 1,
       "inputValues": [
-        { "label": "Enable", "value": 0 },
-        { "label": "Disable", "value": 1 },
+        { "label": "Disable", "value": 0 },
+        { "label": "Enable", "value": 1 },
+        
       ],
     },
     {

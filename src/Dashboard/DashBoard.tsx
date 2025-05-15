@@ -6,14 +6,14 @@ import "./DashBoard.css"; // Import the CSS file
 
 //components imports
 import LineChartComponent from "../Components/Charts/LineChart";
-import useCurrentTime from "../Utils/useCurrentTime";
 import { confirmAction } from "../Components/PopUps/ConfirmAction";
 import { inputModalAction } from "../Components/PopUps/InputAction";
+import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
 
 //library imports
-import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
 import * as types from '../Utils/types';
 import axios from "axios";
+import Swal, { SweetAlertOptions } from 'sweetalert2';
 
 //utilities imports
 import * as helperFunctions from "../Utils/HelperFunctions";
@@ -56,15 +56,10 @@ const Dashboard: React.FC = () => {
   const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({}); 
   const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);   //to handle real time telemetry data 
   const [startSystem, setStartSystem] = useState(false);    //to know system is live or not
-  const [systemCounter, setSystemCounter] = useState(0);    //for system counter
-  const [utcCounter, setUtcCounter] = useState(0);    //for UTC counter
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
-  const [systemStartedTime, setSystemStartedTime] = useState<any>("27-03-2025 12:30:45");    //to handle system live time
-  const [teleCmdData, setTeleCmdData] = useState<string[]>([]);   //for telecmd packet data genrated from backend
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
   const [systemMode, setSystemMode] = useState("0"); //to handle the system mode
   const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
-  const { formattedDate, formattedTime, currentUtcTime } = useCurrentTime();   //Extracting current time and current date thorugh custom hook
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
   const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>(() => {       //state to log the data 
@@ -88,7 +83,7 @@ const Dashboard: React.FC = () => {
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
     "teleCmdType": "Real Time",
     "teleCmd": { "cmd": "", "cmdId": 0 },
-    "teleCmdValue": [""],
+    "teleCmdValue": [0],
 
   })
   const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {
@@ -108,12 +103,16 @@ const Dashboard: React.FC = () => {
     return initialState;
   });
 
-
+   useEffect(() => {
+    setTeleCmdValueError([]); // Reset error
+    let cmdInfo = teleCommands.find((item) => item.cmd === teleCmdsFormData.teleCmd.cmd);
+    setTeleCmdsFormData((prev) => ({
+      ...prev,
+      teleCmdValue: cmdInfo?.inputType == 1 ? [teleCmdsFormData.teleCmdValue[0]] : [], // Reset input value properly
+    }));
+  }, [teleCmdsFormData.teleCmd]);
+  console.log("time",selectedDateTime)
   // use Effects
-  useEffect(() => {
-      fetchTmtCmds()
-  }, [startSystem]); 
-
   useEffect(() => {   // to update session logs
     const handleSessionLogsUpdated = () => {
       const sessionStr = localStorage.getItem("sessionStorage");
@@ -213,8 +212,6 @@ const Dashboard: React.FC = () => {
       ws.onclose = () => console.log("WebSocket Disconnected");
 
       const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
-        setSystemCounter((prev) => prev + 1);
-        setUtcCounter((prev) => prev + 1);
       }, 1000);     // Update every second
 
       return () => { ws.close(); clearInterval(interval) };   //close websocket connection and clear interval for every second
@@ -225,35 +222,7 @@ const Dashboard: React.FC = () => {
   }, [startSystem, isLogging]);
 
 
-  // WebSocket and Data Handling
-  const fetchTmtCmds = async () => {
-    try {
-      const response: any = await axios.get("http://192.168.0.124:8000/dashboard/get_sheduled_commands", {
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response) {
-        setTmtData(response.data);
-      }
-
-    } catch (error) {
-      console.error("API call failed:", error);
-    }
-  }
-
-
-  useEffect(() => {
-    setTeleCmdValueError([]); // Reset error
-
-    setTeleCmdsFormData((prev) => ({
-      ...prev,
-      teleCmdValue: [], // Reset input value properly
-    }));
-  }, [teleCmdsFormData.teleCmd]);
-
+  
 
   //handler functions
 
@@ -261,67 +230,44 @@ const Dashboard: React.FC = () => {
   const CommandsDataHandler = async (event: any) => {  
     event.preventDefault()
     helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
+    const teleCommand = teleCmdsFormData.teleCmd
+    const teleCommandValue = teleCmdsFormData.teleCmdValue
+    const apid = teleCmdsFormData.teleCmdType == "Real Time" ? 0 : 1;
+    const cmd = teleCmdsFormData.teleCmd
 
-    let teleCommand = teleCmdsFormData.teleCmd
-    let teleCommandValue = teleCmdsFormData.teleCmdValue
-
-    if (teleCmdsFormData.teleCmdType == "Real Time") {
-      if (teleCommand.cmd == "System Mode") {
-        setSystemMode(teleCommandValue[0])
-
-        if (teleCommandValue[0] == "2") {
-          setStartSystem(!startSystem);
-          helperFunctions.updateSessionLogs("System started  successfully ")
-          setSystemStartedTime(new Date())
-        }
-      } else if (teleCommand.cmd == "Shutdown System") {
-        setStartSystem(!startSystem);
-        setUtcCounter(0);
-        setSystemCounter(0);
-        setSystemStartedTime(new Date())
-      }
+    if(cmd.cmdId == 0 || cmd.cmd ==""){
+      Swal.fire("Please select any of the teleCommand");
+      return ;
     }
 
-    const formatDateTime = (date: Date) => {
-      const day = date.toLocaleString("en-GB", { day: "2-digit" });
-      const month = date.toLocaleString("en-GB", { month: "2-digit" });
-      const year = date.toLocaleString("en-GB", { year: "numeric" });
-      const time = date.toLocaleTimeString("en-GB", {
-        hour12: true,
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit",
-      });
+    if(teleCmdValueError.length != 0 && teleCmdValueError.every(item => item !== "")){
+      Swal.fire("Please Enter valid data")
+      return ;
+    }
 
-      return `${day}-${month}-${year} ${time}`;
-    };
-
-    const cmdData = {
-          "telecmd_type": teleCmdsFormData.teleCmdType,
-          "telecmd_type_value":teleCmdsFormData.teleCmdType == "Real Time"? `${formattedDate} ${formattedTime}`: selectedDateTime? formatDateTime(selectedDateTime): "",
-          "telecmd": teleCommand.cmd,
-          "telecmd_value": `$${teleCmdsFormData.teleCmdType == "Real Time" ? `RLT,${formattedDate} ${formattedTime}` : `TMT,${selectedDateTime? formatDateTime(selectedDateTime): ""}`},${teleCommand.cmdId},${teleCommandValue.toString()}*\r\n`,
-          "telecmd_id": teleCommand.cmdId,
-          "systemCounter": teleCmdsFormData.teleCmdType == "Real Time" ? 0 : getTimeDifferenceInSeconds(systemStartedTime, selectedDateTime)
-    };
-
+    if(teleCommandValue.length == 0){
+      Swal.fire("Please Enter valid data")
+      return ;
+    }
+  
     try {
-      const response: any = await axios.post("http://192.168.0.124:8000/dashboard/get_telecmds", cmdData, {
+      const teleCmdValues = teleCommandValue.map((val) => Number(val))
+      console.log(teleCmdValues)
+      const response = await axios.post("http://localhost:8002/dashboard/tecommand", {
+        telecmd_id :Number(teleCommand.cmdId),
+        telecmd_value :teleCmdValues,
+        apid: apid,
+        timestamp: apid == 0 ? "0" : selectedDateTime
+      }, {
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
         },
       });
-
-      if (response) {
-        helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command is  executed successfully `)
-        setTeleCmdData((prevData) => [...prevData, response.data.data]);
-        fetchTmtCmds()
-      }
-
+  
+      console.log("Hex packet from server:", response.data.hex_packet);
     } catch (error) {
-      helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command is failed to execute`)
-      console.error("API call failed:", error);
+      console.error("Failed to send telecommand:", error);
     }
   };
 
@@ -435,27 +381,29 @@ const Dashboard: React.FC = () => {
 
   const CommandHandler = (event: any) => {
     const selectedData = JSON.parse(event.target.value);
-    setTeleCmdsFormData((prevState) => (
+      setTeleCmdsFormData((prevState) => (
       {
         ...prevState,
-        ["teleCmd"]: selectedData,
-        ["teleCmdValue"]: ["", "", ""]
+        teleCmd: selectedData,
+        teleCmdValue: selectedData.inputType != 1 ? [] : [0]
       }
     ))
+    
+    
   };
 
   const CommandTypeHandler = (event: any) => {
     setTeleCmdsFormData((prevstate) => ({
       ...prevstate,
-      ["teleCmdType"]: event.target.value
+      teleCmdType: event.target.value
     }))
   };
 
   const TeleCmdValueHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index?: number) => {
     const value = event.target.value;
-    const numValue = parseFloat(value);
+    const numValue = Number(value);
 
-    setTeleCmdsFormData((prevState) => {
+    setTeleCmdsFormData((prevState:any) => {
       const updatedValues = [...prevState.teleCmdValue];
 
       if (typeof index === "number") {
@@ -463,7 +411,7 @@ const Dashboard: React.FC = () => {
       } else {
         return {
           ...prevState,
-          teleCmdValue: [value],
+          teleCmdValue: [numValue],
         };
       }
 
@@ -491,9 +439,15 @@ const Dashboard: React.FC = () => {
       var error = "";
       if (isNaN(numValue) && value != "") {
         error = `Value must be a number.`;
-        return;
+      }else{
+        if (teleCmdsFormData.teleCmd.cmdId != 31 && teleCmdsFormData.teleCmd.cmdId !=90){
+        if(typeof numValue === 'number' && !Number.isInteger(numValue)){
+          error=`Float value is not allowed`
+        }
+      }
       }
 
+      
       const [min, max] = inputConfig.range || [];
       if (
         inputConfig.range &&
@@ -575,7 +529,7 @@ const Dashboard: React.FC = () => {
           {inputOptions.map((item, index) => (
 
             <div key={item.name}>
-              <input value={teleCmdsFormData.teleCmdValue[index]} onChange={(e) => TeleCmdValueHandler(e, index)} placeholder={item.name} className={teleCmdValueError[index] ? "input-error" : ""} type="text" />&nbsp;<b>  {item.units}</b>
+              <input value={teleCmdsFormData.teleCmdValue[index] ? teleCmdsFormData.teleCmdValue[index] : ""} onChange={(e) => TeleCmdValueHandler(e, index)} placeholder={item.name} className={teleCmdValueError[index] ? "input-error" : ""} type="text" />&nbsp;<b>  {item.units}</b>
               {teleCmdValueError[index] && <div className="error">{teleCmdValueError[index]}</div>}
             </div>
 
@@ -672,7 +626,7 @@ const Dashboard: React.FC = () => {
                 {renderTeleCmdsExtraFields()}
 
               </div>
-              <button id="commands-apply-button" disabled={teleCmdValueError.length == 0 || teleCmdValueError.every(item => item === "") ? false : true} onClick={CommandsDataHandler}>{" "}Apply Now</button>
+              <button id="commands-apply-button"  onClick={CommandsDataHandler}>Apply Now</button>
             </div>
 
             {/* commands output container */}
