@@ -30,12 +30,18 @@ const intialTelemeteryData: { [key: string]: { value: number, timestamp: string 
 
 //Modifying intial state of graphs as visible
 allLabels.forEach((item) => {
-  initialVisibility[item.label] = true;
+  if(item.label!== "Software Version") {
+    initialVisibility[item.label] = true;
+    
+  }else{
+    initialVisibility[item.label] = false;
+  }
   intialTelemeteryData[item.label] = [];
+ 
 });
 
 //Modifying intial state of grpahs options of label as false
-allLabels.forEach((item) => {
+allLabels.slice(0,allLabels.length-2).forEach((item) => {
   const grpahObject = combinedLabelGroups.find((graph) => graph.labels.includes(item.label))
   if (grpahObject) {
     initialGraphOptionsState[grpahObject.title] = false;
@@ -167,9 +173,9 @@ const Dashboard: React.FC = () => {
  
   //websockets
   useEffect(() => {
-
+    console.log(telemetryData)
     if (startSystem) {
-        const ws = new WebSocket("ws:/192.168.0.124:8000/ws");
+        const ws = new WebSocket("ws://127.0.0.1:8000/ws");
         ws.onmessage = (event) => {   //on websocket connection
 
         //logging telemetry data to export data through excel 
@@ -189,13 +195,13 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data); // Expected JSON: { "Al Angle": 45, "En Angle": 30, "label1": 12, ... }
-          
+          // console.log(incomingData)
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
             allLabels.forEach((item, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: parseFloat(incomingData[index]), timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
+                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
               }
             });
@@ -228,6 +234,7 @@ const Dashboard: React.FC = () => {
 
   // Command Processing
   const CommandsDataHandler = async (event: any) => {  
+    setStartSystem(true);
     event.preventDefault()
     helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
     const teleCommand = teleCmdsFormData.teleCmd
