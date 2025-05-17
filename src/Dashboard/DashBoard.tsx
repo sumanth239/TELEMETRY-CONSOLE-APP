@@ -30,18 +30,18 @@ const intialTelemeteryData: { [key: string]: { value: number, timestamp: string 
 
 //Modifying intial state of graphs as visible
 allLabels.forEach((item) => {
-  if(item.label!== "Software Version") {
+  if (item.label !== "Software Version") {
     initialVisibility[item.label] = true;
-    
-  }else{
+
+  } else {
     initialVisibility[item.label] = false;
   }
   intialTelemeteryData[item.label] = [];
- 
+
 });
 
 //Modifying intial state of grpahs options of label as false
-allLabels.slice(0,allLabels.length-2).forEach((item) => {
+allLabels.slice(0, allLabels.length - 2).forEach((item) => {
   const grpahObject = combinedLabelGroups.find((graph) => graph.labels.includes(item.label))
   if (grpahObject) {
     initialGraphOptionsState[grpahObject.title] = false;
@@ -51,15 +51,19 @@ allLabels.slice(0,allLabels.length-2).forEach((item) => {
 
 });
 
+type TelemetryData = {
+  [key: string]: { value: number; timestamp: string }[];
+};
+
 
 
 const Dashboard: React.FC = () => {
 
   //default intilizalize values
-  const MAX_POINTS = 10;  const DEFAULT_ZOOM = 1; // 1x zoom (default view), higher means zoom in (fewer points)
+  const MAX_POINTS = 10; const DEFAULT_ZOOM = 1; // 1x zoom (default view), higher means zoom in (fewer points)
   const renderedLabels = new Set<string>();
   //states
-  const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({}); 
+  const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
   const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);   //to handle real time telemetry data 
   const [startSystem, setStartSystem] = useState(false);    //to know system is live or not
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
@@ -83,7 +87,8 @@ const Dashboard: React.FC = () => {
 
     return [];
   });
-
+  const [samplingRatio,setSamplingRatio] = useState(10);
+  const [processedTelemetryData, setProcessedTelemetryData] = useState<TelemetryData>({});
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
@@ -109,7 +114,7 @@ const Dashboard: React.FC = () => {
     return initialState;
   });
 
-   useEffect(() => {
+  useEffect(() => {
     setTeleCmdValueError([]); // Reset error
     let cmdInfo = teleCommands.find((item) => item.cmd === teleCmdsFormData.teleCmd.cmd);
     setTeleCmdsFormData((prev) => ({
@@ -117,7 +122,7 @@ const Dashboard: React.FC = () => {
       teleCmdValue: cmdInfo?.inputType == 1 ? [teleCmdsFormData.teleCmdValue[0]] : [], // Reset input value properly
     }));
   }, [teleCmdsFormData.teleCmd]);
-  console.log("time",selectedDateTime)
+  console.log("time", selectedDateTime)
   // use Effects
   useEffect(() => {   // to update session logs
     const handleSessionLogsUpdated = () => {
@@ -170,23 +175,83 @@ const Dashboard: React.FC = () => {
     };
   }, [visibleGraphs]); // Re-add listeners when visible graphs change
 
- 
+  useEffect(() => {
+  const processed: TelemetryData = Object.fromEntries(
+    Object.entries(telemetryData).map(([label, data]) => {
+      const index = allLabels.findIndex((item) => item.label === label); // ✅ proper lookup
+      const filtered = index >= 0 && index < 12 ? data : data.filter((_, i) => i % samplingRatio === 0);
+      return [label, filtered.slice(-MAX_POINTS)];
+    })
+  );
+  setProcessedTelemetryData(processed);
+}, [telemetryData, allLabels]);
+
+
   //websockets
   useEffect(() => {
-    console.log(telemetryData)
+
     if (startSystem) {
-        const ws = new WebSocket("ws://127.0.0.1:8000/ws");
-        ws.onmessage = (event) => {   //on websocket connection
+      console.log("connected")
+      const ws = new WebSocket("ws://127.0.0.1:8000/ws/SciTM");
+      ws.onmessage = (event) => {
 
         //logging telemetry data to export data through excel 
         if (isLogging) {
           const data = JSON.parse(event.data);
           const newData = {
-              Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-              ...allLabels.reduce((acc, item, index) => {
-                acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
-                return acc;
-              }, {} as { [key: string]: any })
+            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
+            ...allLabels.slice(0,12).reduce((acc, item, index) => {
+              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
+              return acc;
+            }, {} as { [key: string]: any })
+          };
+
+          setExportTelemetryData((prevState) => [...prevState, newData]);
+        }
+
+        try {
+          const incomingData = JSON.parse(event.data);
+          console.log("science telemetry", incomingData)
+          setTelemetryData((prevData) => {
+            const updatedData = { ...prevData };
+
+            allLabels.slice(0,12).forEach((item, index) => {
+              if (incomingData[index] !== undefined) {
+                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
+                updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
+              }
+            });
+            console.log(updatedData)
+            return updatedData;
+
+          });
+        } catch (error) {
+          console.error("WebSocket Data Error:", error);
+        }
+
+        ws.onerror = (error) => console.error("WebSocket Error:", error);
+        ws.onclose = () => console.log("WebSocket Disconnected");
+
+         const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
+      }, 1000);     // Update every second
+
+      return () => { ws.close(); clearInterval(interval) }
+      }
+    }
+    console.log(telemetryData)
+    if (startSystem) {
+      const ws = new WebSocket("ws://127.0.0.1:8000/ws/HKTM");
+      ws.onmessage = (event) => {   //on websocket connection
+
+        //logging telemetry data to export data through excel 
+        if (isLogging) {
+          const data = JSON.parse(event.data);
+          const newData = {
+            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
+            ...allLabels.slice(12).reduce((acc, item, index) => {
+              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
+              return acc;
+            }, {} as { [key: string]: any })
           };
 
           setExportTelemetryData((prevState) => [...prevState, newData]);
@@ -199,15 +264,16 @@ const Dashboard: React.FC = () => {
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLabels.forEach((item, index) => {
+            allLabels.slice(12).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
-                updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
+                updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
               }
             });
             console.log(updatedData)
-            return updatedData;
             
+            return updatedData
+
           });
         } catch (error) {
           console.error("WebSocket Data Error:", error);
@@ -228,12 +294,12 @@ const Dashboard: React.FC = () => {
   }, [startSystem, isLogging]);
 
 
-  
+
 
   //handler functions
 
   // Command Processing
-  const CommandsDataHandler = async (event: any) => {  
+  const CommandsDataHandler = async (event: any) => {
     setStartSystem(true);
     event.preventDefault()
     helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
@@ -242,27 +308,27 @@ const Dashboard: React.FC = () => {
     const apid = teleCmdsFormData.teleCmdType == "Real Time" ? 0 : 1;
     const cmd = teleCmdsFormData.teleCmd
 
-    if(cmd.cmdId == 0 || cmd.cmd ==""){
+    if (cmd.cmdId == 0 || cmd.cmd == "") {
       Swal.fire("Please select any of the teleCommand");
-      return ;
+      return;
     }
 
-    if(teleCmdValueError.length != 0 && teleCmdValueError.every(item => item !== "")){
+    if (teleCmdValueError.length != 0 && teleCmdValueError.every(item => item !== "")) {
       Swal.fire("Please Enter valid data")
-      return ;
+      return;
     }
 
-    if(teleCommandValue.length == 0){
+    if (teleCommandValue.length == 0) {
       Swal.fire("Please Enter valid data")
-      return ;
+      return;
     }
-  
+
     try {
       const teleCmdValues = teleCommandValue.map((val) => Number(val))
       console.log(teleCmdValues)
       const response = await axios.post("http://localhost:8002/dashboard/tecommand", {
-        telecmd_id :Number(teleCommand.cmdId),
-        telecmd_value :teleCmdValues,
+        telecmd_id: Number(teleCommand.cmdId),
+        telecmd_value: teleCmdValues,
         apid: apid,
         timestamp: apid == 0 ? "0" : selectedDateTime
       }, {
@@ -271,7 +337,7 @@ const Dashboard: React.FC = () => {
           "Content-Type": "application/json",
         },
       });
-  
+
       console.log("Hex packet from server:", response.data.hex_packet);
     } catch (error) {
       console.error("Failed to send telecommand:", error);
@@ -305,7 +371,7 @@ const Dashboard: React.FC = () => {
       });
     }
   };
-  
+
   const changeGraphOption = (label: string, option: string) => {
     if (option === "Remove") {
       const groupObj = combinedLabelGroups.find((graph) => graph.labels.includes(label));
@@ -373,7 +439,7 @@ const Dashboard: React.FC = () => {
   }
 
   const systemModeIcon = (mode: string) => {
-    if (mode == "Safe Mode")  return <i className="bi bi-pause-circle"></i>
+    if (mode == "Safe Mode") return <i className="bi bi-pause-circle"></i>
     else if (mode == "Maintenance Mode") return <i className="bi bi-tools"></i>
     else if (mode == "Stand-By Mode") return <i className="bi bi-hourglass-split"></i>
     else if (mode == "Downlink Mode") return <i className="bi bi-cloud-arrow-down"></i>
@@ -388,15 +454,15 @@ const Dashboard: React.FC = () => {
 
   const CommandHandler = (event: any) => {
     const selectedData = JSON.parse(event.target.value);
-      setTeleCmdsFormData((prevState) => (
+    setTeleCmdsFormData((prevState) => (
       {
         ...prevState,
         teleCmd: selectedData,
         teleCmdValue: selectedData.inputType != 1 ? [] : [0]
       }
     ))
-    
-    
+
+
   };
 
   const CommandTypeHandler = (event: any) => {
@@ -410,7 +476,7 @@ const Dashboard: React.FC = () => {
     const value = event.target.value;
     const numValue = Number(value);
 
-    setTeleCmdsFormData((prevState:any) => {
+    setTeleCmdsFormData((prevState: any) => {
       const updatedValues = [...prevState.teleCmdValue];
 
       if (typeof index === "number") {
@@ -446,15 +512,15 @@ const Dashboard: React.FC = () => {
       var error = "";
       if (isNaN(numValue) && value != "") {
         error = `Value must be a number.`;
-      }else{
-        if (teleCmdsFormData.teleCmd.cmdId != 31 && teleCmdsFormData.teleCmd.cmdId !=90){
-        if(typeof numValue === 'number' && !Number.isInteger(numValue)){
-          error=`Float value is not allowed`
+      } else {
+        if (teleCmdsFormData.teleCmd.cmdId != 31 && teleCmdsFormData.teleCmd.cmdId != 90) {
+          if (typeof numValue === 'number' && !Number.isInteger(numValue)) {
+            error = `Float value is not allowed`
+          }
         }
       }
-      }
 
-      
+
       const [min, max] = inputConfig.range || [];
       if (
         inputConfig.range &&
@@ -547,26 +613,26 @@ const Dashboard: React.FC = () => {
 
   }
 
- 
+
   const alertMessages = [
     'Network connection lost.',
     'Failed to load data.',
     'New update available.',
     'alert message with more than one line text',
   ];
- 
+
 
   function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {     //to merge the data points of combined graphs ,to single object
     const mergedMap: { [timestamp: string]: any } = {};
 
-      labels.forEach(label => {
-        telemetryData[label]?.forEach((point: any) => {
-          const { timestamp, value } = point;
-          if (!mergedMap[timestamp]) {
-            mergedMap[timestamp] = { timestamp };
-          }
-          mergedMap[timestamp][label] = value;
-        });
+    labels.forEach(label => {
+      telemetryData[label]?.forEach((point: any) => {
+        const { timestamp, value } = point;
+        if (!mergedMap[timestamp]) {
+          mergedMap[timestamp] = { timestamp };
+        }
+        mergedMap[timestamp][label] = value;
+      });
     });
 
     // Convert map to sorted array
@@ -626,14 +692,14 @@ const Dashboard: React.FC = () => {
               <div>
                 <select onChange={CommandHandler}>
                   <option value="" disabled selected hidden>TeleCmd</option>
-                    {teleCommands.map((data, index) => (
-                      <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
-                    ))}
+                  {teleCommands.map((data, index) => (
+                    <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
+                  ))}
                 </select>
                 {renderTeleCmdsExtraFields()}
 
               </div>
-              <button id="commands-apply-button"  onClick={CommandsDataHandler}>Apply Now</button>
+              <button id="commands-apply-button" onClick={CommandsDataHandler}>Apply Now</button>
             </div>
 
             {/* commands output container */}
@@ -659,8 +725,8 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="labels-and-graphs-container">
               <div className="labels-data-container">
-                {Object.entries(telemetryData).map(([label, data], index) => (
-                  <div className="labels-data" key={`${label}-${index}` }>
+                {Object.entries(processedTelemetryData).map(([label, data], index) => (
+                  <div className="labels-data" key={`${label}-${index}`}>
                     <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
                     <div>
                       <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
@@ -668,9 +734,9 @@ const Dashboard: React.FC = () => {
 
                     {/* condtionally rendering icons to handle graphs visibility */}
                     {visibleGraphs[label].visibility ?
-                      <i  onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
+                      <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black", }}></i>
                       :
-                      <i  onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
+                      <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
                     }
                   </div>
                 ))}
@@ -678,7 +744,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(telemetryData).map(([label, data]) => {
+                {Object.entries(processedTelemetryData).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
@@ -778,20 +844,20 @@ const Dashboard: React.FC = () => {
               {tmtData.map((data: any, index) => (
                 <div key={index} className="step-item">
 
-                  <div className="step-circle" 
-                      style={{
-                            backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
-                            data.status === 'Failed' ? '#F8CECC' :
-                            data.status === 'Success' ? '#D5E8D4' : '#666666'
-                      }}>
+                  <div className="step-circle"
+                    style={{
+                      backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
+                        data.status === 'Failed' ? '#F8CECC' :
+                          data.status === 'Success' ? '#D5E8D4' : '#666666'
+                    }}>
                   </div>
                   <div className="step-line"
-                      style={{
-                            backgroundColor: data.status === 'Pending' ? '#666666' :
-                            data.status === 'Failed' ? '#B85450' :
-                            data.status === 'Success' ? '#82B366' : '#666666',
-                            display: index === tmtData.length - 1 ? "none" : "block",
-                      }}>
+                    style={{
+                      backgroundColor: data.status === 'Pending' ? '#666666' :
+                        data.status === 'Failed' ? '#B85450' :
+                          data.status === 'Success' ? '#82B366' : '#666666',
+                      display: index === tmtData.length - 1 ? "none" : "block",
+                    }}>
                   </div>
                   <p className="step-text">
                     {data.telecmd_type_value} : {data.telecmd_value}

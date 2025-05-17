@@ -179,18 +179,18 @@ export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlin
 
 
 export const allLabels = [
-  // { label: "System Mode", units: "", graphType: "step" },
-  // { label: "PAT Mode", units: "", graphType: "step" },
-  // { label: "Azimuth Angle", units: "dg", graphType: "monotone" },
-  // { label: "Elevation Angle", units: "dg", graphType: "monotoneX" },
-  // { label: "Quadcell Channel 1", units: "", graphType: "monotoneX" },
-  // { label: "Quadcell Channel 2", units: "", graphType: "monotoneX" },
-  // { label: "Quadcell Channel 3", units: "", graphType: "monotoneX" },
-  // { label: "Quadcell Channel 4", units: "", graphType: "monotoneX" },
-  // { label: "EDFA Power", units: "W", graphType: "monotoneX" },
-  // { label: "EDFA Gain", units: "dB", graphType: "monotoneX" },
-  // { label: "EDFA Current", units: "mA", graphType: "monotone" },
-  // { label: "Beacon Status", units: "", graphType: "monotoneX" },
+  { label: "System Mode", units: "", graphType: "step" },
+  { label: "PAT Mode", units: "", graphType: "step" },
+  { label: "Azimuth Angle", units: "dg", graphType: "monotone" },
+  { label: "Elevation Angle", units: "dg", graphType: "monotoneX" },
+  { label: "Quadcell Channel 1", units: "", graphType: "monotoneX" },
+  { label: "Quadcell Channel 2", units: "", graphType: "monotoneX" },
+  { label: "Quadcell Channel 3", units: "", graphType: "monotoneX" },
+  { label: "Quadcell Channel 4", units: "", graphType: "monotoneX" },
+  { label: "EDFA Power", units: "W", graphType: "monotoneX" },
+  { label: "EDFA Gain", units: "dB", graphType: "monotoneX" },
+  { label: "EDFA Current", units: "mA", graphType: "monotone" },
+  { label: "Beacon Status", units: "", graphType: "monotoneX" },
   // { label: "FSM X angle", units: "dg", graphType: "monotoneX" },
   // { label: "FSM Y angle", units: "dg", graphType: "monotoneX" },
   { label: "Gimbal Current Comsumption", units: "A", graphType: "monotoneX" },
@@ -215,7 +215,7 @@ export const allLabels = [
 ];
 
 export const combinedLabelGroups = [
-  { title: "Motor Angles", labels: ["Azimuth Angle", "Elevation Angle"] },
+  // { title: "Motor Angles", labels: ["Azimuth Angle", "Elevation Angle"] },
   { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
   { title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
 ];
