@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
   const [startSystem, setStartSystem] = useState(false);    //to know system is live or not
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
-  const [systemMode, setSystemMode] = useState("0"); //to handle the system mode
+  const [systemMode, setSystemMode] = useState(0); //to handle the system mode
   const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
@@ -87,7 +87,7 @@ const Dashboard: React.FC = () => {
 
     return [];
   });
-  const [samplingRatio,setSamplingRatio] = useState(10);
+  const [samplingRatio,setSamplingRatio] = useState(9);
   const [processedTelemetryData, setProcessedTelemetryData] = useState<TelemetryData>({});
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
   const processed: TelemetryData = Object.fromEntries(
     Object.entries(telemetryData).map(([label, data]) => {
       const index = allLabels.findIndex((item) => item.label === label); // ✅ proper lookup
-      const filtered = index >= 0 && index < 12 ? data : data.filter((_, i) => i % samplingRatio === 0);
+      const filtered = index >= 0 && index < 14 ? data : data.filter((_, i) => i % samplingRatio === 0);
       return [label, filtered.slice(-MAX_POINTS)];
     })
   );
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
           const data = JSON.parse(event.data);
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-            ...allLabels.slice(0,12).reduce((acc, item, index) => {
+            ...allLabels.slice(0,14).reduce((acc, item, index) => {
               acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
             }, {} as { [key: string]: any })
@@ -211,11 +211,11 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
-          console.log("science telemetry", incomingData)
+          setSystemMode(incomingData[0]);
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLabels.slice(0,12).forEach((item, index) => {
+            allLabels.slice(0,14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
@@ -248,7 +248,7 @@ const Dashboard: React.FC = () => {
           const data = JSON.parse(event.data);
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-            ...allLabels.slice(12).reduce((acc, item, index) => {
+            ...allLabels.slice(14).reduce((acc, item, index) => {
               acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
             }, {} as { [key: string]: any })
@@ -264,7 +264,7 @@ const Dashboard: React.FC = () => {
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLabels.slice(12).forEach((item, index) => {
+            allLabels.slice(14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
@@ -326,7 +326,7 @@ const Dashboard: React.FC = () => {
     try {
       const teleCmdValues = teleCommandValue.map((val) => Number(val))
       console.log(teleCmdValues)
-      const response = await axios.post("http://localhost:8002/dashboard/tecommand", {
+      const response = await axios.post("http://127.0.0.1:8000/dashboard/tecommand", {
         telecmd_id: Number(teleCommand.cmdId),
         telecmd_value: teleCmdValues,
         apid: apid,
@@ -651,7 +651,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             <div className="status-item">
-              <span className="icon">{systemModeIcon(systemModes[Number(systemMode)])}</span>
+              <span className="icon">{systemModeIcon(systemModes[systemMode])}</span>
               <span className="text">{systemModes[Number(systemMode)]}</span>
             </div>
 
@@ -744,7 +744,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(processedTelemetryData).map(([label, data]) => {
+                {Object.entries(processedTelemetryData).slice(0,32).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
