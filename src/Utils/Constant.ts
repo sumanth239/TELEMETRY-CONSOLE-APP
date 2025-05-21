@@ -211,7 +211,8 @@ export const allLabels = [
   { label: "SOC 1.35V Rail", units: "V", graphType: "monotoneX" },
   { label: "SOC 1V Rail", units: "V", graphType: "monotoneX" },
   { label: "SOC Temperature", units: "°C", graphType: "monotoneX" },
-  { label: "Software Version", units: "", graphType: null }
+  { label: "Total Power Consumption", units: "V", graphType: "monotoneX" },
+  { label: "Software Version", units: "", graphType: null },
 ];
 
 export const combinedLabelGroups = [

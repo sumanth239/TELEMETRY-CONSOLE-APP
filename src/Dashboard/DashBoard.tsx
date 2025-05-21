@@ -68,7 +68,11 @@ const Dashboard: React.FC = () => {
   const [startSystem, setStartSystem] = useState(false);    //to know system is live or not
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
-  const [systemMode, setSystemMode] = useState(0); //to handle the system mode
+  const [systemStatusLabels,setSystemStatusLabels] = useState({
+    "SystemMode":0,
+    "Temperature":32.2,
+    "TotalPowerConsumption":0.0
+  })
   const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
   const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
@@ -211,7 +215,11 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
-          setSystemMode(incomingData[0]);
+          setSystemStatusLabels((prevData) => ({
+            ...prevData,
+            SystemMode:incomingData[0]
+          }))
+
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
@@ -259,7 +267,20 @@ const Dashboard: React.FC = () => {
 
 
         try {
-          const incomingData = JSON.parse(event.data); // Expected JSON: { "Al Angle": 45, "En Angle": 30, "label1": 12, ... }
+          const incomingData = JSON.parse(event.data); 
+          console.log(incomingData)
+
+          //updating the system status labels data
+          setSystemStatusLabels((prevData) => ({
+            ...prevData,
+            Temperature:helperFunctions.roundToTwoDecimals(incomingData[1])
+          }))
+
+          setSystemStatusLabels((prevData) => ({
+            ...prevData,
+            TotalPowerConsumption:helperFunctions.roundToTwoDecimals(incomingData[18])
+          }))
+
           // console.log(incomingData)
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
@@ -651,18 +672,18 @@ const Dashboard: React.FC = () => {
             </div>
 
             <div className="status-item">
-              <span className="icon">{systemModeIcon(systemModes[systemMode])}</span>
-              <span className="text">{systemModes[Number(systemMode)]}</span>
+              <span className="icon">{systemModeIcon(systemModes[systemStatusLabels.SystemMode])}</span>
+              <span className="text">{systemModes[systemStatusLabels.SystemMode]}</span>
             </div>
 
             <div className="status-item">
               <span className="icon"><img id="temperature-icon" src={temperatureIcon} alt="Temperature" /></span>
-              <span className="text">37 °C</span>
+              <span className="text">{systemStatusLabels.Temperature} °C</span>
             </div>
 
             <div className="status-item">
               <span className="icon"><img src={powerIcon} alt="Power" id="power-icon" /></span>
-              <span className="text">45W Consumption</span>
+              <span className="text">{systemStatusLabels.TotalPowerConsumption} W Consumption</span>
             </div>
 
             <div className="status-item">
@@ -744,7 +765,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(processedTelemetryData).slice(0,32).map(([label, data]) => {
+                {Object.entries(processedTelemetryData).slice(0,33).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not

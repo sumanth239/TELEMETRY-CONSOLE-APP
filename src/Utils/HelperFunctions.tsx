@@ -100,3 +100,7 @@ export function updateSessionLogs(action: string) {     //to handle the session 
   window.dispatchEvent(new Event("sessionLogsUpdated"));
 }
 
+export function roundToTwoDecimals(value:Number) {
+  return parseFloat(value.toFixed(2));
+}
+
