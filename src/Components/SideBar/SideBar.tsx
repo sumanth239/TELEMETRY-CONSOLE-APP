@@ -36,11 +36,11 @@ const Sidebar: React.FC = () => {
           isActive={location.pathname === "/data-viewer"}
         />
         <SidebarItem
-          to="/"
+          to="/settings"
           icon="bi bi-gear-fill"
           label="Settings"
           isOpen={isOpen}
-          isActive={location.pathname === "/title1"}
+          isActive={location.pathname === "/settings"}
         />
       </div>
 

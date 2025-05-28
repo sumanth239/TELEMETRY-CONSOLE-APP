@@ -1,5 +1,5 @@
 //default imports
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, PureComponent } from "react";
 
 //style sheet imports
 import "./DashBoard.css"; // Import the CSS file
@@ -9,6 +9,8 @@ import LineChartComponent from "../Components/Charts/LineChart";
 import { confirmAction } from "../Components/PopUps/ConfirmAction";
 import { inputModalAction } from "../Components/PopUps/InputAction";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
+import {useSettings} from "../SettingsSceen/SettingScreen";
+
 
 //library imports
 import * as types from '../Utils/types';
@@ -26,6 +28,19 @@ import { teleCommandType, systemModes, teleCommands, graphOptions, allLabels, co
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
 const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
+
+function parseTimeToMillis(timestamp: string): number {
+  const [time, meridian] = timestamp.split(' ');
+  const [hoursStr, minutesStr, secondsStr] = time.split(':');
+  let hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+  const seconds = parseInt(secondsStr, 10);
+
+  if (meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+  if (meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
+
+  return hours * 3600000 + minutes * 60000 + seconds * 1000;
+}
 
 
 //Modifying intial state of graphs as visible
@@ -91,7 +106,7 @@ const Dashboard: React.FC = () => {
 
     return [];
   });
-  const [samplingRatio,setSamplingRatio] = useState(9);
+  const { timezone, frequency } = useSettings();
   const [processedTelemetryData, setProcessedTelemetryData] = useState<TelemetryData>({});
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
@@ -128,67 +143,90 @@ const Dashboard: React.FC = () => {
   }, [teleCmdsFormData.teleCmd]);
   console.log("time", selectedDateTime)
   // use Effects
-  useEffect(() => {   // to update session logs
-    const handleSessionLogsUpdated = () => {
-      const sessionStr = localStorage.getItem("sessionStorage");
-      if (!sessionStr) return;
+  // useEffect(() => {   // to update session logs
+  //   const handleSessionLogsUpdated = () => {
+  //     const sessionStr = localStorage.getItem("sessionStorage");
+  //     if (!sessionStr) return;
 
-      try {
-        const sessionData = JSON.parse(sessionStr);
-        if (Array.isArray(sessionData.Logs)) {
-          setSessionLogsData(sessionData.Logs);
-        }
-      } catch (err) {
-        console.error("Failed to parse session logs:", err);
-      }
-    };
+  //     try {
+  //       const sessionData = JSON.parse(sessionStr);
+  //       if (Array.isArray(sessionData.Logs)) {
+  //         setSessionLogsData(sessionData.Logs);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to parse session logs:", err);
+  //     }
+  //   };
 
-    // 👂 Listen for custom event
-    window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+  //   // 👂 Listen for custom event
+  //   window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
 
-    // Cleanup
-    return () => {
-      window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
-    };
-  }, []);
+  //   // Cleanup
+  //   return () => {
+  //     window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+  //   };
+  // }, []);
 
-  useEffect(() => {
-    const graphElements = document.querySelectorAll('.graph');
+  // useEffect(() => {
+  //   const graphElements = document.querySelectorAll('.graph');
 
-    const wheelHandler = (e: any) => {
-      e.preventDefault();
-      const label = e.currentTarget.getAttribute('data-label');
-      if (label) {
-        const delta = e.deltaY < 0 ? 1 : -1;
-        setZoomLevels((prev) => {
-          const current = prev[label] || DEFAULT_ZOOM;
-          const next = Math.max(1, current + delta);
-          return { ...prev, [label]: next };
-        });
-      }
-    };
+  //   const wheelHandler = (e: any) => {
+  //     e.preventDefault();
+  //     const label = e.currentTarget.getAttribute('data-label');
+  //     if (label) {
+  //       const delta = e.deltaY < 0 ? 1 : -1;
+  //       setZoomLevels((prev) => {
+  //         const current = prev[label] || DEFAULT_ZOOM;
+  //         const next = Math.max(1, current + delta);
+  //         return { ...prev, [label]: next };
+  //       });
+  //     }
+  //   };
 
-    graphElements.forEach(el => {
-      el.addEventListener('wheel', wheelHandler, { passive: false });
-    });
+  //   graphElements.forEach(el => {
+  //     el.addEventListener('wheel', wheelHandler, { passive: false });
+  //   });
 
-    return () => {
-      graphElements.forEach(el => {
-        el.removeEventListener('wheel', wheelHandler);
-      });
-    };
-  }, [visibleGraphs]); // Re-add listeners when visible graphs change
+  //   return () => {
+  //     graphElements.forEach(el => {
+  //       el.removeEventListener('wheel', wheelHandler);
+  //     });
+  //   };
+  // }, [visibleGraphs]); // Re-add listeners when visible graphs change
 
-  useEffect(() => {
-  const processed: TelemetryData = Object.fromEntries(
-    Object.entries(telemetryData).map(([label, data]) => {
-      const index = allLabels.findIndex((item) => item.label === label); // ✅ proper lookup
-      const filtered = index >= 0 && index < 14 ? data : data.filter((_, i) => i % samplingRatio === 0);
-      return [label, filtered.slice(-MAX_POINTS)];
-    })
-  );
-  setProcessedTelemetryData(processed);
-}, [telemetryData, allLabels]);
+  // useEffect(() => {
+  //   const processed: TelemetryData = Object.fromEntries(
+  //     Object.entries(telemetryData).map(([label, data]) => {
+  //       const index = allLabels.findIndex((item) => item.label === label);
+  //       const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data ;
+  //       return [label, filtered.slice(-MAX_POINTS)];
+  //     })
+  //   );
+  
+  //   const updatedData: TelemetryData = intialTelemeteryData;
+  
+  //   for (const label in processed) {
+  //     const series = processed[label];
+  //     if (series.length === 0) continue;
+  
+  //     const baseTime = parseTimeToMillis(series[0].timestamp);
+  
+  //     updatedData[label] = series.map((point, index) => {
+  //       if (index === 0) return point;
+  
+  //       const currentTime = parseTimeToMillis(point.timestamp);
+  //       const diffSeconds = Math.round((currentTime - baseTime) / 1000);
+  
+  //       return {
+  //         ...point,
+  //         timestamp: `+${diffSeconds}s`,
+  //       };
+  //     });
+  //   }
+  
+  //   setProcessedTelemetryData(updatedData);
+  // }, [telemetryData, allLabels]);
+  
 
 
   //websockets
@@ -226,7 +264,7 @@ const Dashboard: React.FC = () => {
             allLabels.slice(0,14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
-                updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-MAX_POINTS);   //updating real time telemetry data i.e generated and received from backend
+                updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
               }
             });
             console.log(updatedData)
@@ -339,7 +377,7 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    if (teleCommandValue.length == 0) {
+    if (cmd.cmdId != 6 && cmd.cmdId != 32 && teleCommandValue.length == 0) {
       Swal.fire("Please Enter valid data")
       return;
     }
@@ -746,7 +784,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="labels-and-graphs-container">
               <div className="labels-data-container">
-                {Object.entries(processedTelemetryData).map(([label, data], index) => (
+                {Object.entries(telemetryData).map(([label, data], index) => (
                   <div className="labels-data" key={`${label}-${index}`}>
                     <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
                     <div>
@@ -765,7 +803,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(processedTelemetryData).slice(0,33).map(([label, data]) => {
+                {Object.entries(telemetryData).slice(0,33).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not

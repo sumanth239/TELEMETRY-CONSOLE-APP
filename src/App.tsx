@@ -7,21 +7,29 @@ import Layout from './HeaderLayout/layout';
 import SignIn from './SignIn/SignIn';
 import SignUp from './SignUp/SignUp';
 import TelecommandInfo from './HelpScreen/TelecommandInfo';
+import SettingsScreen, { SettingsProvider } from './SettingsSceen/SettingScreen';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path='/' element={<SignIn />} />
-        <Route path='/' element={<Layout />} >
-          <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/data-viewer' element={<DataViewer />} />
-          <Route path='/signin' element={<SignIn />} />
-          <Route path='/signup' element={<SignUp />} />
-          <Route path='/help' element={<TelecommandInfo />} />
-        </Route>
-      </Routes>
-    </Router>
+    <SettingsProvider>
+      <Router>
+        <Routes>
+          {/* Exact match for SignIn */}
+          <Route path='/' element={<SignIn />} />
+
+          {/* Layout wrapper for authenticated routes */}
+          <Route path='/' element={<Layout />}>
+            <Route path='dashboard' element={<Dashboard />} />
+            <Route path='data-viewer' element={<DataViewer />} />
+            <Route path='signup' element={<SignUp />} />
+            <Route path='help' element={<TelecommandInfo />} />
+            <Route path='settings' element={<SettingsScreen />} />
+          </Route>
+        </Routes>
+      </Router>
+    </SettingsProvider>
+
+
   );
 }
 

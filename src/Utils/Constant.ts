@@ -67,7 +67,7 @@ export const teleCommands = [
       "cmd"  : "Beacon Camera ROI",
       "cmdId": 21,
       "inputType": 2,
-      "inputValues": [{ "name": "Start Px", "units": "Px", "range": [] },{ "name": "ROI Size", "units": "", "range": [] }],
+      "inputValues": [{ "name": "X_Start Px", "units": "Px", "range": [] },{ "name": "X_ROI Size", "units": "", "range": [] },{ "name": "Y_Start Px", "units": "Px", "range": [] },{ "name": "Y_ROI Size", "units": "", "range": [] }],
     },
     {
       "cmd"  : "FSM Driver Toggle",

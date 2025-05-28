@@ -3,13 +3,15 @@ import "./Header.css";
 import logo from "../../assets/logo.png"
 import { settingsMenu } from "../../Utils/Constant";
 import useCurrentTime from "../../Utils/useCurrentTime";
+import { useContext } from "react";
+import {useSettings}  from "../../SettingsSceen/SettingScreen"
 
 
 //A Header component which is placed in top most of the page
 const Header: React.FC = () => {
-
+    const { timezone, frequency } = useSettings();
     const { formattedDate, formattedTime, currentUtcTime, localDate, localTime } = useCurrentTime();  //custom hook for utc date and time
-
+    console.log("from header",timezone,frequency)
     return (
         <div className="header-main-container">
 
@@ -22,7 +24,7 @@ const Header: React.FC = () => {
             {/* Date and time contianer */}
             <div className="date-time-container">
                 <p>{formattedDate} &nbsp;  | &nbsp; {formattedTime} UTC </p>
-                <p> {localDate} &nbsp;  | &nbsp; {localTime} IST</p>
+                <p> {localDate} &nbsp;  | &nbsp; {localTime} {timezone}</p>
             </div>
 
             <div className="settings-help-container">
