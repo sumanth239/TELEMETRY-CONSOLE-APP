@@ -5,30 +5,32 @@ import { settingsMenu } from "../../Utils/Constant";
 import useCurrentTime from "../../Utils/useCurrentTime";
 import { useContext } from "react";
 import {useSettings}  from "../../SettingsSceen/SettingScreen"
+import * as helperFunctions from "../../Utils/HelperFunctions";
 
 
 //A Header component which is placed in top most of the page
 const Header: React.FC = () => {
     const { timezone, frequency } = useSettings();
     const { formattedDate, formattedTime, currentUtcTime, localDate, localTime } = useCurrentTime();  //custom hook for utc date and time
-    console.log("from header",timezone,frequency)
+    const productName = helperFunctions.getSessionStorageKey("product") || "AstroLink 10G ODT"; // Get product name from session storage
+    const userName = (helperFunctions.getSessionStorageKey("userName") || "User") // Get user name from session storage
     return (
         <div className="header-main-container">
 
             {/* Logo contianer*/}
             <div className="logo-container">
                 <img id="astro-logo-image" src={logo} alt="AstroLink Logo" />
-                <p id="logo-text">AstroLink 10G ODT</p>
+                <p id="logo-text">{productName}</p>
             </div>
 
             {/* Date and time contianer */}
             <div className="date-time-container">
-                <p>{formattedDate} &nbsp;  | &nbsp; {formattedTime} UTC </p>
-                <p> {localDate} &nbsp;  | &nbsp; {localTime} {timezone}</p>
+                <p>{formattedDate}&nbsp;&nbsp;|&nbsp;&nbsp;{formattedTime}&nbsp;&nbsp;UTC </p>
+                <p> {localDate}&nbsp;&nbsp;|&nbsp;&nbsp;{localTime}&nbsp;&nbsp;{timezone}</p>
             </div>
 
             <div className="settings-help-container">
-                <p id="username">Hello, [User Name]</p>
+                <p id="username">Hello, {userName}</p>
             </div>
         </div>
     );

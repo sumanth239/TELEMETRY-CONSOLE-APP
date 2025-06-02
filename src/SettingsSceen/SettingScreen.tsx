@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import "./SettingScreen.css";
 import Swal from 'sweetalert2';
+import Select from 'react-select';
+import moment from 'moment-timezone';
 
-// 1. Context Definition (not used in this file)
+// Context Definition
 interface SettingsContextType {
     timezone: string;
     setTimezone: (tz: string) => void;
@@ -29,30 +31,43 @@ export const useSettings = () => {
     return context;
 };
 
-const timezones = [
-    'UTC', 'IST', 'PST', 'EST', 'CST', 'MST', 'GMT', 'CET', 'EET', 'JST', 'AEST'
-];
-
-const frequencies = Array.from({ length: 10 }, (_, i) => `${(i + 1) * 100}ms`);
+// Generate timezone options using moment-timezone with UTC offsets
+const timezoneOptions = moment.tz.names().map((tz) => {
+    const offset = moment.tz(tz).utcOffset();
+    const sign = offset >= 0 ? '+' : '-';
+    const hours = Math.floor(Math.abs(offset) / 60)
+        .toString()
+        .padStart(2, '0');
+    const minutes = (Math.abs(offset) % 60).toString().padStart(2, '0');
+    return {
+        label: `${tz} (UTC${sign}${hours}:${minutes})`,
+        value: tz,
+    };
+});
 
 const SettingsScreen = () => {
     const { timezone, setTimezone, frequency, setFrequency } = useSettings();
 
-    // Step 1: Local state for form inputs, initialized with context values
-    const [localTimezone, setLocalTimezone] = useState<string>(timezone);
+    // Local state for dropdowns
+    const [localTimezone, setLocalTimezone] = useState<{ label: string; value: string }>(
+        timezoneOptions.find((tz) => tz.value === timezone) || timezoneOptions[0]
+    );
     const [localFrequency, setLocalFrequency] = useState<number>(frequency);
 
-    // Step 2: Save local values to context only when Save is clicked
     const handleSave = () => {
-        setTimezone(localTimezone);
+        setTimezone(localTimezone.value);
         setFrequency(localFrequency);
 
-        console.log('Settings saved:', { timezone: localTimezone, frequency: localFrequency });
+        console.log('Settings saved:', {
+            timezone: localTimezone.value,
+            frequency: localFrequency,
+        });
 
         Swal.fire({
-            title: "Great job!",
             text: "Settings saved successfully!",
-            icon: "success"
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
         });
     };
 
@@ -70,16 +85,49 @@ const SettingsScreen = () => {
                         <div className="card-content">
                             <label className="label">Select Timezone</label>
                             <div className="select-container">
-                                <select
+                                <Select
+                                    options={timezoneOptions}
                                     value={localTimezone}
-                                    onChange={(e) => setLocalTimezone(e.target.value)}
-                                    className="select"
-                                >
-                                    {timezones.map((tz) => (
-                                        <option key={tz} value={tz}>{tz}</option>
-                                    ))}
-                                </select>
-                                <i className="bi bi-chevron-down select-icon"></i>
+                                    onChange={(option) => {
+                                        if (option) setLocalTimezone(option);
+                                    }}
+                                    classNamePrefix="select"
+                                    styles={{
+                                        control: (base, state) => ({
+                                            ...base,
+                                            borderRadius: '8px',
+                                            border: '2px solid #d1d5db',
+                                            backgroundColor: '#ffffff',
+                                            color: '#1e293b',
+                                            fontSize: '1rem',
+                                            fontWeight: 500,
+                                            boxShadow: state.isFocused ? '0 0 0 3px rgba(99, 102, 241, 0.1)' : 'none',
+                                            '&:hover': {
+                                                borderColor: '#9ca3af',
+                                            },
+                                        }),
+                                        menu: (base) => ({
+                                            ...base,
+                                            borderRadius: '8px',
+                                            zIndex: 10,
+                                        }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isFocused ? '#e0e7ff' : '#fff',
+                                            color: '#1e293b',
+                                            fontWeight: 500,
+                                            cursor: 'pointer',
+                                        }),
+                                        singleValue: (base) => ({
+                                            ...base,
+                                            color: '#1e293b',
+                                        }),
+                                        dropdownIndicator: (base) => ({
+                                            ...base,
+                                            color: '#6b7280',
+                                        }),
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>

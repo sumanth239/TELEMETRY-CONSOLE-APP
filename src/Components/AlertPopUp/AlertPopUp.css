@@ -16,6 +16,7 @@
   color: black;
   font-size: var(--font-size-body);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); /* 👈 soft and clean shadow */
+  position: relative;
 }
 
 .alerts-container {
@@ -24,7 +25,7 @@
 }
 .alerts {
   display: grid;
-  grid-template-columns: 68% 10% 10% 10%;
+  grid-template-columns: 70% 15% 15%;
   height: 50px;
   align-items: center;
   font-size: 18px;
@@ -45,11 +46,20 @@
   font-size: var(--font-size-heading);
   color: var(--buttons-color);
   font-weight: bold;
-  padding: 0 35px;
+  padding: 0 22px;
 }
 .alerts-header-container i:hover {
   cursor: pointer;
 }
+
+.close-button {
+  position: absolute; /* Position the button absolutely within the container */
+  bottom: 30px; /* Align it to the bottom */
+  right: 23px; /* Align it to the rightmost end */
+  padding: 7px 25px;
+ 
+} 
+  
 
 .acknowledge-button {
   /* background-color: white;
@@ -62,11 +72,11 @@
   /* background-color: rgb(19, 17, 17); */
   width: 90px;
 }
-.acknowledge-and-close-container {
+/* .acknowledge-and-close-container {
     display: flex;
     gap: 10px;
     align-items: center;
-}
+} */
 
 @media screen and (min-width: 780px) and (max-width: 1800px) {  
   .alerts{

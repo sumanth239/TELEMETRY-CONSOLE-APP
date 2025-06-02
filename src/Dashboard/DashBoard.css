@@ -6,6 +6,38 @@
   padding: 15px 15px 15px 75px;
   background-color: #DAE8FC;
 }
+.colored-toast.swal2-icon-success {
+  background-color: #a5dc86 !important;
+}
+
+.colored-toast.swal2-icon-error {
+  background-color: #f27474 !important;
+}
+
+.colored-toast.swal2-icon-warning {
+  background-color: #f8bb86 !important;
+}
+
+.colored-toast.swal2-icon-info {
+  background-color: #3fc3ee !important;
+}
+
+.colored-toast.swal2-icon-question {
+  background-color: #87adbd !important;
+}
+
+.colored-toast .swal2-title {
+  color: white;
+}
+
+.colored-toast .swal2-close {
+  color: white;
+}
+
+.colored-toast .swal2-html-container {
+  color: white;
+}
+
 .dashboard {
   display: flex;
   flex-direction: column;
@@ -225,14 +257,14 @@
   
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
-  padding: 5px 10px;
+  padding: 5px 15px;
   height: calc(70vh - 180px);
   overflow-y: scroll;
 }
 
 .dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data {
   display: grid;
-  grid-template-columns: 58% 22% 10%;
+  grid-template-columns: 55% 20% 10% 10%;
   gap: 10px;
   color: var(--primary-color);
   align-items: center;
@@ -248,7 +280,7 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: bold;
-  text-align: right;
+  text-align: left;
 }
 
 .dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-value {

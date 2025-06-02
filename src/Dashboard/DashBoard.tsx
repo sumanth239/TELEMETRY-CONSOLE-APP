@@ -11,7 +11,6 @@ import { inputModalAction } from "../Components/PopUps/InputAction";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
 import {useSettings} from "../SettingsSceen/SettingScreen";
 
-
 //library imports
 import * as types from '../Utils/types';
 import axios from "axios";
@@ -36,12 +35,23 @@ function parseTimeToMillis(timestamp: string): number {
   const minutes = parseInt(minutesStr, 10);
   const seconds = parseInt(secondsStr, 10);
 
-  if (meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
-  if (meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
+  if (meridian && meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+  if (meridian && meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
 
   return hours * 3600000 + minutes * 60000 + seconds * 1000;
 }
 
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  iconColor: 'white',
+  customClass: {
+    popup: 'colored-toast',
+  },
+  showConfirmButton: false,
+  timer: 1500,
+  timerProgressBar: true,
+});
 
 //Modifying intial state of graphs as visible
 allLabels.forEach((item) => {
@@ -101,7 +111,7 @@ const Dashboard: React.FC = () => {
         return sessionData.Logs;
       }
     } catch (err) {
-      console.error("Failed to parse session logs:", err);
+      console.error("FAILED to parse session logs:", err);
     }
 
     return [];
@@ -143,89 +153,108 @@ const Dashboard: React.FC = () => {
   }, [teleCmdsFormData.teleCmd]);
   console.log("time", selectedDateTime)
   // use Effects
-  // useEffect(() => {   // to update session logs
-  //   const handleSessionLogsUpdated = () => {
-  //     const sessionStr = localStorage.getItem("sessionStorage");
-  //     if (!sessionStr) return;
 
-  //     try {
-  //       const sessionData = JSON.parse(sessionStr);
-  //       if (Array.isArray(sessionData.Logs)) {
-  //         setSessionLogsData(sessionData.Logs);
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to parse session logs:", err);
-  //     }
-  //   };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const loginedTime = helperFunctions.getSessionStorageKey("loginTime") || new Date().toISOString();
 
-  //   // 👂 Listen for custom event
-  //   window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+      axios
+        .get('http://localhost:8000/dashboard/telecommands', { params: { from_time: loginedTime } })
+        .then(res => {
+          console.log('Fetched telecommands:', res.data);
+          setTmtData(res.data.telecommands || []);  //setting the telecmds data to state
+        })
+        .catch(err => {
+          console.error('Error fetching telecommands:', err);
+        });
+    }, 2000);
 
-  //   // Cleanup
-  //   return () => {
-  //     window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
-  //   };
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
-  // useEffect(() => {
-  //   const graphElements = document.querySelectorAll('.graph');
+  useEffect(() => {   // to update session logs
+    const handleSessionLogsUpdated = () => {
+      const sessionStr = localStorage.getItem("sessionStorage");
+      if (!sessionStr) return;
 
-  //   const wheelHandler = (e: any) => {
-  //     e.preventDefault();
-  //     const label = e.currentTarget.getAttribute('data-label');
-  //     if (label) {
-  //       const delta = e.deltaY < 0 ? 1 : -1;
-  //       setZoomLevels((prev) => {
-  //         const current = prev[label] || DEFAULT_ZOOM;
-  //         const next = Math.max(1, current + delta);
-  //         return { ...prev, [label]: next };
-  //       });
-  //     }
-  //   };
+      try {
+        const sessionData = JSON.parse(sessionStr);
+        if (Array.isArray(sessionData.Logs)) {
+          setSessionLogsData(sessionData.Logs);
+        }
+      } catch (err) {
+        console.error("FAILED to parse session logs:", err);
+      }
+    };
 
-  //   graphElements.forEach(el => {
-  //     el.addEventListener('wheel', wheelHandler, { passive: false });
-  //   });
+    // 👂 Listen for custom event
+    window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
 
-  //   return () => {
-  //     graphElements.forEach(el => {
-  //       el.removeEventListener('wheel', wheelHandler);
-  //     });
-  //   };
-  // }, [visibleGraphs]); // Re-add listeners when visible graphs change
+    // Cleanup
+    return () => {
+      window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+    };
+  }, []);
 
-  // useEffect(() => {
-  //   const processed: TelemetryData = Object.fromEntries(
-  //     Object.entries(telemetryData).map(([label, data]) => {
-  //       const index = allLabels.findIndex((item) => item.label === label);
-  //       const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data ;
-  //       return [label, filtered.slice(-MAX_POINTS)];
-  //     })
-  //   );
+  useEffect(() => {
+    const graphElements = document.querySelectorAll('.graph');
+
+    const wheelHandler = (e: any) => {
+      e.preventDefault();
+      const label = e.currentTarget.getAttribute('data-label');
+      if (label) {
+        const delta = e.deltaY < 0 ? 1 : -1;
+        setZoomLevels((prev) => {
+          const current = prev[label] || DEFAULT_ZOOM;
+          const next = Math.max(1, current + delta);
+          return { ...prev, [label]: next };
+        });
+      }
+    };
+
+    graphElements.forEach(el => {
+      el.addEventListener('wheel', wheelHandler, { passive: false });
+    });
+
+    return () => {
+      graphElements.forEach(el => {
+        el.removeEventListener('wheel', wheelHandler);
+      });
+    };
+  }, [visibleGraphs]); // Re-add listeners when visible graphs change
+
+  useEffect(() => {
+    const processed: TelemetryData = Object.fromEntries(
+      Object.entries(telemetryData).map(([label, data]) => {
+        const index = allLabels.findIndex((item) => item.label === label);
+        const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data ;
+        return [label, filtered.slice(-MAX_POINTS)];
+      })
+    );
   
-  //   const updatedData: TelemetryData = intialTelemeteryData;
+    const updatedData: TelemetryData = intialTelemeteryData;
   
-  //   for (const label in processed) {
-  //     const series = processed[label];
-  //     if (series.length === 0) continue;
+    for (const label in processed) {
+      const series = processed[label];
+      if (series.length === 0) continue;
   
-  //     const baseTime = parseTimeToMillis(series[0].timestamp);
+      const baseTime = parseTimeToMillis(series[0].timestamp);
   
-  //     updatedData[label] = series.map((point, index) => {
-  //       if (index === 0) return point;
+      updatedData[label] = series.map((point, index) => {
+        if (index === 0) return point;
   
-  //       const currentTime = parseTimeToMillis(point.timestamp);
-  //       const diffSeconds = Math.round((currentTime - baseTime) / 1000);
+        const currentTime = parseTimeToMillis(point.timestamp);
+        const diffSeconds = Math.round((currentTime - baseTime) / 1000);
   
-  //       return {
-  //         ...point,
-  //         timestamp: `+${diffSeconds}s`,
-  //       };
-  //     });
-  //   }
+        return {
+          ...point,
+          timestamp: `+${diffSeconds}s`,
+        };
+      });
+    }
   
-  //   setProcessedTelemetryData(updatedData);
-  // }, [telemetryData, allLabels]);
+    setProcessedTelemetryData(updatedData);
+  }, [telemetryData, allLabels]);
   
 
 
@@ -240,6 +269,7 @@ const Dashboard: React.FC = () => {
         //logging telemetry data to export data through excel 
         if (isLogging) {
           const data = JSON.parse(event.data);
+
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
             ...allLabels.slice(0,14).reduce((acc, item, index) => {
@@ -253,6 +283,24 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
+          if(incomingData.length == 0) {
+            confirmAction({
+              title: 'New Alert',
+              text: 'Skipping packet, packet contains bit error.',
+              confirmButtonText: 'Acknowledge',
+              cancelButtonText: 'Do it Later',
+              confirmButtonColor: '#20409A',
+              cancelButtonColor: '#e53e3e',
+              onConfirm: () => {
+                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
+                return
+              },
+              // onCancel: () => {
+              //   helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+              // }
+            });
+            return
+          }
           setSystemStatusLabels((prevData) => ({
             ...prevData,
             SystemMode:incomingData[0]
@@ -307,6 +355,19 @@ const Dashboard: React.FC = () => {
         try {
           const incomingData = JSON.parse(event.data); 
           console.log(incomingData)
+          if(incomingData.length == 0) {
+            confirmAction({
+              title: 'New Alert',
+              text: 'Skipping packet, packet contains bit error.',
+              confirmButtonText: 'Acknowledge',
+              cancelButtonText: 'Do it Later',
+              confirmButtonColor: '#e53e3e',
+              onConfirm: () => {
+                return
+              },
+            });
+            return
+          }
 
           //updating the system status labels data
           setSystemStatusLabels((prevData) => ({
@@ -359,9 +420,9 @@ const Dashboard: React.FC = () => {
 
   // Command Processing
   const CommandsDataHandler = async (event: any) => {
-    setStartSystem(true);
+    setStartSystem(true); // Start the system if not already started
     event.preventDefault()
-    helperFunctions.updateSessionLogs(`User executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
+    helperFunctions.updateSessionLogs(`executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
     const teleCommand = teleCmdsFormData.teleCmd
     const teleCommandValue = teleCmdsFormData.teleCmdValue
     const apid = teleCmdsFormData.teleCmdType == "Real Time" ? 0 : 1;
@@ -387,9 +448,10 @@ const Dashboard: React.FC = () => {
       console.log(teleCmdValues)
       const response = await axios.post("http://127.0.0.1:8000/dashboard/tecommand", {
         telecmd_id: Number(teleCommand.cmdId),
+        telecmd : teleCommand.cmd,
         telecmd_value: teleCmdValues,
         apid: apid,
-        timestamp: apid == 0 ? "0" : selectedDateTime
+        timestamp: apid == 1 ? selectedDateTime : new Date().toISOString(),
       }, {
         headers: {
           "Accept": "application/json",
@@ -399,7 +461,7 @@ const Dashboard: React.FC = () => {
 
       console.log("Hex packet from server:", response.data.hex_packet);
     } catch (error) {
-      console.error("Failed to send telecommand:", error);
+      console.error("FAILED to send telecommand:", error);
     }
   };
 
@@ -608,14 +670,14 @@ const Dashboard: React.FC = () => {
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#e53e3e',
       onConfirm: () => {
-        helperFunctions.updateSessionLogs(`User stopped logging telemetry data`);
+        helperFunctions.updateSessionLogs(`stopped logging telemetry data`);
         setIsLogging(false);
       },
     });
   };
 
   const handleExportData = () => {
-    helperFunctions.updateSessionLogs(`User started exporting telemetry data`);
+    helperFunctions.updateSessionLogs(`started exporting telemetry data`);
     inputModalAction({
       title: 'Export Telemetry Data',
       text: 'Enter a filename for the Excel export:',
@@ -675,7 +737,7 @@ const Dashboard: React.FC = () => {
 
   const alertMessages = [
     'Network connection lost.',
-    'Failed to load data.',
+    'FAILED to load data.',
     'New update available.',
     'alert message with more than one line text',
   ];
@@ -730,7 +792,7 @@ const Dashboard: React.FC = () => {
 
             </div>
           </div>
-          {showAlert && <AlertPopup alerts={alertMessages} onClose={() => setShowAlert(false)} />}
+          {showAlert && <AlertPopup onClose={() => setShowAlert(false)} />}
 
           <div className="commands-main-container">
             {/* comands data container */}
@@ -778,18 +840,19 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-container2">
           <div className="telemetry-main-container" >
             <div className="logs-button-container">
-              <button className="start-logging-button" onClick={() => { setIsLogging(!isLogging); helperFunctions.updateSessionLogs(`User started logging telemetry data`) }} disabled={!startSystem || isLogging} >Start Logging</button>
+              <button className="start-logging-button" onClick={() => { setIsLogging(!isLogging); helperFunctions.updateSessionLogs(`started logging telemetry data`) }} disabled={!startSystem || isLogging} >Start Logging</button>
               <button className="stop-logging-button" onClick={handleLogging} disabled={!isLogging}>Stop Logging</button>
               {exportTelemetryData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
             </div>
             <div className="labels-and-graphs-container">
               <div className="labels-data-container">
-                {Object.entries(telemetryData).map(([label, data], index) => (
+                {Object.entries(processedTelemetryData).map(([label, data], index) => (
                   <div className="labels-data" key={`${label}-${index}`}>
-                    <p className="label-key">{label}  {helperFunctions.getLabelUnits(label) && `(${helperFunctions.getLabelUnits(label)})`} </p>
+                    <p className="label-key">{label} </p>
                     <div>
                       <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
                     </div>
+                    <p className="label-key"> {helperFunctions.getLabelUnits(label) && `${helperFunctions.getLabelUnits(label)}`}</p>
 
                     {/* condtionally rendering icons to handle graphs visibility */}
                     {visibleGraphs[label].visibility ?
@@ -803,7 +866,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(telemetryData).slice(0,33).map(([label, data]) => {
+                {Object.entries(processedTelemetryData).slice(0,33).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
@@ -811,7 +874,7 @@ const Dashboard: React.FC = () => {
 
                   if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
                     groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
-                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);    //merging mutiple label data pooints 
+                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, processedTelemetryData);    //merging mutiple label data pooints 
                     const graphLineToggles: Boolean[] = []     //array which contains labels visiblity of combined graphs
 
                     groupObj.labels.map((obj) => (
@@ -905,21 +968,48 @@ const Dashboard: React.FC = () => {
 
                   <div className="step-circle"
                     style={{
-                      backgroundColor: data.status === 'Pending' ? '#E6E6E6' :
-                        data.status === 'Failed' ? '#F8CECC' :
-                          data.status === 'Success' ? '#D5E8D4' : '#666666'
+                      backgroundColor: data.status === 'PENDING' ? '#E6E6E6' :
+                        data.status === 'FAILED' ? '#F8CECC' :
+                          data.status === 'SUCCESS' ? '#D5E8D4' : '#666666'
                     }}>
                   </div>
                   <div className="step-line"
                     style={{
-                      backgroundColor: data.status === 'Pending' ? '#666666' :
-                        data.status === 'Failed' ? '#B85450' :
-                          data.status === 'Success' ? '#82B366' : '#666666',
-                      display: index === tmtData.length - 1 ? "none" : "block",
+                      backgroundColor: data.status === 'PENDING' ? '#666666' :
+                        data.status === 'FAILED' ? '#B85450' :
+                          data.status === 'SUCCESS' ? '#82B366' : '#666666',
+                      display: index === Object.entries(tmtData).length - 1 ? "none" : "block",
                     }}>
                   </div>
                   <p className="step-text">
-                    {data.telecmd_type_value} : {data.telecmd_value}
+                    {data.apid === 0 ? (
+                      <>
+                        <i className="bi bi-alarm"
+                        style={{
+                          color: data.status === 'PENDING' ? '#666666' :
+                            data.status === 'FAILED' ? '#B85450' :
+                            data.status === 'SUCCESS' ? '#82B366' : '#666666'
+                          }} />&nbsp;
+                        {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
+                      </>
+                    ) : (
+                        <>
+                        <i
+                          className="bi bi-calendar2-check-fill"
+                          style={{
+                          color: data.status === 'PENDING' ? '#666666' :
+                          data.status === 'FAILED' ? '#B85450' :
+                          data.status === 'SUCCESS' ? '#82B366' : '#666666'
+                          }}
+                        />&nbsp;
+                        {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
+                        </>
+                    )}
+                    {data.telecmd_values.length > 0 && data.telecmd_values.map((value: number, idx: number) => (
+                      <span key={idx}>
+                        , {helperFunctions.resolveLabelValue(data.telecmd, value)}
+                      </span>
+                    ))}
                   </p>
                 </div>
               ))}

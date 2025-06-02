@@ -16,27 +16,12 @@ const useCurrentTime = () => {
     const formattedTime = currentTime.toLocaleTimeString("en-GB", {
         timeZone: "UTC",
         hour12: true,
-    });
+    }).replace(/am|pm/, (match) => match.toUpperCase());
 
     const currentUtcTime = convertToUtcFormat(currentTime);
 
-    // Abbreviation to IANA Timezone Map
-    const timezoneMap: { [key: string]: string }  = {
-        UTC: 'Etc/UTC',
-        IST: 'Asia/Kolkata',
-        PST: 'America/Los_Angeles',
-        EST: 'America/New_York',
-        CST: 'America/Chicago',
-        MST: 'America/Denver',
-        GMT: 'Etc/GMT',
-        CET: 'Europe/Paris',
-        EET: 'Europe/Bucharest',
-        JST: 'Asia/Tokyo',
-        AEST: 'Australia/Sydney'
-    };
-
     // Convert abbreviation to full IANA timezone, fallback to UTC
-    const timeZone = timezoneMap[timezone] || 'Etc/UTC';
+    const timeZone = timezone
 
     // Format local date as DD-MM-YYYY
     const localDate = currentTime.toLocaleDateString('en-GB', { timeZone }).replace(/\//g, '-');

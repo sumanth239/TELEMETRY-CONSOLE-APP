@@ -24,6 +24,7 @@ function App() {
             <Route path='signup' element={<SignUp />} />
             <Route path='help' element={<TelecommandInfo />} />
             <Route path='settings' element={<SettingsScreen />} />
+            <Route path='signin' element={<SignIn />} />
           </Route>
         </Routes>
       </Router>

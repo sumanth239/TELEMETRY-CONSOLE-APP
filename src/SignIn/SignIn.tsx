@@ -47,15 +47,17 @@ export default function SignIn() {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const logsData = {
-      userName :formData.name,
+      userName :formData.name.replace(/\b\w/g, char => char.toUpperCase()), // Capitalize the first letter of each word
       singedInTime:new Date(),
       userId : 2,
       product:selectedProduct,
-      Logs : []
+      Logs : [],
+      loginTime : new Date().toISOString(),
+      alerts: [],
     }
 
     localStorage.setItem("sessionStorage",JSON.stringify(logsData));
-    helperFunctions.updateSessionLogs(`${formData.name} sucessfully loged into ${selectedProduct}`)
+    helperFunctions.updateSessionLogs(`sucessfully loged into ${selectedProduct}`)
     navigate("/dashboard");
     console.log(
       "Form submitted:",

@@ -386,7 +386,7 @@ const DataViewer: React.FC = () => {
                     </div>
 
                     <ul className="data-buttons-container" >
-                        <li><input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> {!file && "Select Xlsx or Xls file "}</li>
+                        <li><input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> {!file && "Select .xlsx or .xls file "}</li>
                         <li>
                             {file && Object.keys(telemetryData).length == 0 && <button className="system-log-buttons" onClick={readExcelData}>Import Data</button>}
 

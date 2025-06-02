@@ -13,32 +13,32 @@ const TelecommandInfo: React.FC = () => {
     { 
       label: "System Mode", 
       units: "", 
-      description: "Controls the operational state of the system. Values: 0: Safe, 1: Maintenance, 2: Stand-By, 3: Downlink. In Safe mode, all potentially harmful operations are disabled."
+      description: "Controls the operational state of the system. In Safe mode, all potentially harmful operations are disabled."
     },
     { 
       label: "PAT Mode", 
       units: "", 
-      description: "Pointing, Acquisition and Tracking system status. Values: 0: Standby, 1: Pointing, 2: Acquisition, 3: Tracking. Controls the laser targeting subsystem."
+      description: "Pointing, Acquisition and Tracking system status. Controls the laser targeting subsystem."
     },
     { 
       label: "Azimuth Angle", 
-      units: "dg", 
-      description: "Horizontal angle of the gimbal system. Range: 0-360 degrees. Used for coarse pointing in the initial acquisition phase."
+      units: "deg", 
+      description: "Horizontal angle of the gimbal system. Used for coarse pointing in the initial acquisition phase."
     },
     { 
       label: "Elevation Angle", 
-      units: "dg", 
-      description: "Vertical angle of the gimbal system. Range: -20 to +90 degrees. Limited by mechanical constraints of the mounting system."
+      units: "deg", 
+      description: "Vertical angle of the gimbal system. Limited by mechanical constraints of the mounting system."
     },
     { 
       label: "Motor Current Consumption", 
       units: "A", 
-      description: "Current draw of the gimbal motor system. Normal range: 0.1-3.5A. Values above 4A trigger automatic safety shutdown."
+      description: "Current draw of the gimbal motor system. Values above 4A trigger automatic safety shutdown."
     },
     { 
       label: "ODT Temperature", 
       units: "°C", 
-      description: "Operating temperature of the Optical Data Terminal. Optimal range: 10-40°C. Thermal management activates at temperatures exceeding 45°C."
+      description: "Operating temperature of the Optical Data Terminal. Thermal management activates at temperatures exceeding 45°C."
     },
     { 
       label: "Gimbal Temperature", 
@@ -68,17 +68,17 @@ const TelecommandInfo: React.FC = () => {
     { 
       label: "EDFA Mode", 
       units: "", 
-      description: "Erbium-Doped Fiber Amplifier operational mode. Values: 0: PC (Power Control), 1: GC (Gain Control), 2: CC (Current Control), 3: OFF. Controls laser amplification."
+      description: "Erbium-Doped Fiber Amplifier operational mode. Controls laser amplification."
     },
     { 
       label: "EDFA Power", 
       units: "W", 
-      description: "Output power of the Erbium-Doped Fiber Amplifier. Normal range: 0.5-2.5W depending on link distance and atmospheric conditions."
+      description: "Output power of the Erbium-Doped Fiber Amplifier. Depends on link distance and atmospheric conditions."
     },
     { 
       label: "EDFA Gain", 
       units: "dB", 
-      description: "Gain setting of the optical amplifier. Typical range: 15-30dB. Higher values used for longer distance communication links."
+      description: "Gain setting of the optical amplifier. Higher values used for longer distance communication links."
     },
     { 
       label: "EDFA Current", 
@@ -93,7 +93,7 @@ const TelecommandInfo: React.FC = () => {
     { 
       label: "EDFA Laser Temperature", 
       units: "°C", 
-      description: "Operating temperature of the EDFA pump laser. Critical parameter for maintaining wavelength stability. Optimal range: 20-30°C."
+      description: "Operating temperature of the EDFA pump laser. Critical parameter for maintaining wavelength stability."
     },
     { 
       label: "EDFA Internal Temperature", 
@@ -103,7 +103,7 @@ const TelecommandInfo: React.FC = () => {
     { 
       label: "Beacon Status", 
       units: "", 
-      description: "Status of beacon detection. Values: 'Detected', 'Not Detected'. Essential for initial acquisition and maintaining optical link."
+      description: "Status of beacon detection. Essential for initial acquisition and maintaining optical link."
     },
     { 
       label: "Beacon Exposure", 
@@ -123,7 +123,7 @@ const TelecommandInfo: React.FC = () => {
     { 
       label: "TEC Voltage", 
       units: "V", 
-      description: "Operating voltage of the Thermoelectric Cooler. Typical range: 0-12V depending on required cooling or heating power."
+      description: "Operating voltage of the Thermoelectric Cooler. Depends on required cooling or heating power."
     },
     { 
       label: "TEC Current", 
@@ -173,7 +173,6 @@ const TelecommandInfo: React.FC = () => {
               <section key={index} className="command-section">
                 <h2>{item.label} {item.units && <span className="units">({item.units})</span>}</h2>
                 <p className="description">{item.description}</p>
-                <div className="command-id">Command ID: TC-{index + 100}</div>
               </section>
             ))}
           </div>

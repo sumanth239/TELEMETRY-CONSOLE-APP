@@ -89,10 +89,10 @@ export function updateSessionLogs(action: string) {     //to handle the session 
   if (!Array.isArray(sessionData.Logs)) {
     sessionData.Logs = [];
   }
-
+  const userName = getSessionStorageKey("userName");// Get user name from session storage
   sessionData.Logs.push({
-    TimeStamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-    Action: action
+    TimeStamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }).replace(/am|pm/, (match) => match.toUpperCase()) + " UTC",
+    Action: `${userName} ${action}`,
   });
 
   localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
@@ -100,7 +100,55 @@ export function updateSessionLogs(action: string) {     //to handle the session 
   window.dispatchEvent(new Event("sessionLogsUpdated"));
 }
 
+export function updateAlerts(alert: any,action:any) {     //to handle the session logs
+  const sessionStr: any = localStorage.getItem("sessionStorage");
+  if (!sessionStr) {
+    return
+  };
+
+  const sessionData = JSON.parse(sessionStr);
+
+  if (!Array.isArray(sessionData.alerts)) {
+    sessionData.alerts = [];
+  }
+  
+  sessionData.alerts.push({
+    TimeStamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }).replace(/am|pm/, (match) => match.toUpperCase()) + " UTC",
+    Alert: alert,
+    Action: action,
+  });
+
+  localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
+  // 🔥 Dispatch custom event
+  window.dispatchEvent(new Event("sessionAlertsUpdated"));
+}
+
 export function roundToTwoDecimals(value:Number) {
   return parseFloat(value.toFixed(2));
 }
 
+export function getSessionStorageKey(key: string): string | null {
+  const data = localStorage.getItem("sessionStorage");
+  if (!data) return null;
+
+  try {
+    const parsed = JSON.parse(data);
+    return parsed[key] || null;
+  } catch {
+    return null;
+  }
+}
+
+
+export function formatDateToReadableString(date: Date): string {
+  const utcDate = new Date(date); // Ensure the date is treated as UTC
+  const day = String(utcDate.getUTCDate()).padStart(2, "0");
+  const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-based
+  const year = utcDate.getUTCFullYear();
+  const hours = utcDate.getUTCHours() % 12 || 12; // Convert to 12-hour format
+  const minutes = String(utcDate.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(utcDate.getUTCSeconds()).padStart(2, "0");
+  const amPm = utcDate.getUTCHours() >= 12 ? "PM" : "AM";
+
+  return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds} ${amPm} UTC`;
+}

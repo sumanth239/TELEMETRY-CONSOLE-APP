@@ -1,6 +1,12 @@
 //configuration file that contains and configure of a single sub system eg;astrolink v2 , astro beam etc..
 export const teleCommandType = ["Real Time","Time Tagged"]
 export const teleCommands = [
+  {
+    "cmd"  : "Power On",
+    "cmdId": 5,
+    "inputType": 0,
+    "inputValues" :[]
+  },
     {
       "cmd"  : "Shutdown",
       "cmdId": 6,
@@ -114,7 +120,7 @@ export const teleCommands = [
       ],
     },
     {
-      "cmd"  : "Pat Mode",
+      "cmd"  : "PAT Mode",
       "cmdId": 50,
       "inputType": 1,
       "inputValues": [
@@ -181,8 +187,8 @@ export const graphOptions = ["Remove","Logarithmic Scale","Axis Titles","Gridlin
 export const allLabels = [
   { label: "System Mode", units: "", graphType: "step" },
   { label: "PAT Mode", units: "", graphType: "step" },
-  { label: "Azimuth Angle", units: "dg", graphType: "monotone" },
-  { label: "Elevation Angle", units: "dg", graphType: "monotoneX" },
+  { label: "Azimuth Angle", units: "deg", graphType: "monotone" },
+  { label: "Elevation Angle", units: "deg", graphType: "monotoneX" },
   { label: "Quadcell Channel 1", units: "", graphType: "monotoneX" },
   { label: "Quadcell Channel 2", units: "", graphType: "monotoneX" },
   { label: "Quadcell Channel 3", units: "", graphType: "monotoneX" },
@@ -191,8 +197,8 @@ export const allLabels = [
   { label: "EDFA Gain", units: "dB", graphType: "monotoneX" },
   { label: "EDFA Current", units: "mA", graphType: "monotone" },
   { label: "Beacon Status", units: "", graphType: "monotoneX" },
-  { label: "FSM X angle", units: "dg", graphType: "monotoneX" },
-  { label: "FSM Y angle", units: "dg", graphType: "monotoneX" },
+  { label: "FSM X angle", units: "deg", graphType: "monotoneX" },
+  { label: "FSM Y angle", units: "deg", graphType: "monotoneX" },
   { label: "Gimbal Current Comsumption", units: "A", graphType: "monotoneX" },
   { label: "ODT Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Gimbal Temperature", units: "°C", graphType: "monotoneX" },
@@ -211,7 +217,7 @@ export const allLabels = [
   { label: "SOC 1.35V Rail", units: "V", graphType: "monotoneX" },
   { label: "SOC 1V Rail", units: "V", graphType: "monotoneX" },
   { label: "SOC Temperature", units: "°C", graphType: "monotoneX" },
-  { label: "Total Power Consumption", units: "V", graphType: "monotoneX" },
+  { label: "Total Power", units: "W", graphType: "monotoneX" },
   { label: "Software Version", units: "", graphType: null },
 ];
 
@@ -222,17 +228,17 @@ export const combinedLabelGroups = [
 ];
 
 export const combinedLabelGroupsWithUnits = [
-  { title: "Motor Angles", labels: ["Azimuth Angle(dg)", "Elevation Angle(dg)"] },
+  { title: "Motor Angles", labels: ["Azimuth Angle(deg)", "Elevation Angle(deg)"] },
   { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
   { title : "FSM Angles",labels:["FSM X angle","FSM Y angle"]}
 ];
 
 export const labelValueMappings: Record<string, Record<number | string, string>> = {
   "System Mode": {
-    0: "Safe",
-    1: "Maintenance",
-    2: "Stand-By",
-    3: "Downlink"
+    0: "Safe Mode",
+    1: "Maintenance Mode",
+    2: "Stand-By Mode",
+    3: "Downlink Mode"
   },
   "PAT Mode": {
     0: "Standby",
@@ -240,15 +246,46 @@ export const labelValueMappings: Record<string, Record<number | string, string>>
     2: "Acquisition",
     3: "Tracking"
   },
-  "EDFA Mode": {
-    0: "PC",
-    1: "GC",
-    2: "CC",
-    3: "OFF"
-  },
+  // "EDFA Mode": {
+  //   0: "PC",
+  //   1: "GC",
+  //   2: "CC",
+  //   3: "OFF"
+  // },
   "Beacon Status": {
     0: "Not Detected",
     1: "Detected"
+  },
+  "Data Transfer Toggle":{
+    0: "Disable",
+    1: "Enable"
+  },
+  "Data Speed Configuration": {
+    0: "0.5 Gbps",
+    1: "1 Gbps",
+    2: "2.5 Gbps"
+  },
+  "TEC Toggle": {
+    0: "Disable",
+    1: "Enable"
+  },
+  "Laser Driver Control": {
+    0: "Constant Current Control",
+    1: "Automatic Power Control"
+  },
+  "FSM Driver Toggle": {
+    0: "Disable",
+    1: "Enable"
+  },
+  "Motor Driver Toggle": {
+    0: "Disable",
+    1: "Enable"
+  },
+  "EDFA Mode": {
+    0: "Power Control",
+    1: "Gain Control",
+    2: "Current Control",
+    3: "OFF"
   }
   // Add more mappings as needed
 };

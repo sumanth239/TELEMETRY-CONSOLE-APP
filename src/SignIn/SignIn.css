@@ -186,7 +186,7 @@
   }
   
   .signin-footer a {
-    color: #3b82f6;
+    color: var(--buttons-color);
     text-decoration: none;
   }
   
