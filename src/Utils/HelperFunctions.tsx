@@ -91,7 +91,10 @@ export function updateSessionLogs(action: string) {     //to handle the session 
   }
   const userName = getSessionStorageKey("userName");// Get user name from session storage
   sessionData.Logs.push({
-    TimeStamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }).replace(/am|pm/, (match) => match.toUpperCase()) + " UTC",
+    TimeStamp: new Date().toLocaleString("en-GB", { 
+      timeZone: "UTC", 
+      hour12: true 
+    }).replace(/(\b\d\b)/g, "0$1").replace(/am|pm/, (match) => match.toUpperCase()) + " UTC",
     Action: `${userName} ${action}`,
   });
 
@@ -177,4 +180,19 @@ export function updateAlertsAction(index: number): void {
   localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
   // 🔥 Dispatch custom event
   window.dispatchEvent(new Event("sessionAlertsUpdated"));
+}
+
+export function getActiveAlertsCount(): number {
+  const sessionStr: any = localStorage.getItem("sessionStorage");
+  if (!sessionStr) {
+    return 0;
+  }
+
+  const sessionData = JSON.parse(sessionStr);
+
+  if (!Array.isArray(sessionData.alerts)) {
+    return 0;
+  }
+
+  return sessionData.alerts.filter((alert: any) => !alert.Action).length;
 }

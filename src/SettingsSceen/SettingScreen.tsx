@@ -17,7 +17,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const [timezone, setTimezone] = useState<string>('UTC');
-    const [frequency, setFrequency] = useState<number>(1);
+    const [frequency, setFrequency] = useState<number>(10);
 
     return (
         <SettingsContext.Provider value={{ timezone, setTimezone, frequency, setFrequency }}>

@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
 
     allLabels.forEach((item) => {
       initialState[item.label] = {
-        visibility: true,
+        visibility: false,
         graphOptions: {
           "Logarithmic Scale": false,
           "Axis Titles": false,
@@ -154,47 +154,47 @@ const Dashboard: React.FC = () => {
   console.log("time", selectedDateTime)
   // use Effects
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const loginedTime = helperFunctions.getSessionStorageKey("loginTime") || new Date().toISOString();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const loginedTime = helperFunctions.getSessionStorageKey("loginTime") || new Date().toISOString();
 
-  //     axios
-  //       .get('http://localhost:8000/dashboard/telecommands', { params: { from_time: loginedTime } })
-  //       .then(res => {
-  //         console.log('Fetched telecommands:', res.data);
-  //         setTmtData(res.data.telecommands || []);  //setting the telecmds data to state
-  //       })
-  //       .catch(err => {
-  //         console.error('Error fetching telecommands:', err);
-  //       });
-  //   }, 2000);
+      axios
+        .get('http://localhost:8000/dashboard/telecommands', { params: { from_time: loginedTime } })
+        .then(res => {
+          console.log('Fetched telecommands:', res.data);
+          setTmtData(res.data.telecommands || []);  //setting the telecmds data to state
+        })
+        .catch(err => {
+          console.error('Error fetching telecommands:', err);
+        });
+    }, 2000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
-  // useEffect(() => {   // to update session logs
-  //   const handleSessionLogsUpdated = () => {
-  //     const sessionStr = localStorage.getItem("sessionStorage");
-  //     if (!sessionStr) return;
+  useEffect(() => {   // to update session logs
+    const handleSessionLogsUpdated = () => {
+      const sessionStr = localStorage.getItem("sessionStorage");
+      if (!sessionStr) return;
 
-  //     try {
-  //       const sessionData = JSON.parse(sessionStr);
-  //       if (Array.isArray(sessionData.Logs)) {
-  //         setSessionLogsData(sessionData.Logs.reverse());
-  //       }
-  //     } catch (err) {
-  //       console.error("FAILED to parse session logs:", err);
-  //     }
-  //   };
+      try {
+        const sessionData = JSON.parse(sessionStr);
+        if (Array.isArray(sessionData.Logs)) {
+          setSessionLogsData(sessionData.Logs.reverse());
+        }
+      } catch (err) {
+        console.error("FAILED to parse session logs:", err);
+      }
+    };
 
-  //   // 👂 Listen for custom event
-  //   window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+    // 👂 Listen for custom event
+    window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
 
-  //   // Cleanup
-  //   return () => {
-  //     window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
-  //   };
-  // }, []);
+    // Cleanup
+    return () => {
+      window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+    };
+  }, []);
 
   // useEffect(() => {
   //   const graphElements = document.querySelectorAll('.graph');
@@ -470,6 +470,19 @@ const Dashboard: React.FC = () => {
 
   // Graph Management
   const toggleGraph = (label: string) => {
+    const visibleGraphCount = Object.values(visibleGraphs).filter(graph => graph.visibility).length;
+
+    if (!visibleGraphs[label].visibility && visibleGraphCount >= 6) {
+      Swal.fire({
+        title: 'Limit Reached',
+        text: 'You can only view up to 6 graphs at a time.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#20409A',
+      });
+      return;
+    }
+
     setVisibleGraphs((prev) => ({
       ...prev,
       [label]: {
@@ -550,16 +563,6 @@ const Dashboard: React.FC = () => {
   };
 
   // Utility Functions
-  function getTimeDifferenceInSeconds(startTime: Date, endTime: any) {
-    const start = new Date(startTime.getTime() - (5.5 * 60 * 60 * 1000))
-    const end = new Date(endTime);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error("Invalid date format. Use 'DD-MM-YYYY HH:mm:ss' for startTime and a valid UTC format for endTime.");
-    }
-
-    return Math.abs((end.getTime() - start.getTime()) / 1000);
-  }
 
   const systemModeIcon = (mode: string) => {
     if (mode == "Safe Mode") return <i className="bi bi-pause-circle"></i>
@@ -737,19 +740,11 @@ const Dashboard: React.FC = () => {
   }
 
 
-  const alertMessages = [
-    'Network connection lost.',
-    'FAILED to load data.',
-    'New update available.',
-    'alert message with more than one line text',
-  ];
-
-
   function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {     //to merge the data points of combined graphs ,to single object
     const mergedMap: { [timestamp: string]: any } = {};
 
     labels.forEach(label => {
-      telemetryData[label]?.forEach((point: any) => {
+    telemetryData[label]?.forEach((point: any) => {
         const { timestamp, value } = point;
         if (!mergedMap[timestamp]) {
           mergedMap[timestamp] = { timestamp };
@@ -759,7 +754,7 @@ const Dashboard: React.FC = () => {
     });
 
     // Convert map to sorted array
-    const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
+    const mergedArray = Object.values(mergedMap);
     return mergedArray;
   }
 
@@ -790,7 +785,13 @@ const Dashboard: React.FC = () => {
 
             <div className="status-item">
               <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ color: "#FF6666" }} ></i></span>
-              <span className="text">Alerts &nbsp; &nbsp;&nbsp;<i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i></span>
+                <span 
+                className="text" 
+                style={{ color: helperFunctions.getActiveAlertsCount() > 0 ? "#B85450" : "rgba(142, 238, 171, 0.795)" }}
+                >
+                Alerts : {helperFunctions.getActiveAlertsCount()} &nbsp; &nbsp;&nbsp;
+                <i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i>
+                </span>
 
             </div>
           </div>
@@ -868,7 +869,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(processedTelemetryData).slice(0,33).map(([label, data]) => {
+                {Object.entries(processedTelemetryData).slice(0,24).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
@@ -986,31 +987,17 @@ const Dashboard: React.FC = () => {
                   <p className="step-text">
                     {data.apid === 0 ? (
                       <>
-                        <i className="bi bi-alarm"
-                        style={{
-                          color: data.status === 'PENDING' ? '#666666' :
-                            data.status === 'FAILED' ? '#B85450' :
-                            data.status === 'SUCCESS' ? '#82B366' : '#666666'
-                          }} />&nbsp;
+                        <i className="bi bi-alarm" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666'}} />&nbsp;
                         {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
                       </>
                     ) : (
                         <>
-                        <i
-                          className="bi bi-calendar2-check-fill"
-                          style={{
-                          color: data.status === 'PENDING' ? '#666666' :
-                          data.status === 'FAILED' ? '#B85450' :
-                          data.status === 'SUCCESS' ? '#82B366' : '#666666'
-                          }}
-                        />&nbsp;
+                        <i className="bi bi-calendar2-check-fill" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666'}}/>&nbsp;
                         {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
                         </>
                     )}
                     {data.telecmd_values.length > 0 && data.telecmd_values.map((value: number, idx: number) => (
-                      <span key={idx}>
-                        , {helperFunctions.resolveLabelValue(data.telecmd, value)}
-                      </span>
+                      <span key={idx}>, {helperFunctions.resolveLabelValue(data.telecmd, value)} </span>
                     ))}
                   </p>
                 </div>
