@@ -21,17 +21,18 @@
 
 .alerts-container {
   border-top: 2px solid grey;
-  /* padding: 0px 35px ; */
+  height: 75%;
+  overflow-y: scroll;
 }
 .alerts {
   display: grid;
-  grid-template-columns: 70% 15% 15%;
+  grid-template-columns: 62% 25% 10%;
   height: 50px;
   align-items: center;
   font-size: 18px;
   gap: 10px;
   border-bottom: 1px solid var(  --greay-background);
-  padding: 5px 35px;
+  padding: 5px 20px;
 }
 .alert-item {
   display: flex;
@@ -40,43 +41,28 @@
   gap: 15px;
 }
 .alerts-header-container {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 87% 10%;
   align-items: center;
   font-size: var(--font-size-heading);
   color: var(--buttons-color);
   font-weight: bold;
-  padding: 0 22px;
+  padding: 0 20px;
+  gap: 20px;
 }
 .alerts-header-container i:hover {
   cursor: pointer;
 }
-
-.close-button {
-  position: absolute; /* Position the button absolutely within the container */
-  bottom: 30px; /* Align it to the bottom */
-  right: 23px; /* Align it to the rightmost end */
-  padding: 7px 25px;
- 
-} 
-  
-
-.acknowledge-button {
-  /* background-color: white;
-  border: 1px solid grey;
-  color: black;
+.alert-timestamp{
   font-size: var(--font-size-body);
-  font-weight: bold; */
 }
-.acknowledge-all-button {
-  /* background-color: rgb(19, 17, 17); */
-  width: 90px;
+.no-alerts {
+  margin: 25% auto;
+  color: var(--buttons-color);
+  font-size: var(--font-size-heading);
+  text-align: center;
 }
-/* .acknowledge-and-close-container {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-} */
+
 
 @media screen and (min-width: 780px) and (max-width: 1800px) {  
   .alerts{

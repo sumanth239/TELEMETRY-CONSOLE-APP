@@ -3,6 +3,7 @@ import "./SettingScreen.css";
 import Swal from 'sweetalert2';
 import Select from 'react-select';
 import moment from 'moment-timezone';
+import * as helperFunctions from '../Utils/HelperFunctions';
 
 // Context Definition
 interface SettingsContextType {
@@ -69,6 +70,10 @@ const SettingsScreen = () => {
             timer: 1500,
             showConfirmButton: false,
         });
+
+        helperFunctions.updateSessionLogs(
+            `updated settings : Timezone - ${localTimezone.value}, Frequency - ${localFrequency*100}ms`
+        );
     };
 
     return (

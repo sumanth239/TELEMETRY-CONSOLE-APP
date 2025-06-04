@@ -152,3 +152,29 @@ export function formatDateToReadableString(date: Date): string {
 
   return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds} ${amPm} UTC`;
 }
+
+export function updateAlertsAction(index: number): void {
+  const sessionStr: any = localStorage.getItem("sessionStorage");
+  if (!sessionStr) {
+    return;
+  }
+
+  const sessionData = JSON.parse(sessionStr);
+
+  if (!Array.isArray(sessionData.alerts)) {
+    sessionData.alerts = [];
+  }
+
+  if (index === -1) {
+    sessionData.alerts.forEach((alert: any) => {
+      alert.Action = true;
+    });
+  } else if (index >= 0 && index < sessionData.alerts.length) {
+    console.log("Updating alert at index:", index);
+    sessionData.alerts[index].Action = true;
+  }
+
+  localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
+  // 🔥 Dispatch custom event
+  window.dispatchEvent(new Event("sessionAlertsUpdated"));
+}

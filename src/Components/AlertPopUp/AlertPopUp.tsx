@@ -13,7 +13,7 @@ interface AlertPopupProps {
 
 
 const AlertPopup: React.FC<AlertPopupProps> = ({ onClose }) => {
-  const [alertsData, setAlertsData] = useState<{ Timestamp: any;  Alert: string; Acknowledged: boolean }[]>(() => { //state to log the data 
+  const [alertsData, setAlertsData] = useState<{ TimeStamp: any;  Alert: string; Action: boolean }[]>(() => { //state to log the data 
     const sessionStr = localStorage.getItem("sessionStorage");
     if (!sessionStr) return [];
 
@@ -21,7 +21,7 @@ const AlertPopup: React.FC<AlertPopupProps> = ({ onClose }) => {
       const sessionData = JSON.parse(sessionStr);
       if (Array.isArray(sessionData.alerts)) {
         console.log("sessionData.alerts", sessionData.alerts);
-        return sessionData.alerts;
+        return sessionData.alerts.reverse();
       }
     } catch (err) {
       console.error("FAILED to parse session logs:", err);
@@ -55,30 +55,59 @@ const AlertPopup: React.FC<AlertPopupProps> = ({ onClose }) => {
   }, []);
 
   return (
-    <div className='alert-overlay-container'>
+    <div 
+      className='alert-overlay-container' 
+      onClick={(e) => {
+      // Ensure the click is on the overlay and not on the alerts container
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+      }}
+    >
       <div className='alerts-main-container'>
-        <div className='alerts-header-container'>
-          <p>ACTIVE ALERTS  </p>
-          <div className='acknowledge-and-close-container'>
-            <button className='acknowledge-all-button'>ACK ALL</button>
-          </div>
-        </div>
-
-        <div className='alerts-container'>
-          {alertsData.map((item, index) => (
-            <div className='alerts' key={index}>
-              <div className="alert-item">
-                <i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i>
-                <span>{item?.Alert}</span>
-              </div>
-              <span className='alert-timestamp'>{item.Timestamp }</span>
-              <button className='acknowledge-button'>ACK</button>
-            </div>
-          ))}
-        </div>
-        <button className='close-button' onClick={onClose}>Close</button>
+      <div className='alerts-header-container'>
+        <p>ACTIVE ALERTS  </p>
+       
+        {alertsData.filter((item) => !item.Action).length !== 0 && (
+        <button 
+          className='acknowledge-all-button' 
+          onClick={() => {
+          helperFunctions.updateAlertsAction(-1);
+          helperFunctions.updateSessionLogs(`acknowledged the all active alerts`);
+          }}
+        >
+          ACK ALL
+        </button>)}
       </div>
 
+      <div className='alerts-container'>
+        {alertsData.filter((item) => !item.Action).length === 0 ? (
+        <div className="no-alerts">There are no active alerts</div>
+        ) : (
+        alertsData.map((item, index) =>
+          item.Action ? null : (
+          <div className='alerts' key={index}>
+            <div className="alert-item">
+            <i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "25px", color: "#FF6666" }} ></i>
+            <span>{item?.Alert} </span>
+            </div>
+            <span className='alert-timestamp'>{item?.TimeStamp}</span>
+            <button 
+            className='acknowledge-button' 
+            onClick={() => {
+              helperFunctions.updateAlertsAction(index);
+              helperFunctions.updateSessionLogs(`acknowledged the alert: ${item.Alert}`);
+            }}
+            >
+            ACK
+            </button>
+          </div>
+          )
+        )
+        )}
+      </div>
+
+      </div>
     </div>
   );
 };

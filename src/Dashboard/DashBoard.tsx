@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
     try {
       const sessionData = JSON.parse(sessionStr);
       if (Array.isArray(sessionData.Logs)) {
-        return sessionData.Logs;
+        return sessionData.Logs.reverse(); ;
       }
     } catch (err) {
       console.error("FAILED to parse session logs:", err);
@@ -154,74 +154,74 @@ const Dashboard: React.FC = () => {
   console.log("time", selectedDateTime)
   // use Effects
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const loginedTime = helperFunctions.getSessionStorageKey("loginTime") || new Date().toISOString();
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const loginedTime = helperFunctions.getSessionStorageKey("loginTime") || new Date().toISOString();
 
-      axios
-        .get('http://localhost:8000/dashboard/telecommands', { params: { from_time: loginedTime } })
-        .then(res => {
-          console.log('Fetched telecommands:', res.data);
-          setTmtData(res.data.telecommands || []);  //setting the telecmds data to state
-        })
-        .catch(err => {
-          console.error('Error fetching telecommands:', err);
-        });
-    }, 2000);
+  //     axios
+  //       .get('http://localhost:8000/dashboard/telecommands', { params: { from_time: loginedTime } })
+  //       .then(res => {
+  //         console.log('Fetched telecommands:', res.data);
+  //         setTmtData(res.data.telecommands || []);  //setting the telecmds data to state
+  //       })
+  //       .catch(err => {
+  //         console.error('Error fetching telecommands:', err);
+  //       });
+  //   }, 2000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
-  useEffect(() => {   // to update session logs
-    const handleSessionLogsUpdated = () => {
-      const sessionStr = localStorage.getItem("sessionStorage");
-      if (!sessionStr) return;
+  // useEffect(() => {   // to update session logs
+  //   const handleSessionLogsUpdated = () => {
+  //     const sessionStr = localStorage.getItem("sessionStorage");
+  //     if (!sessionStr) return;
 
-      try {
-        const sessionData = JSON.parse(sessionStr);
-        if (Array.isArray(sessionData.Logs)) {
-          setSessionLogsData(sessionData.Logs);
-        }
-      } catch (err) {
-        console.error("FAILED to parse session logs:", err);
-      }
-    };
+  //     try {
+  //       const sessionData = JSON.parse(sessionStr);
+  //       if (Array.isArray(sessionData.Logs)) {
+  //         setSessionLogsData(sessionData.Logs.reverse());
+  //       }
+  //     } catch (err) {
+  //       console.error("FAILED to parse session logs:", err);
+  //     }
+  //   };
 
-    // 👂 Listen for custom event
-    window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+  //   // 👂 Listen for custom event
+  //   window.addEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
 
-    // Cleanup
-    return () => {
-      window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
-    };
-  }, []);
+  //   // Cleanup
+  //   return () => {
+  //     window.removeEventListener("sessionLogsUpdated", handleSessionLogsUpdated);
+  //   };
+  // }, []);
 
-  useEffect(() => {
-    const graphElements = document.querySelectorAll('.graph');
+  // useEffect(() => {
+  //   const graphElements = document.querySelectorAll('.graph');
 
-    const wheelHandler = (e: any) => {
-      e.preventDefault();
-      const label = e.currentTarget.getAttribute('data-label');
-      if (label) {
-        const delta = e.deltaY < 0 ? 1 : -1;
-        setZoomLevels((prev) => {
-          const current = prev[label] || DEFAULT_ZOOM;
-          const next = Math.max(1, current + delta);
-          return { ...prev, [label]: next };
-        });
-      }
-    };
+  //   const wheelHandler = (e: any) => {
+  //     e.preventDefault();
+  //     const label = e.currentTarget.getAttribute('data-label');
+  //     if (label) {
+  //       const delta = e.deltaY < 0 ? 1 : -1;
+  //       setZoomLevels((prev) => {
+  //         const current = prev[label] || DEFAULT_ZOOM;
+  //         const next = Math.max(1, current + delta);
+  //         return { ...prev, [label]: next };
+  //       });
+  //     }
+  //   };
 
-    graphElements.forEach(el => {
-      el.addEventListener('wheel', wheelHandler, { passive: false });
-    });
+  //   graphElements.forEach(el => {
+  //     el.addEventListener('wheel', wheelHandler, { passive: false });
+  //   });
 
-    return () => {
-      graphElements.forEach(el => {
-        el.removeEventListener('wheel', wheelHandler);
-      });
-    };
-  }, [visibleGraphs]); // Re-add listeners when visible graphs change
+  //   return () => {
+  //     graphElements.forEach(el => {
+  //       el.removeEventListener('wheel', wheelHandler);
+  //     });
+  //   };
+  // }, [visibleGraphs]); // Re-add listeners when visible graphs change
 
   useEffect(() => {
     const processed: TelemetryData = Object.fromEntries(
@@ -295,10 +295,9 @@ const Dashboard: React.FC = () => {
                 helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
                 return
               },
-              // onCancel: () => {
-              //   helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
-              // }
             });
+            helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+            helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
             return
           }
           setSystemStatusLabels((prevData) => ({
@@ -327,9 +326,9 @@ const Dashboard: React.FC = () => {
         ws.onclose = () => console.log("WebSocket Disconnected");
 
          const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
-      }, 1000);     // Update every second
+      });     // Update every second
 
-      return () => { ws.close(); clearInterval(interval) }
+      return () => { ws.close() }
       }
     }
     console.log(telemetryData)
@@ -361,11 +360,15 @@ const Dashboard: React.FC = () => {
               text: 'Skipping packet, packet contains bit error.',
               confirmButtonText: 'Acknowledge',
               cancelButtonText: 'Do it Later',
-              confirmButtonColor: '#e53e3e',
+              confirmButtonColor: '#20409A',
+              cancelButtonColor: '#e53e3e',
               onConfirm: () => {
+                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
                 return
               },
             });
+            helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+            helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
             return
           }
 
@@ -403,10 +406,9 @@ const Dashboard: React.FC = () => {
       ws.onerror = (error) => console.error("WebSocket Error:", error);
       ws.onclose = () => console.log("WebSocket Disconnected");
 
-      const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
-      }, 1000);     // Update every second
+         // Update every second
 
-      return () => { ws.close(); clearInterval(interval) };   //close websocket connection and clear interval for every second
+      return () => { ws.close() };   //close websocket connection and clear interval for every second
 
     }
 
@@ -783,7 +785,7 @@ const Dashboard: React.FC = () => {
 
             <div className="status-item">
               <span className="icon"><img src={powerIcon} alt="Power" id="power-icon" /></span>
-              <span className="text">{systemStatusLabels.TotalPowerConsumption} W Consumption</span>
+              <span className="text">{systemStatusLabels.TotalPowerConsumption} W</span>
             </div>
 
             <div className="status-item">
@@ -902,7 +904,7 @@ const Dashboard: React.FC = () => {
                                   </li>
                                 ))}
                               </ul>
-                            </div>
+                  </div>
                           )}
                         </div>
                         <LineChartComponent
@@ -939,7 +941,7 @@ const Dashboard: React.FC = () => {
                                 </li>
                               ))}
                             </ul>
-                          </div>
+              </div>
                         )}
                       </div>
                       <LineChartComponent
