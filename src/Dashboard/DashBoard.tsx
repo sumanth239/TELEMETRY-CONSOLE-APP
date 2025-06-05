@@ -260,7 +260,7 @@ const Dashboard: React.FC = () => {
 
   //websockets
   useEffect(() => {
-
+    if(!startSystem) return; // Exit if the system is not started
     if (startSystem) {
       console.log("connected")
       const ws = new WebSocket("ws://127.0.0.1:8000/ws/SciTM");
@@ -337,18 +337,18 @@ const Dashboard: React.FC = () => {
       ws.onmessage = (event) => {   //on websocket connection
 
         //logging telemetry data to export data through excel 
-        if (isLogging) {
-          const data = JSON.parse(event.data);
-          const newData = {
-            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-            ...allLabels.slice(14).reduce((acc, item, index) => {
-              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
-              return acc;
-            }, {} as { [key: string]: any })
-          };
+        // if (isLogging) {
+        //   const data = JSON.parse(event.data);
+        //   const newData = {
+        //     Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
+        //     ...allLabels.slice(14).reduce((acc, item, index) => {
+        //       acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
+        //       return acc;
+        //     }, {} as { [key: string]: any })
+        //   };
 
-          setExportTelemetryData((prevState) => [...prevState, newData]);
-        }
+        //   setExportTelemetryData((prevState) => [...prevState, newData]);
+        // }
 
 
         try {
@@ -422,13 +422,21 @@ const Dashboard: React.FC = () => {
 
   // Command Processing
   const CommandsDataHandler = async (event: any) => {
-    setStartSystem(true); // Start the system if not already started
+    
     event.preventDefault()
     helperFunctions.updateSessionLogs(`executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
     const teleCommand = teleCmdsFormData.teleCmd
     const teleCommandValue = teleCmdsFormData.teleCmdValue
     const apid = teleCmdsFormData.teleCmdType == "Real Time" ? 0 : 1;
     const cmd = teleCmdsFormData.teleCmd
+
+    if(cmd.cmdId == 5){
+      setStartSystem(true); // Start the system if not already started
+    }
+
+    if(cmd.cmdId == 6){
+      setStartSystem(false); // Start the system if not already started
+    }
 
     if (cmd.cmdId == 0 || cmd.cmd == "") {
       Swal.fire("Please select any of the teleCommand");
@@ -440,7 +448,7 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    if (cmd.cmdId != 6 && cmd.cmdId != 32 && teleCommandValue.length == 0) {
+    if (cmd.cmdId != 6 && cmd.cmdId != 32 && cmd.cmdId != 5 && teleCommandValue.length == 0) {
       Swal.fire("Please Enter valid data")
       return;
     }

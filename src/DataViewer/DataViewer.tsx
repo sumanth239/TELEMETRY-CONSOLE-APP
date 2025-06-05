@@ -7,7 +7,6 @@ import "./DataViewer.css";
 
 //components imports
 import LineChartComponent from "../Components/Charts/LineChart";
-import CalendarComponent from "../Components/Calender";
 
 //library imports
 import * as XLSX from "xlsx";
@@ -17,6 +16,7 @@ import { LineChart, ResponsiveContainer, Brush } from "recharts";
 //utilities imports
 import * as types from '../Utils/types';
 import { graphOptions, allLabels, combinedLabelGroupsWithUnits ,combinedLabelGroups} from "../Utils/Constant";
+import axios from "axios";
 
 
 //Intials states of useState
@@ -84,7 +84,11 @@ const DataViewer: React.FC = () => {
 
         return initialState;
     });      
-    const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);    //to handle the calender selected date
+    //to handle the calendar selected start and end dates
+    const [selectedDateRange, setSelectedDateRange] = useState<{ startDate: Date | null; endDate: Date | null }>({
+        startDate: null,
+        endDate: null,
+    });
     const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
     const [timeSliderData, setTimeSliderData] = useState<any>([])
     const [startIndex, setStartIndex] = useState(0);
@@ -238,11 +242,90 @@ const DataViewer: React.FC = () => {
         }
     };
 
-    const handleDateChange = (date: Date | null) => {       //to handle date change in child component
-        setSelectedDateTime(date);
-        
+    const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => { // to handle date change
+        const { value, name } = event.target;
+        console.log(`Selected ${name}:`, value);
+        setSelectedDateRange((prev) => {
+            const updatedRange = {
+                ...prev,
+                [name]: value ? new Date(value) : null,
+            };
+            
+            return updatedRange;
+        });
+        setFile(undefined); // Reset file when date range is changed
     };
 
+    const fetchTelemetryData = async () => {
+        if (!selectedDateRange.startDate || !selectedDateRange.endDate) {
+            console.warn("Start date or end date is missing.");
+            return;
+        }
+
+        try {
+            const response = await axios.get(`http://localhost:8000/dataviewer/telemetry`, {
+                params: {
+                    start_date: selectedDateRange.startDate.toISOString(),
+                    end_date: selectedDateRange.endDate.toISOString(),
+                },
+            });
+
+            const { telemetry_data } = response.data;
+            console.log("Fetched Telemetry Data:", telemetry_data);
+            const updatedTelemetryData: { [key: string]: { value: number, timestamp: string }[] } = {};
+            const timestampMap: { [key: string]: number } = {};
+
+            Object.values(telemetry_data).forEach((dataArray: any) => {
+                dataArray.forEach((entry: any) => {
+                    if (!timestampMap[entry.time]) {
+                        timestampMap[entry.time] = 1;
+                    } else {
+                        timestampMap[entry.time]++;
+                    }
+                });
+            });
+
+            const timeSliderDataArray = Object.entries(timestampMap).map(([timestamp, value]) => ({
+                timestamp,
+                value,
+            }));
+
+            setTimeSliderData(timeSliderDataArray);
+            // Process SCITM data
+            telemetry_data.SCITM.forEach((entry: any) => {
+                const timestamp = entry.time;
+                entry.telemetry_data.slice(0, 14).forEach((value: number, index: number) => {
+                    const label = allLabels[index] ? `${allLabels[index].label}${allLabels[index].units ? `(${allLabels[index].units})` : ''}` : null;
+                    if (label) {
+                        if (!updatedTelemetryData[label]) {
+                            updatedTelemetryData[label] = [];
+                        }
+                        updatedTelemetryData[label].push({ value, timestamp });
+                    }
+                });
+            });
+
+            // Process HKTM data
+            telemetry_data.HKTM.forEach((entry: any) => {
+                const timestamp = entry.time;
+                entry.telemetry_data.forEach((value: number, index: number) => {
+                    const label =  allLabels[index+14] ? `${allLabels[index+14].label}${allLabels[index+14].units ? `(${allLabels[index+14].units})` : ''}` : null;
+                    if (label) {
+                        if (!updatedTelemetryData[label]) {
+                            updatedTelemetryData[label] = [];
+                        }
+                        updatedTelemetryData[label].push({ value, timestamp });
+                    }
+                });
+            });
+
+            setTelemetryData(updatedTelemetryData);
+            setFile(undefined) // Reset date range after fetching data
+            console.log("Updated Telemetry Data:", updatedTelemetryData);
+        } catch (error) {
+            console.error("Error fetching telemetry data:", error);
+        }
+    };
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTelemetryData({});
         const selectedFile = event.target.files?.[0];
@@ -255,6 +338,7 @@ const DataViewer: React.FC = () => {
         }
 
         setFile(selectedFile);
+        setSelectedDateRange({ startDate: null, endDate: null }); // Reset date range when a new file is uploaded
     };
 
     const parseCustomTimestamp = (timestampStr: string): number | null => {
@@ -272,6 +356,7 @@ const DataViewer: React.FC = () => {
     };
 
     const readExcelData = () => {
+        setSelectedDateRange({ startDate: null, endDate: null }); // Reset date range when a new file is uploaded
         if (!file) {
             console.warn("No file selected.");
             return;
@@ -328,7 +413,8 @@ const DataViewer: React.FC = () => {
             
             setTimeSliderData(Object.entries(transformedData)[0][1]);       //data for the time slider 
             setTelemetryData(transformedData);
-
+            
+            console.log("Transformed Telemetry Data:", transformedData);
 
 
 
@@ -339,8 +425,9 @@ const DataViewer: React.FC = () => {
             setSessionLogsData(logsJsonData);
 
         };
-
+        
         reader.readAsArrayBuffer(file);
+        setFile(undefined); // Reset file after reading
     };
 
     return (
@@ -381,18 +468,18 @@ const DataViewer: React.FC = () => {
                         )}
                     </div>
                     <div className="time-range-container">
-                        <span>Select Start Date : <CalendarComponent onDateChange={handleDateChange} /></span>
-                        <span>Select End Date : <CalendarComponent onDateChange={handleDateChange} /></span>
+                        <span>Select Start Date : <input type="datetime-local"  value={selectedDateRange.startDate ? selectedDateRange.startDate.toISOString().slice(0, -1) : ''} name="startDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select End Date : <input type="datetime-local"  value={selectedDateRange.endDate ? selectedDateRange.endDate.toISOString().slice(0, -1) : ''} name="endDate" onChange={handleDateChange} step="1"></input></span>
                     </div>
 
                     <ul className="data-buttons-container" >
                         <li><input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleFileUpload} /> {!file && "Select .xlsx or .xls file "}</li>
                         <li>
-                            {file && Object.keys(telemetryData).length == 0 && <button className="system-log-buttons" onClick={readExcelData}>Import Data</button>}
+                            {file && !selectedDateRange.startDate && !selectedDateRange.endDate && <button className="system-log-buttons" onClick={readExcelData}>Import Data </button>}
 
                         </li>
                         <li>
-                            <button className="system-log-buttons">Export Data</button>
+                            {selectedDateRange.startDate && selectedDateRange.endDate && <button className="system-log-buttons" onClick={fetchTelemetryData}>Import Data</button>}
                         </li>
 
                     </ul>

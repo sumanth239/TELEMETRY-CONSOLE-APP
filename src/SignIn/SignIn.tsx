@@ -164,10 +164,10 @@ export default function SignIn() {
                   <option value="" disabled>
                     Select a product
                   </option>
-                  <option value="AstroLink 10G ODT">AstroLink 10G ODT</option>
+                  <option value="miniOCT">miniOCT</option>
                   <option value="AstroLink Nano">AstroLink Nano</option>
                   <option value="AstroBeam">AstroBeam</option>
-                  <option value="P2PLink-10G">P2PLink-10G</option>
+                  {/* <option value="P2PLink-10G">P2PLink-10G</option> */}
                 </select>
               </div>
 
