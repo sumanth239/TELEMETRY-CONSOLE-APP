@@ -1,42 +1,43 @@
-//default imports
-import  { useState, ChangeEvent, FormEvent } from "react";
+//Default imports
+import { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
-//style sheet imports
+//Style sheet imports
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./SignIn.css";
 
-//library imports
+//Library imports
 import indexline from "../assets/index_line.jpeg";
 import astrologo from "../assets/astrogate_labs_logo.png";
 
-//utilities imports
+//Utilities imports
 import * as helperFunctions from "../Utils/HelperFunctions";
 import * as types from "../Utils/types";
-
-
+import * as CONSTANTS from "../Utils/Constants";
 
 type FieldName = keyof types.FormData | null;
 
 export default function SignIn() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Using useNavigate hook from react-router-dom for navigation
+  //states
   const [formData, setFormData] = useState<types.FormData>({
     name: "",
     email: "",
     password: "",
   });
 
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [focusedField, setFocusedField] = useState<FieldName>(null);
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false); // State to toggle password visibility
+  const [focusedField, setFocusedField] = useState<FieldName>(null); // State to track which field is focused
+  const [selectedProduct, setSelectedProduct] = useState<string>(""); // State to track selected product from dropdown
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //Handler functions
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {          // to handle input changes
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProductChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleProductChange = (e: ChangeEvent<HTMLSelectElement>) => {      // to handle product selection from dropdown
     setSelectedProduct(e.target.value);
   };
 
@@ -44,27 +45,22 @@ export default function SignIn() {
     setShowPassword((prev) => !prev);
   };
 
+  // Function to handle form submission
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const logsData = {
-      userName :formData.name.replace(/\b\w/g, char => char.toUpperCase()), // Capitalize the first letter of each word
-      singedInTime:new Date(),
-      userId : 2,
-      product:selectedProduct,
-      Logs : [],
-      loginTime : new Date().toISOString(),
+      userName: formData.name.replace(/\b\w/g, (char) => char.toUpperCase()),       // Capitalize the first letter of each word
+      singedInTime: new Date(),
+      userId: 2,
+      product: selectedProduct,
+      Logs: [],
+      loginTime: new Date().toISOString(),
       alerts: [],
-    }
+    };
 
-    localStorage.setItem("sessionStorage",JSON.stringify(logsData));
-    helperFunctions.updateSessionLogs(`sucessfully loged into ${selectedProduct}`)
+    localStorage.setItem("sessionStorage", JSON.stringify(logsData));                   // Store session data in localStorage
+    helperFunctions.updateSessionLogs(`sucessfully loged into ${selectedProduct}`);     // Update session logs
     navigate("/dashboard");
-    console.log(
-      "Form submitted:",
-      formData,
-      "Selected Product:",
-      selectedProduct
-    );
   };
 
   const handleFocus = (field: FieldName) => {
@@ -91,11 +87,10 @@ export default function SignIn() {
             </div>
 
             <form onSubmit={handleSubmit}>
+              {/* Email Input */}
               <div className="form-group">
                 {shouldShowLegend("name") && (
-                  <label htmlFor="name" className="floating-label">
-                    User Name
-                  </label>
+                  <label htmlFor="name" className="floating-label">User Name </label>
                 )}
                 <input
                   className="input-field"
@@ -110,7 +105,8 @@ export default function SignIn() {
                   required
                 />
               </div>
-
+              
+              {/* Password Input */}
               <div className="form-group">
                 {shouldShowLegend("password") && (
                   <label htmlFor="password" className="floating-label">
@@ -130,18 +126,11 @@ export default function SignIn() {
                     placeholder={shouldShowLegend("password") ? "" : "Password"}
                     required
                   />
-                  <button
-                    type="button"
-                    className="password-toggle-btn"
-                    onClick={togglePasswordVisibility}
-                    aria-label="Toggle password visibility"
-                  >
-                    <i
-                      className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"
-                        }`}
-                    ></i>
+                  <button type="button" className="password-toggle-btn" onClick={togglePasswordVisibility} aria-label="Toggle password visibility">
+                    <i className={`bi ${  showPassword ? "bi-eye-slash" : "bi-eye"}`} />
                   </button>
                 </div>
+
                 <div className="forgot-password">
                   <Link to="/forgot-password">Forgot Password?</Link>
                 </div>
@@ -154,26 +143,19 @@ export default function SignIn() {
 
               {/* Product Dropdown */}
               <div className="form-group">
-                <select
-                  id="product-select"
-                  className="input-field"
-                  value={selectedProduct}
-                  onChange={handleProductChange}
-                  required
-                >
-                  <option value="" disabled>
-                    Select a product
-                  </option>
-                  <option value="miniOCT">miniOCT</option>
-                  <option value="AstroLink Nano">AstroLink Nano</option>
-                  <option value="AstroBeam">AstroBeam</option>
-                  {/* <option value="P2PLink-10G">P2PLink-10G</option> */}
+                <select id="product-select"  className="input-field" value={selectedProduct} onChange={handleProductChange} required >
+                  <option value="" disabled> Select a product </option>
+                  {CONSTANTS.PRODUCTS.map((product) => (
+                    <option key={product} value={product}>
+                      {product}   
+                      </option>
+                    ))
+                  }
                 </select>
               </div>
 
               <div className="form-submit">
                 <button className="submit-btn" type="submit">
-                  {/* <Link to="/dashboard" >Log In</Link> */}
                   Log In
                 </button>
               </div>
@@ -184,6 +166,7 @@ export default function SignIn() {
                 Don’t have an account? <Link to="/signup">Sign Up</Link>
               </p>
             </div>
+
           </div>
         </div>
       </div>

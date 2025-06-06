@@ -15,7 +15,7 @@ import { LineChart, ResponsiveContainer, Brush } from "recharts";
 
 //utilities imports
 import * as types from '../Utils/types';
-import { graphOptions, allLabels, combinedLabelGroupsWithUnits ,combinedLabelGroups} from "../Utils/Constant";
+import * as CONSTANTS from "../Utils/Constants";
 import axios from "axios";
 
 
@@ -26,12 +26,12 @@ const initialGraphOptionsState: { [key: string]: boolean } = {};
 const initialDropdownOptions: string[] = [];
 
 //Modifying intial states  
-allLabels.forEach((item) => {    //graphs visiblilty
+CONSTANTS.ALL_LABELS.forEach((item) => {    //graphs visiblilty
     initialVisibility[item.label] = true;
 });
 
-allLabels.forEach((item) => {    //graph options
-    const grpahObject = combinedLabelGroups.find((graph) => graph.labels.includes(item.label))
+CONSTANTS.ALL_LABELS.forEach((item) => {    //graph options
+    const grpahObject = CONSTANTS.COMBINED_LABEL_GROUPS.find((graph) => graph.labels.includes(item.label))
     if (grpahObject) {
         initialGraphOptionsState[grpahObject.title] = false;
     } else {
@@ -39,7 +39,7 @@ allLabels.forEach((item) => {    //graph options
     }
 });
 
-allLabels.forEach((item) => (    //dropdown options
+CONSTANTS.ALL_LABELS.forEach((item) => (    //dropdown options
     initialDropdownOptions.push(`${item.label}${item.units && `(${item.units})`}`)
 ))
 
@@ -70,7 +70,7 @@ const DataViewer: React.FC = () => {
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
         const initialState: { [label: string]: types.GraphState } = {};
 
-        allLabels.forEach((item) => {
+        CONSTANTS.ALL_LABELS.forEach((item) => {
             let fullLabel = `${item.label}${item.units && `(${item.units})`}`
             initialState[fullLabel] = {
                 visibility: true,
@@ -138,7 +138,7 @@ const DataViewer: React.FC = () => {
 
     const changeGraphOption = (label: string, option: string) => {      //to change the graph otption
         if (option === "Remove") {
-            const groupObj = combinedLabelGroupsWithUnits.find((graph) => graph.labels.includes(label));        //cobined graph labels object
+            const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find((graph) => graph.labels.includes(label));        //cobined graph labels object
             if(groupObj){
                 groupObj.labels.map((graphLabel) => {       //disable all labels visibility of cobined graph  object
                     setVisibleGraphs((prev) => ({
@@ -169,7 +169,7 @@ const DataViewer: React.FC = () => {
             
         }
 
-        if (!graphOptions.includes(option as keyof types.GraphOptions)) return;
+        if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
 
         setVisibleGraphs((prev) => ({       //upadting label graph options
             ...prev,
@@ -206,7 +206,7 @@ const DataViewer: React.FC = () => {
             setVisibleGraphs(() => {
                 const initialState: { [label: string]: types.GraphState } = {};
 
-                allLabels.forEach((item) => {
+                CONSTANTS.ALL_LABELS.forEach((item) => {
                     initialState[item.label] = {
                         visibility: true,
                         graphOptions: {
@@ -225,7 +225,7 @@ const DataViewer: React.FC = () => {
             setVisibleGraphs(() => {
                 const initialState: { [label: string]: types.GraphState } = {};
 
-                allLabels.forEach((item) => {
+                CONSTANTS.ALL_LABELS.forEach((item) => {
                     initialState[item.label] = {
                         visibility: false,
                         graphOptions: {
@@ -295,7 +295,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.SCITM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.slice(0, 14).forEach((value: number, index: number) => {
-                    const label = allLabels[index] ? `${allLabels[index].label}${allLabels[index].units ? `(${allLabels[index].units})` : ''}` : null;
+                    const label = CONSTANTS.ALL_LABELS[index] ? `${CONSTANTS.ALL_LABELS[index].label}${CONSTANTS.ALL_LABELS[index].units ? `(${CONSTANTS.ALL_LABELS[index].units})` : ''}` : null;
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -309,7 +309,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.HKTM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.forEach((value: number, index: number) => {
-                    const label =  allLabels[index+14] ? `${allLabels[index+14].label}${allLabels[index+14].units ? `(${allLabels[index+14].units})` : ''}` : null;
+                    const label =  CONSTANTS.ALL_LABELS[index+14] ? `${CONSTANTS.ALL_LABELS[index+14].label}${CONSTANTS.ALL_LABELS[index+14].units ? `(${CONSTANTS.ALL_LABELS[index+14].units})` : ''}` : null;
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -400,7 +400,7 @@ const DataViewer: React.FC = () => {
                         timeInfo = { timestamp: timestampStr };
                     } else if (firstTimestamp !== null) {
                         const diffSeconds = (timestamp - firstTimestamp) / 1000;
-                        timeInfo = { timestamp: timestampStr };
+                        timeInfo = { timestamp: diffSeconds };
                     }
 
                     transformedData[key].push({
@@ -452,7 +452,7 @@ const DataViewer: React.FC = () => {
                                         />
 
                                     </li>
-                                    {allLabels.map((item, index) => (
+                                    {CONSTANTS.ALL_LABELS.map((item, index) => (
                                         <li key={item.label} className="dropdown-item">
                                             <label>{item.label}</label>
                                             <input
@@ -530,7 +530,7 @@ const DataViewer: React.FC = () => {
                             {/* Condtionly rendering the graphs based on visibility */}
                             {Object.entries(telemetryData).map(([label, data]) => {
                                 if (renderedLabels.has(label)) return null;
-                                const groupObj = combinedLabelGroupsWithUnits.find(groupObj => groupObj.labels.includes(label));        //checking label is combined graph or not
+                                const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find(groupObj => groupObj.labels.includes(label));        //checking label is combined graph or not
 
                                 if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
                                     groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
@@ -553,7 +553,7 @@ const DataViewer: React.FC = () => {
                                                 {graphOptionsOpendLables[groupObj.title] && (       //for combined graphs we send parameter title 
                                                     <div className="graph-options-menu">
                                                         <ul>
-                                                            {graphOptions.map((item, index) => (
+                                                            {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
                                                                 <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                                                     }`}>
                                                                     {item}
@@ -581,7 +581,7 @@ const DataViewer: React.FC = () => {
                                             {graphOptionsOpendLables[label] && (
                                                 <div className="graph-options-menu">
                                                     <ul>
-                                                        {graphOptions.map((item, index) => (
+                                                        {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
                                                             <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""}`}>
                                                                 {item}
                                                             </li>

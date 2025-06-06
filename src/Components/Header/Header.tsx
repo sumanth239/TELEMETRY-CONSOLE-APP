@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./Header.css";
 import logo from "../../assets/logo.png"
-import { settingsMenu } from "../../Utils/Constant";
 import useCurrentTime from "../../Utils/useCurrentTime";
-import { useContext } from "react";
 import {useSettings}  from "../../SettingsSceen/SettingScreen"
 import * as helperFunctions from "../../Utils/HelperFunctions";
 
 
 //A Header component which is placed in top most of the page
 const Header: React.FC = () => {
-    const { timezone, frequency } = useSettings();
-    const { formattedDate, formattedTime, currentUtcTime, localDate, localTime } = useCurrentTime();  //custom hook for utc date and time
+    const { timezone } = useSettings();
+    const { formattedDate, formattedTime, localDate, localTime } = useCurrentTime();  //custom hook for utc date and time
     const productName = helperFunctions.getSessionStorageKey("product") || "AstroLink 10G ODT"; // Get product name from session storage
     const userName = (helperFunctions.getSessionStorageKey("userName") || "User") // Get user name from session storage
     return (

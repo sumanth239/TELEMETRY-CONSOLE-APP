@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { convertToUtcFormat } from "../Utils/Constant";
 import { useSettings } from "../SettingsSceen/SettingScreen";
 
 // Custom hook to handle current UTC and local time
 const useCurrentTime = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
-    const { timezone, frequency } = useSettings(); // You get 'IST', 'PST', etc. here
+    const { timezone} = useSettings(); // You get 'IST', 'PST', etc. here
 
     // Format UTC date as DD-MM-YYYY
     const formattedDate = currentTime.toLocaleDateString("en-GB", {
@@ -18,7 +17,6 @@ const useCurrentTime = () => {
         hour12: true,
     }).replace(/am|pm/, (match) => match.toUpperCase());
 
-    const currentUtcTime = convertToUtcFormat(currentTime);
 
     // Convert abbreviation to full IANA timezone, fallback to UTC
     const timeZone = timezone
@@ -40,7 +38,6 @@ const useCurrentTime = () => {
     return {
         formattedDate,     // UTC Date
         formattedTime,     // UTC Time
-        currentUtcTime,    // Custom UTC Format
         localDate,         // Local Date based on selected timezone
         localTime          // Local Time based on selected timezone
     };

@@ -1,6 +1,7 @@
 import React from "react";
 import ReactECharts from "echarts-for-react";
 import * as types from '../../Utils/types';
+import * as CONSTANTS from '../../Utils/Constants';
 
 interface ChildProps {
   data: types.DataPoint[];
@@ -11,18 +12,6 @@ interface ChildProps {
 }
 
 const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, graphType, graphLineToggles }) => {
-
-  const getColorForLabel = (index: number) => {
-    const colorMap = [
-      "#446BAD",
-      "#ff7300",
-      "#387908",
-      "#F05A7E",
-      "#82ca9d",
-      "#000000",
-    ];
-    return colorMap[index];
-  };
 
   const getSeries = () => {
     if (!data.length) return [];
@@ -41,7 +30,7 @@ const LineChartComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlid
           return params.dataIndex === data.length - 1 ? 6 : 3;
         },
         itemStyle: {
-          color: getColorForLabel(index)
+          color: CONSTANTS.COLOR_MAP[index]
         },
         data: data.map(d => [d.timestamp, d[key as keyof types.DataPoint]]),
       };
@@ -92,10 +81,6 @@ const blinkingPoints = mainSeries.map((series) => {
       name: graphOptions["Axis Titles"] ? "timestamp" : '',
       nameLocation: 'middle',     // ⬅️ Places it in the center
       nameGap: 20,                // ⬅️ Distance below the axis
-      // nameTextStyle: {
-      //   fontSize: 12,             // ⬅️ Optional: font styling
-      //   padding: [10, 0, 0, 0],   // ⬅️ Extra vertical padding if needed
-      // },
       data: data.map(d => d.timestamp),
       axisLabel: {
         fontSize: 10

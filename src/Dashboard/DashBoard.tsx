@@ -1,5 +1,5 @@
 //default imports
-import React, { useState, useEffect, PureComponent } from "react";
+import React, { useState, useEffect } from "react";
 
 //style sheet imports
 import "./DashBoard.css"; // Import the CSS file
@@ -14,13 +14,13 @@ import { useSettings } from "../SettingsSceen/SettingScreen";
 //library imports
 import * as types from '../Utils/types';
 import axios from "axios";
-import Swal, { SweetAlertOptions } from 'sweetalert2';
+import Swal from 'sweetalert2';
 
 //utilities imports
 import * as helperFunctions from "../Utils/HelperFunctions";
 import temperatureIcon from "../assets/temperature_icon.png";
 import powerIcon from "../assets/bolt_icon.png";
-import { teleCommandType, systemModes, teleCommands, graphOptions, allLabels, combinedLabelGroups } from "../Utils/Constant";
+import * as CONSTANTS from "../Utils/Constants";
 
 
 // Initialization and State Management
@@ -41,20 +41,8 @@ function parseTimeToMillis(timestamp: string): number {
   return hours * 3600000 + minutes * 60000 + seconds * 1000;
 }
 
-const Toast = Swal.mixin({
-  toast: true,
-  position: 'top-end',
-  iconColor: 'white',
-  customClass: {
-    popup: 'colored-toast',
-  },
-  showConfirmButton: false,
-  timer: 1500,
-  timerProgressBar: true,
-});
-
 //Modifying intial state of graphs as visible
-allLabels.forEach((item) => {
+CONSTANTS.ALL_LABELS.forEach((item) => {
   if (item.label !== "Software Version") {
     initialVisibility[item.label] = true;
 
@@ -66,8 +54,8 @@ allLabels.forEach((item) => {
 });
 
 //Modifying intial state of grpahs options of label as false
-allLabels.slice(0, allLabels.length - 2).forEach((item) => {
-  const grpahObject = combinedLabelGroups.find((graph) => graph.labels.includes(item.label))
+CONSTANTS.ALL_LABELS.slice(0, CONSTANTS.ALL_LABELS.length - 2).forEach((item) => {
+  const grpahObject = CONSTANTS.COMBINED_LABEL_GROUPS.find((graph) => graph.labels.includes(item.label))
   if (grpahObject) {
     initialGraphOptionsState[grpahObject.title] = false;
   } else {
@@ -116,7 +104,7 @@ const Dashboard: React.FC = () => {
 
     return [];
   });
-  const { timezone, frequency } = useSettings();
+  const {  frequency } = useSettings();
   const [processedTelemetryData, setProcessedTelemetryData] = useState<TelemetryData>({});
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
@@ -129,7 +117,7 @@ const Dashboard: React.FC = () => {
   const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {
     const initialState: { [label: string]: types.GraphState } = {};
 
-    allLabels.forEach((item) => {
+    CONSTANTS.ALL_LABELS.forEach((item) => {
       initialState[item.label] = {
         visibility: false,
         graphOptions: {
@@ -145,10 +133,10 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     setTeleCmdValueError([]); // Reset error
-    let cmdInfo = teleCommands.find((item) => item.cmd === teleCmdsFormData.teleCmd.cmd);
+    let cmdInfo = CONSTANTS.TELE_COMMANDS.find((item) => item.cmd === teleCmdsFormData.teleCmd.cmd);
     setTeleCmdsFormData((prev) => ({
       ...prev,
-      teleCmdValue: cmdInfo?.inputType == 1 ? [teleCmdsFormData.teleCmdValue[0]] : [], // Reset input value properly
+      teleCmdValue: cmdInfo?.inputType === 1 ? [teleCmdsFormData.teleCmdValue[0]] : [], // Reset input value properly
     }));
   }, [teleCmdsFormData.teleCmd]);
   console.log("time", selectedDateTime)
@@ -226,7 +214,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const processed: TelemetryData = Object.fromEntries(
       Object.entries(telemetryData).map(([label, data]) => {
-        const index = allLabels.findIndex((item) => item.label === label);
+        const index = CONSTANTS.ALL_LABELS.findIndex((item) => item.label === label);
         const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data;
         return [label, filtered.slice(-MAX_POINTS)];
       })
@@ -254,7 +242,7 @@ const Dashboard: React.FC = () => {
     }
 
     setProcessedTelemetryData(updatedData);
-  }, [telemetryData, allLabels]);
+  }, [telemetryData]);
 
 
 
@@ -272,7 +260,7 @@ const Dashboard: React.FC = () => {
 
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-            ...allLabels.slice(0, 14).reduce((acc, item, index) => {
+            ...CONSTANTS.ALL_LABELS.slice(0, 14).reduce((acc, item, index) => {
               acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
             }, {} as { [key: string]: any })
@@ -283,7 +271,7 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
-          if (incomingData.length == 0) {
+          if (incomingData.length === 0) {
             confirmAction({
               title: 'New Alert',
               text: 'Skipping packet, packet contains bit error.',
@@ -309,7 +297,7 @@ const Dashboard: React.FC = () => {
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLabels.slice(0, 14).forEach((item, index) => {
+            CONSTANTS.ALL_LABELS.slice(0, 14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
@@ -326,9 +314,7 @@ const Dashboard: React.FC = () => {
         ws.onerror = (error) => console.error("WebSocket Error:", error);
         ws.onclose = () => console.log("WebSocket Disconnected");
 
-        const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
-        });     // Update every second
-
+        
         return () => { ws.close() }
       }
     }
@@ -342,7 +328,7 @@ const Dashboard: React.FC = () => {
         //   const data = JSON.parse(event.data);
         //   const newData = {
         //     Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-        //     ...allLabels.slice(14).reduce((acc, item, index) => {
+        //     ...CONSTANTS.ALL_LABELS.slice(14).reduce((acc, item, index) => {
         //       acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
         //       return acc;
         //     }, {} as { [key: string]: any })
@@ -355,7 +341,7 @@ const Dashboard: React.FC = () => {
         try {
           const incomingData = JSON.parse(event.data);
           console.log(incomingData)
-          if (incomingData.length == 0) {
+          if (incomingData.length === 0) {
             confirmAction({
               title: 'New Alert',
               text: 'Skipping packet, packet contains bit error.',
@@ -389,7 +375,7 @@ const Dashboard: React.FC = () => {
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLabels.slice(14).forEach((item, index) => {
+            CONSTANTS.ALL_LABELS.slice(14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
@@ -429,28 +415,28 @@ const Dashboard: React.FC = () => {
     helperFunctions.updateSessionLogs(`executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
     const teleCommand = teleCmdsFormData.teleCmd
     const teleCommandValue = teleCmdsFormData.teleCmdValue
-    const apid = teleCmdsFormData.teleCmdType == "Real Time" ? 0 : 1;
+    const apid = teleCmdsFormData.teleCmdType === "Real Time" ? 0 : 1;
     const cmd = teleCmdsFormData.teleCmd
 
-    if (cmd.cmdId == 5) {
+    if (cmd.cmdId === 5) {
       setStartSystem(true); // Start the system if not already started
     }
 
-    if (cmd.cmdId == 6) {
+    if (cmd.cmdId === 6) {
       setStartSystem(false); // Start the system if not already started
     }
 
-    if (cmd.cmdId == 0 || cmd.cmd == "") {
+    if (cmd.cmdId === 0 || cmd.cmd === "") {
       Swal.fire("Please select any of the teleCommand");
       return;
     }
 
-    if (teleCmdValueError.length != 0 && teleCmdValueError.every(item => item !== "")) {
+    if (teleCmdValueError.length !== 0 && teleCmdValueError.every(item => item !== "")) {
       Swal.fire("Please Enter valid data")
       return;
     }
 
-    if (cmd.cmdId != 6 && cmd.cmdId != 32 && cmd.cmdId != 5 && teleCommandValue.length == 0) {
+    if (cmd.cmdId !== 6 && cmd.cmdId !== 32 && cmd.cmdId !== 5 && teleCommandValue.length === 0) {
       Swal.fire("Please Enter valid data")
       return;
     }
@@ -463,7 +449,7 @@ const Dashboard: React.FC = () => {
         telecmd: teleCommand.cmd,
         telecmd_value: teleCmdValues,
         apid: apid,
-        timestamp: apid == 1 ? selectedDateTime : new Date().toISOString(),
+        timestamp: apid === 1 ? selectedDateTime : new Date().toISOString(),
       }, {
         headers: {
           "Accept": "application/json",
@@ -520,7 +506,7 @@ const Dashboard: React.FC = () => {
 
   const changeGraphOption = (label: string, option: string) => {
     if (option === "Remove") {
-      const groupObj = combinedLabelGroups.find((graph) => graph.labels.includes(label));
+      const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS.find((graph) => graph.labels.includes(label));
 
       if (groupObj) {
         groupObj.labels.map((graphLabel) => {
@@ -554,7 +540,7 @@ const Dashboard: React.FC = () => {
     }
 
 
-    if (!graphOptions.includes(option as keyof types.GraphOptions)) return;
+    if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
 
     setVisibleGraphs((prev) => ({
       ...prev,
@@ -575,10 +561,10 @@ const Dashboard: React.FC = () => {
   // Utility Functions
 
   const systemModeIcon = (mode: string) => {
-    if (mode == "Safe Mode") return <i className="bi bi-pause-circle"></i>
-    else if (mode == "Maintenance Mode") return <i className="bi bi-tools"></i>
-    else if (mode == "Stand-By Mode") return <i className="bi bi-hourglass-split"></i>
-    else if (mode == "Downlink Mode") return <i className="bi bi-cloud-arrow-down"></i>
+    if (mode === "Safe Mode") return <i className="bi bi-pause-circle"></i>
+    else if (mode === "Maintenance Mode") return <i className="bi bi-tools"></i>
+    else if (mode === "Stand-By Mode") return <i className="bi bi-hourglass-split"></i>
+    else if (mode === "Downlink Mode") return <i className="bi bi-cloud-arrow-down"></i>
   }
 
 
@@ -594,7 +580,7 @@ const Dashboard: React.FC = () => {
       {
         ...prevState,
         teleCmd: selectedData,
-        teleCmdValue: selectedData.inputType != 1 ? [] : [0]
+        teleCmdValue: selectedData.inputType !== 1 ? [] : [0]
       }
     ))
 
@@ -630,7 +616,7 @@ const Dashboard: React.FC = () => {
       };
     });
 
-    const cmdInfo = teleCommands.find(
+    const cmdInfo = CONSTANTS.TELE_COMMANDS.find(
       (item) => item.cmd === teleCmdsFormData.teleCmd.cmd
     );
 
@@ -646,10 +632,10 @@ const Dashboard: React.FC = () => {
       const inputConfig = inputConfigs[index];
 
       var error = "";
-      if (isNaN(numValue) && value != "") {
+      if (isNaN(numValue) && value !== "") {
         error = `Value must be a number.`;
       } else {
-        if (teleCmdsFormData.teleCmd.cmdId != 31 && teleCmdsFormData.teleCmd.cmdId != 90) {
+        if (teleCmdsFormData.teleCmd.cmdId !== 31 && teleCmdsFormData.teleCmd.cmdId !== 90) {
           if (typeof numValue === 'number' && !Number.isInteger(numValue)) {
             error = `Float value is not allowed`
           }
@@ -714,7 +700,7 @@ const Dashboard: React.FC = () => {
     let cmd = teleCmdsFormData.teleCmd.cmd;
     if (!cmd) return null;
 
-    let cmdInfo = teleCommands.find((item) => item.cmd === cmd);
+    let cmdInfo = CONSTANTS.TELE_COMMANDS.find((item) => item.cmd === cmd);
     if (!cmdInfo) return null
 
     if (cmdInfo.inputType === 1) {
@@ -779,8 +765,8 @@ const Dashboard: React.FC = () => {
             </div>
 
             <div className="status-item">
-              <span className="icon">{systemModeIcon(systemModes[systemStatusLabels.SystemMode])}</span>
-              <span className="text">{systemModes[systemStatusLabels.SystemMode]}</span>
+              <span className="icon">{systemModeIcon(CONSTANTS.SYSTEM_MODES[systemStatusLabels.SystemMode])}</span>
+              <span className="text">{CONSTANTS.SYSTEM_MODES[systemStatusLabels.SystemMode]}</span>
             </div>
 
             <div className="status-item">
@@ -813,20 +799,20 @@ const Dashboard: React.FC = () => {
               <div>
                 <select onChange={CommandTypeHandler}>
                   <option value="" disabled selected hidden>TeleCmd Type</option>
-                  {teleCommandType.map((value, index) => (
+                  {CONSTANTS.TELE_COMMAND_TYPES.map((value, index) => (
                     <option id={value} key={index}>   {value} </option>
                   ))}
                 </select>
 
                 {/*condtionally rendering calender componenet based on command type */}
-                {teleCmdsFormData.teleCmdType == "Time Tagged" && <input type="datetime-local" onChange={handleDateChange} step="1"></input>}
+                {teleCmdsFormData.teleCmdType === "Time Tagged" && <input type="datetime-local" onChange={handleDateChange} step="1"></input>}
               </div>
 
 
               <div>
                 <select onChange={CommandHandler}>
                   <option value="" disabled selected hidden>TeleCmd</option>
-                  {teleCommands.map((data, index) => (
+                  {CONSTANTS.TELE_COMMANDS.map((data, index) => (
                     <option id={data?.cmd} key={index} value={JSON.stringify(data)}> {data?.cmd} </option>
                   ))}
                 </select>
@@ -882,7 +868,7 @@ const Dashboard: React.FC = () => {
                 {Object.entries(processedTelemetryData).slice(0, 24).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
-                  const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
+                  const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
 
 
                   if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
@@ -908,7 +894,7 @@ const Dashboard: React.FC = () => {
                           {graphOptionsOpendLables[groupObj.title] && (   //for combined graphs we send parameter title 
                             <div className="graph-options-menu">
                               <ul>
-                                {graphOptions.map((item, index) => (
+                                {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
                                   <li key={item} onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                     }`}>
                                     {item}
@@ -945,7 +931,7 @@ const Dashboard: React.FC = () => {
                         {graphOptionsOpendLables[label] && (
                           <div className="graph-options-menu">
                             <ul>
-                              {graphOptions.map((item, index) => (
+                              {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
                                 <li key={item} onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
                                   }`}>
                                   {item}

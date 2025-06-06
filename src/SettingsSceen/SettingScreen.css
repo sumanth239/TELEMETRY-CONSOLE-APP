@@ -1,6 +1,5 @@
 .settings-page {
     min-height: 100vh;
-    /* // background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); */
     padding: 1rem;
 }
 
@@ -84,7 +83,6 @@
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     transition: all 0.2s ease;
-    /* overflow: hidden; */
 }
 
 .card:hover {
@@ -190,7 +188,6 @@
 }
 
 .save-button:hover {
-    /* background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); */
     transform: translateY(-1px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
    

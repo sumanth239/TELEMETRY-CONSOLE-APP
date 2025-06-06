@@ -18,16 +18,13 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    /* height: 91.7vh; */
   }
   
   
   .signup-container .signup-box {
-    /* background-color: #ffffff; */
     padding: 2rem;
     border-radius: 0.5rem;
     width: 24rem;
-    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   }
   .signup-container .signup-box h1 {
     color: var(--buttons-color);
@@ -68,8 +65,8 @@
   
   .signup-container  .input-field {
     width: 100%;
-    padding: 1.25rem; /* increased padding for more height */
-    background-color: #e5e7eb; /* light gray */
+    padding: 1.25rem; 
+    background-color: #e5e7eb; 
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     outline: none;

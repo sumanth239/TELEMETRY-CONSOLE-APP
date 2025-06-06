@@ -1,7 +1,6 @@
-import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { allLabels, labelValueMappings } from "./Constant";
+import * as CONSTANTS from "./Constants";
 import * as types from "../Utils/types"
 
 
@@ -42,12 +41,12 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
 };
 
 export function getLabelUnits(label: string): string | undefined {      //function to get the units of label
-  const labelData = allLabels.find((item) => item.label === label);
+  const labelData = CONSTANTS.ALL_LABELS.find((item) => item.label === label);
   return labelData?.units;
 }
 
 export function getLabelGraphType(label: string): string {      //function to get the graph type of label
-  const labelData = allLabels.find((item) => item.label === label);
+  const labelData = CONSTANTS.ALL_LABELS.find((item) => item.label === label);
   if(labelData?.graphType) {
     return labelData?.graphType
   }
@@ -71,7 +70,7 @@ export const getFormattedDateTime = (): string => {
 
 
 export const resolveLabelValue = (label: string, value: number | string): string => {     //for handling and displaying names for numeric values eg. system mode 0 safe mode
-  const mappings = labelValueMappings[label];
+  const mappings = CONSTANTS.LABEL_VALUE_MAPPINGS[label];
   if (mappings) {
     return mappings[value] ?? String(value); // fallback to raw value if not mapped
   }
@@ -103,7 +102,7 @@ export function updateSessionLogs(action: string) {     //to handle the session 
   window.dispatchEvent(new Event("sessionLogsUpdated"));
 }
 
-export function updateAlerts(alert: any,action:any) {     //to handle the session logs
+export function updateAlerts(alert: any,action:any) {     //to handle the alerts
   const sessionStr: any = localStorage.getItem("sessionStorage");
   if (!sessionStr) {
     return

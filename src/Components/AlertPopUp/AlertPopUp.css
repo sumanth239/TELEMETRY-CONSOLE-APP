@@ -15,7 +15,7 @@
   border-radius: 20px;
   color: black;
   font-size: var(--font-size-body);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); /* 👈 soft and clean shadow */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); 
   position: relative;
 }
 

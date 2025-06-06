@@ -1,14 +1,14 @@
-//default imports
+//Default imports
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-//style sheet imports
+//Style sheet imports
 import './SignUp.css';
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 
-//utilities imports
+//Utilities imports
 import logo from '../assets/logo.png';
 import indexline from "../assets/index_line.jpeg";
 import * as types from "../Utils/types";
@@ -17,36 +17,38 @@ import * as types from "../Utils/types";
 type FieldName = keyof types.FormData | null;
 
 export default function SignUp() {
-  const navigate = useNavigate();
+  const navigate = useNavigate();           //to change the route after form submission
   const [formData, setFormData] = useState<types.FormData>({
     name: '',
     email: '',
     password: '',
   });
 
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [focusedField, setFocusedField] = useState<FieldName>(null);
+  //states
+  const [showPassword, setShowPassword] = useState<boolean>(false);           //to toggle password visibility
+  const [focusedField, setFocusedField] = useState<FieldName>(null);          //to track which field is focused
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+
+  //Handler functions
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {            // to handle input changes
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const togglePasswordVisibility = () => {
+  const togglePasswordVisibility = () => {                    // to toggle password visibility
     setShowPassword(prev => !prev);
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {       // to handle form submission  
     e.preventDefault();
-    console.log('Form submitted:', formData);
     navigate("/signin");
   };
 
-  const handleFocus = (field: FieldName) => {
+  const handleFocus = (field: FieldName) => {     // to handle focus event 
     setFocusedField(field);
   };
 
-  const handleBlur = () => {
+  const handleBlur = () => {          // to handle blur event 
     setFocusedField(null);
   };
 
@@ -55,9 +57,7 @@ export default function SignUp() {
 
   return (
     <div className='signup-main-container'>
-      <div className="signup-side-container">
-        {/* <img src={bg}></img> */}
-      </div>
+      <div className="signup-side-container"></div>
       <div className="signup-container">
         <div className="signup-box">
           <div className="signup-logo">

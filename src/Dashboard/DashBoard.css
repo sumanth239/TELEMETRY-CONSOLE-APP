@@ -130,7 +130,6 @@
   color: black;
   border: 1px solid white;
   border-radius: 5px;
-  /* margin-right: 10px; */
   margin: 0px 10px 12px 0;
   width: 200px;
 }
@@ -161,11 +160,9 @@
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container  .error {
-  /* position: absolute; */
   color: #B85450;
   font-size:var(--font-size-span);
   font-weight: bold;
-  /* width: 150px; */
 }
 
 .dashboard-container1  .commands-main-container .commands-data-container .input-error {
@@ -220,7 +217,7 @@
   border-radius: 15px;
   padding: 5px 10px;
   background-color: white;
-  overflow-y: auto; /* auto shows scroll only when needed */
+  overflow-y: auto; 
   margin-top: 13px;
   height: calc(30vh - 97px);
   font-size: var(--font-size-body);
@@ -253,8 +250,6 @@
 }
 
 .dashboard-container2  .labels-and-graphs-container .labels-data-container {
-  /* height: 495px; */
-  
   background-color: var(--greay-background);
   border-radius: var(--primary-border-radius);
   padding: 5px 15px;
@@ -383,7 +378,6 @@
 }
 
 .graph-options-menu-item.selected {
-  /* background-color: #007bff; */
   color: #007bff;
   font-weight: 600;
 }
@@ -393,7 +387,6 @@
   border: 0;
   background-color: white;
   color: black;
-  /* height: 10px; */
   padding: 0;
   cursor: pointer;
 }
@@ -415,7 +408,6 @@
 .dashboard-container2  .time-tag-container .time-tag-commands-container {
   background-color: white;
   max-width: auto;
-  /* height: 500px; */
   border-radius: var(--primary-border-radius);
   padding: 5px 15px;
   overflow-y: scroll;
@@ -431,7 +423,6 @@
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container p {
   font-size: var(--font-size-body);
-  /* color: grey; */
 }
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item {
@@ -439,7 +430,6 @@
   align-items: first baseline;
   position: relative;
   padding: 0;
-  /* margin-bottom: 2px; */
 }
 .logs-button-container {
   display: flex;
@@ -468,7 +458,6 @@
   position: absolute;
   left: 0;
   top: 5px;
-  /* bottom: 2px; */
 }
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item .step-line {
@@ -608,13 +597,10 @@
     position: absolute;
     left: 149px;
     top: 35px;
-    /* bottom: 120px !important; */
   }
 
   .dynamic-inputs-container div input {
     width: calc(100% - 10px);
-    /* padding: 2px !important; */
-    /* height: 13px !important; */
   }
 
   .dashboard-container1 .commands-main-container .commands-output-container {
@@ -679,9 +665,6 @@
   .dashboard-container2 .labels-and-graphs-container .labels-data-container {
     padding: 4px 8px;
     height: calc(70vh - 123px);
-    /* flex: 1;
-    height: 100%; */
-    /* height: calc(70vh - 55px); */
   }
 
   .dashboard-container2 .labels-and-graphs-container .labels-data-container .labels-data {
@@ -719,8 +702,6 @@
   }
 
   .dashboard-container2 .graphs-data-container {
-    /* flex: 1;
-    height: 100%; */
     height: calc(70vh - 135px);
     padding: 10px;
     gap: 5px;
@@ -813,8 +794,7 @@
     gap: 5px;
     padding: 5px 5px 5px 35px;
     grid-template-columns: 20% auto;
-    /* height: calc(30vh - 10px); */
-    /* height: 100px !important; */
+
   }
   .dashboard-container1  .system-status-container {
     padding: 1px 4px;
@@ -858,18 +838,14 @@
   .dashboard-container1  .commands-main-container {
     padding: 5px 10px 5px 5px;
     gap: 5px;
-    /* height: 100px !important; */
-    /* height: calc(30vh - 10px) */
     display: grid;
     grid-template-columns: 100%;
-    /* flex-direction: row; */
   }
 
 
 
   .dashboard-container1  .commands-main-container .commands-data-container {
     padding: 1px;
-    /* height: 100px !important; */
   }
   
   
@@ -919,7 +895,6 @@
   height: calc(30vh - 30px);
   display: flex;
   flex-direction: column;
-  /* height: 95px !important; */
 }
 
 .dashboard-container1  .commands-main-container .commands-output-container ul {
@@ -944,9 +919,7 @@
   border-radius: 5px;
   padding: 5px 10px;
   margin-top: 3px;
-  /* height: 90px !important; */
   flex: 1;
-  /* height: calc(100% - 15px); */
 }
 
 .dashboard-container1  .commands-main-container .commands-output-container .system-logs-container p {
@@ -988,7 +961,6 @@
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container {
   padding: 2px 10px;
-  /* height: calc(70vh - 55px); */
 }
 
 .dashboard-container2  .labels-and-graphs-container .labels-data-container .labels-data .label-key {
@@ -1055,7 +1027,6 @@
   border: 0;
   background-color: white;
   color: black;
-  /* height: 10px; */
   padding: 0;
   cursor: pointer;
 }
@@ -1071,7 +1042,6 @@
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container {
   padding: 2px 5px;
-  /* height: calc(70vh - 10px); */
 }
 
 .dashboard-container2  .time-tag-container .time-tag-commands-container .step-item .step-circle {

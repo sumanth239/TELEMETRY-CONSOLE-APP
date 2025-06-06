@@ -1,23 +1,21 @@
- /* Make the body fixed */
 body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevents the whole page from scrolling */
+    overflow: hidden; 
     height: 100vh;
   }
   
-  /* Make the container take full height and scroll independently */
   .telecommand-container {
     font-family: 'Roboto', sans-serif;
     color: #333;
-    /* background-color: #f5f7fa; */
-    height: 100vh; /* Full viewport height */
-    overflow-y: auto; /* Enable scrolling for this container only */
-    position: relative; /* Establish positioning context */
+    
+    height: 100vh; 
+    overflow-y: auto; 
+    position: relative; 
     margin-left: 50px;
   }
   
-  /* Rest of your CSS remains the same */
+ 
   .main-content {
     max-width: 1200px;
     margin: 0 auto;
@@ -43,9 +41,6 @@ body {
   .command-list {
     display: flex;
     flex-direction: column;
-    /* gap: 15px; */
-    /* display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); */
     gap: 20px;
   }
   

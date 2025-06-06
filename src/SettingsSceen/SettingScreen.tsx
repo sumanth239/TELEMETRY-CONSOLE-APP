@@ -13,9 +13,9 @@ interface SettingsContextType {
     setFrequency: (freq: number) => void;
 }
 
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);                          // Define the context type
 
-export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+export const SettingsProvider = ({ children }: { children: ReactNode }) => {                                   // Create a provider component
     const [timezone, setTimezone] = useState<string>('Asia/Kolkata');
     const [frequency, setFrequency] = useState<number>(1);
 
@@ -26,7 +26,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useSettings = () => {
+export const useSettings = () => {                                          // Custom hook to use the context
     const context = useContext(SettingsContext);
     if (!context) throw new Error('useSettings must be used within SettingsProvider');
     return context;
@@ -47,7 +47,7 @@ const timezoneOptions = moment.tz.names().map((tz) => {
 });
 
 const SettingsScreen = () => {
-    const { timezone, setTimezone, frequency, setFrequency } = useSettings();
+    const { timezone, setTimezone, frequency, setFrequency } = useSettings();                           // Use the context to get timezone and frequency
 
     // Local state for dropdowns
     const [localTimezone, setLocalTimezone] = useState<{ label: string; value: string }>(
@@ -59,11 +59,7 @@ const SettingsScreen = () => {
         setTimezone(localTimezone.value);
         setFrequency(localFrequency);
 
-        console.log('Settings saved:', {
-            timezone: localTimezone.value,
-            frequency: localFrequency,
-        });
-
+        //popup notification 
         Swal.fire({
             text: "Settings saved successfully!",
             icon: "success",
