@@ -21,7 +21,7 @@ const AlertPopup: React.FC<AlertPopupProps> = ({ onClose }) => {
       const sessionData = JSON.parse(sessionStr);
       if (Array.isArray(sessionData.alerts)) {
         console.log("sessionData.alerts", sessionData.alerts);
-        return sessionData.alerts.reverse();
+        return sessionData.alerts;
       }
     } catch (err) {
       console.error("FAILED to parse session logs:", err);

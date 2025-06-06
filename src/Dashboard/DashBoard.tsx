@@ -9,7 +9,7 @@ import LineChartComponent from "../Components/Charts/LineChart";
 import { confirmAction } from "../Components/PopUps/ConfirmAction";
 import { inputModalAction } from "../Components/PopUps/InputAction";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
-import {useSettings} from "../SettingsSceen/SettingScreen";
+import { useSettings } from "../SettingsSceen/SettingScreen";
 
 //library imports
 import * as types from '../Utils/types';
@@ -93,10 +93,10 @@ const Dashboard: React.FC = () => {
   const [startSystem, setStartSystem] = useState(false);    //to know system is live or not
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
-  const [systemStatusLabels,setSystemStatusLabels] = useState({
-    "SystemMode":0,
-    "Temperature":32.2,
-    "TotalPowerConsumption":0.0
+  const [systemStatusLabels, setSystemStatusLabels] = useState({
+    "SystemMode": 0,
+    "Temperature": 32.2,
+    "TotalPowerConsumption": 0.0
   })
   const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
     try {
       const sessionData = JSON.parse(sessionStr);
       if (Array.isArray(sessionData.Logs)) {
-        return sessionData.Logs.reverse(); ;
+        return sessionData.Logs.reverse();;
       }
     } catch (err) {
       console.error("FAILED to parse session logs:", err);
@@ -227,40 +227,40 @@ const Dashboard: React.FC = () => {
     const processed: TelemetryData = Object.fromEntries(
       Object.entries(telemetryData).map(([label, data]) => {
         const index = allLabels.findIndex((item) => item.label === label);
-        const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data ;
+        const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data;
         return [label, filtered.slice(-MAX_POINTS)];
       })
     );
-  
+
     const updatedData: TelemetryData = intialTelemeteryData;
-  
+
     for (const label in processed) {
       const series = processed[label];
       if (series.length === 0) continue;
-  
+
       const baseTime = parseTimeToMillis(series[0].timestamp);
-  
+
       updatedData[label] = series.map((point, index) => {
         if (index === 0) return point;
-  
+
         const currentTime = parseTimeToMillis(point.timestamp);
         const diffSeconds = Math.round((currentTime - baseTime) / 1000);
-  
+
         return {
           ...point,
           timestamp: `+${diffSeconds}s`,
         };
       });
     }
-  
+
     setProcessedTelemetryData(updatedData);
   }, [telemetryData, allLabels]);
-  
+
 
 
   //websockets
   useEffect(() => {
-    if(!startSystem) return; // Exit if the system is not started
+    if (!startSystem) return; // Exit if the system is not started
     if (startSystem) {
       console.log("connected")
       const ws = new WebSocket("ws://127.0.0.1:8000/ws/SciTM");
@@ -272,7 +272,7 @@ const Dashboard: React.FC = () => {
 
           const newData = {
             Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
-            ...allLabels.slice(0,14).reduce((acc, item, index) => {
+            ...allLabels.slice(0, 14).reduce((acc, item, index) => {
               acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
             }, {} as { [key: string]: any })
@@ -283,7 +283,7 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
-          if(incomingData.length == 0) {
+          if (incomingData.length == 0) {
             confirmAction({
               title: 'New Alert',
               text: 'Skipping packet, packet contains bit error.',
@@ -295,20 +295,21 @@ const Dashboard: React.FC = () => {
                 helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
                 return
               },
+              onCancel: () => {
+                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+                helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
+              }
             });
-            helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
-            helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
-            return
           }
           setSystemStatusLabels((prevData) => ({
             ...prevData,
-            SystemMode:incomingData[0]
+            SystemMode: incomingData[0]
           }))
 
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
-            allLabels.slice(0,14).forEach((item, index) => {
+            allLabels.slice(0, 14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
                 const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
@@ -325,10 +326,10 @@ const Dashboard: React.FC = () => {
         ws.onerror = (error) => console.error("WebSocket Error:", error);
         ws.onclose = () => console.log("WebSocket Disconnected");
 
-         const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
-      });     // Update every second
+        const interval = setInterval(() => {    //interval function to handle the system counter and UTC counter
+        });     // Update every second
 
-      return () => { ws.close() }
+        return () => { ws.close() }
       }
     }
     console.log(telemetryData)
@@ -352,9 +353,9 @@ const Dashboard: React.FC = () => {
 
 
         try {
-          const incomingData = JSON.parse(event.data); 
+          const incomingData = JSON.parse(event.data);
           console.log(incomingData)
-          if(incomingData.length == 0) {
+          if (incomingData.length == 0) {
             confirmAction({
               title: 'New Alert',
               text: 'Skipping packet, packet contains bit error.',
@@ -364,23 +365,24 @@ const Dashboard: React.FC = () => {
               cancelButtonColor: '#e53e3e',
               onConfirm: () => {
                 helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
-                return
               },
+              onCancel: () => {
+                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+                helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
+              }
             });
-            helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
-            helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
-            return
+
           }
 
           //updating the system status labels data
           setSystemStatusLabels((prevData) => ({
             ...prevData,
-            Temperature:helperFunctions.roundToTwoDecimals(incomingData[1])
+            Temperature: helperFunctions.roundToTwoDecimals(incomingData[1])
           }))
 
           setSystemStatusLabels((prevData) => ({
             ...prevData,
-            TotalPowerConsumption:helperFunctions.roundToTwoDecimals(incomingData[18])
+            TotalPowerConsumption: helperFunctions.roundToTwoDecimals(incomingData[18])
           }))
 
           // console.log(incomingData)
@@ -394,7 +396,7 @@ const Dashboard: React.FC = () => {
               }
             });
             console.log(updatedData)
-            
+
             return updatedData
 
           });
@@ -406,7 +408,7 @@ const Dashboard: React.FC = () => {
       ws.onerror = (error) => console.error("WebSocket Error:", error);
       ws.onclose = () => console.log("WebSocket Disconnected");
 
-         // Update every second
+      // Update every second
 
       return () => { ws.close() };   //close websocket connection and clear interval for every second
 
@@ -422,7 +424,7 @@ const Dashboard: React.FC = () => {
 
   // Command Processing
   const CommandsDataHandler = async (event: any) => {
-    
+
     event.preventDefault()
     helperFunctions.updateSessionLogs(`executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
     const teleCommand = teleCmdsFormData.teleCmd
@@ -430,11 +432,11 @@ const Dashboard: React.FC = () => {
     const apid = teleCmdsFormData.teleCmdType == "Real Time" ? 0 : 1;
     const cmd = teleCmdsFormData.teleCmd
 
-    if(cmd.cmdId == 5){
+    if (cmd.cmdId == 5) {
       setStartSystem(true); // Start the system if not already started
     }
 
-    if(cmd.cmdId == 6){
+    if (cmd.cmdId == 6) {
       setStartSystem(false); // Start the system if not already started
     }
 
@@ -458,7 +460,7 @@ const Dashboard: React.FC = () => {
       console.log(teleCmdValues)
       const response = await axios.post("http://127.0.0.1:8000/dashboard/tecommand", {
         telecmd_id: Number(teleCommand.cmdId),
-        telecmd : teleCommand.cmd,
+        telecmd: teleCommand.cmd,
         telecmd_value: teleCmdValues,
         apid: apid,
         timestamp: apid == 1 ? selectedDateTime : new Date().toISOString(),
@@ -752,7 +754,7 @@ const Dashboard: React.FC = () => {
     const mergedMap: { [timestamp: string]: any } = {};
 
     labels.forEach(label => {
-    telemetryData[label]?.forEach((point: any) => {
+      telemetryData[label]?.forEach((point: any) => {
         const { timestamp, value } = point;
         if (!mergedMap[timestamp]) {
           mergedMap[timestamp] = { timestamp };
@@ -793,13 +795,13 @@ const Dashboard: React.FC = () => {
 
             <div className="status-item">
               <span className="icon"><i className="bi bi-exclamation-triangle-fill" style={{ color: "#FF6666" }} ></i></span>
-                <span 
-                className="text" 
+              <span
+                className="text"
                 style={{ color: helperFunctions.getActiveAlertsCount() > 0 ? "#B85450" : "rgba(142, 238, 171, 0.795)" }}
-                >
+              >
                 Alerts : {helperFunctions.getActiveAlertsCount()} &nbsp; &nbsp;&nbsp;
                 <i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i>
-                </span>
+              </span>
 
             </div>
           </div>
@@ -877,7 +879,7 @@ const Dashboard: React.FC = () => {
               {/* graphs container*/}
               <div className="graphs-data-container">
                 {/* Condtionly rendering the graphs based on visibility */}
-                {Object.entries(processedTelemetryData).slice(0,24).map(([label, data]) => {
+                {Object.entries(processedTelemetryData).slice(0, 24).map(([label, data]) => {
                   if (renderedLabels.has(label)) return null;
 
                   const groupObj = combinedLabelGroups.find(groupObj => groupObj.labels.includes(label));    //checking label is combined graph or not
@@ -913,7 +915,7 @@ const Dashboard: React.FC = () => {
                                   </li>
                                 ))}
                               </ul>
-                  </div>
+                            </div>
                           )}
                         </div>
                         <LineChartComponent
@@ -950,7 +952,7 @@ const Dashboard: React.FC = () => {
                                 </li>
                               ))}
                             </ul>
-              </div>
+                          </div>
                         )}
                       </div>
                       <LineChartComponent
@@ -995,14 +997,14 @@ const Dashboard: React.FC = () => {
                   <p className="step-text">
                     {data.apid === 0 ? (
                       <>
-                        <i className="bi bi-alarm" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666'}} />&nbsp;
+                        <i className="bi bi-alarm" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666' }} />&nbsp;
                         {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
                       </>
                     ) : (
-                        <>
-                        <i className="bi bi-calendar2-check-fill" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666'}}/>&nbsp;
+                      <>
+                        <i className="bi bi-calendar2-check-fill" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666' }} />&nbsp;
                         {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
-                        </>
+                      </>
                     )}
                     {data.telecmd_values.length > 0 && data.telecmd_values.map((value: number, idx: number) => (
                       <span key={idx}>, {helperFunctions.resolveLabelValue(data.telecmd, value)} </span>
