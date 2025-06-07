@@ -45,6 +45,13 @@ export function getLabelUnits(label: string): string | undefined {      //functi
   return labelData?.units;
 }
 
+export function getFullLabelWithUnits(label: string): string {      //function to get the units of label
+  const labelData = CONSTANTS.ALL_LABELS.find((item) => item.label === label);
+  if (!labelData) {
+    return label; // Return the label itself if no data found
+  }
+  return `${labelData.label}${labelData.units && `(${labelData.units})`}`
+}
 export function getLabelGraphType(label: string): string {      //function to get the graph type of label
   const labelData = CONSTANTS.ALL_LABELS.find((item) => item.label === label);
   if(labelData?.graphType) {
@@ -194,4 +201,22 @@ export function getActiveAlertsCount(): number {
   }
 
   return sessionData.alerts.filter((alert: any) => !alert.Action).length;
+}
+
+export function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {          //to merge the data points of combined graphs ,to single object
+    const mergedMap: { [timestamp: string]: any } = {};
+
+    labels.forEach(label => {
+        telemetryData[label]?.forEach((point: any) => {
+            const { timestamp, value } = point;
+            if (!mergedMap[timestamp]) {
+                mergedMap[timestamp] = { timestamp };
+            }
+            mergedMap[timestamp][label] = value;
+        });
+    });
+
+    // Convert map to sorted array
+    const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
+    return mergedArray;
 }

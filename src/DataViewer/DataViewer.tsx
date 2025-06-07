@@ -20,7 +20,6 @@ import axios from "axios";
 
 
 //Intials states of useState
-const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
 const initialDropdownOptions: string[] = [];
@@ -30,7 +29,7 @@ CONSTANTS.ALL_LABELS.forEach((item) => {    //graphs visiblilty
     initialVisibility[item.label] = true;
 });
 
-CONSTANTS.ALL_LABELS.forEach((item) => {    //graph options
+CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => {    //graph options
     const grpahObject = CONSTANTS.COMBINED_LABEL_GROUPS.find((graph) => graph.labels.includes(item.label))
     if (grpahObject) {
         initialGraphOptionsState[grpahObject.title] = false;
@@ -40,26 +39,9 @@ CONSTANTS.ALL_LABELS.forEach((item) => {    //graph options
 });
 
 CONSTANTS.ALL_LABELS.forEach((item) => (    //dropdown options
-    initialDropdownOptions.push(`${item.label}${item.units && `(${item.units})`}`)
+    initialDropdownOptions.push(helperFunctions.getFullLabelWithUnits(item.label))
 ))
 
-function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) {          //to merge the data points of combined graphs ,to single object
-    const mergedMap: { [timestamp: string]: any } = {};
-
-    labels.forEach(label => {
-        telemetryData[label]?.forEach((point: any) => {
-            const { timestamp, value } = point;
-            if (!mergedMap[timestamp]) {
-                mergedMap[timestamp] = { timestamp };
-            }
-            mergedMap[timestamp][label] = value;
-        });
-    });
-
-    // Convert map to sorted array
-    const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
-    return mergedArray;
-}
 
 const DataViewer: React.FC = () => {
     //constants 
@@ -69,19 +51,20 @@ const DataViewer: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
         const initialState: { [label: string]: types.GraphState } = {};
-
-        CONSTANTS.ALL_LABELS.forEach((item) => {
+    
+        CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => {
             let fullLabel = `${item.label}${item.units && `(${item.units})`}`
             initialState[fullLabel] = {
                 visibility: true,
                 graphOptions: {
+                    "Remove": false,
                     "Logarithmic Scale": false,
                     "Axis Titles": false,
                     "Gridlines": true,
                 } as const,
             };
         });
-
+    
         return initialState;
     });      
     //to handle the calendar selected start and end dates
@@ -89,7 +72,7 @@ const DataViewer: React.FC = () => {
         startDate: null,
         endDate: null,
     });
-    const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);
+    const [telemetryData, setTelemetryData] = useState<{ [key: string]: { value: number, timestamp: string }[] }>({});
     const [timeSliderData, setTimeSliderData] = useState<any>([])
     const [startIndex, setStartIndex] = useState(0);
     const [endIndex, setEndIndex] = useState(0);
@@ -104,7 +87,7 @@ const DataViewer: React.FC = () => {
     useEffect(() => {
         if (timeSliderData.length === 0) return;
       
-        const index = timeSliderData.length > 60 ? 60 : timeSliderData.length - 1;
+        const index = timeSliderData.length > CONSTANTS.MAX_TIME_SLIDER_INDEX ? CONSTANTS.MAX_TIME_SLIDER_INDEX : timeSliderData.length - 1;
         setEndIndex(index);
       }, [timeSliderData]);
 
@@ -117,9 +100,9 @@ const DataViewer: React.FC = () => {
                 ...prev[label],
                 graphOptions: {
                     ...prev[label].graphOptions,
-                    ["Remove"]: !prev[label].graphOptions["Remove" as keyof types.GraphOptions],
+                    Remove: !prev[label].graphOptions.Remove,                       //toggle remove option
                 },
-                visibility: !prev[label].visibility
+                visibility: !prev[label].visibility         //toggle visibility
             }
         }));
     };
@@ -138,7 +121,7 @@ const DataViewer: React.FC = () => {
 
     const changeGraphOption = (label: string, option: string) => {      //to change the graph otption
         if (option === "Remove") {
-            const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find((graph) => graph.labels.includes(label));        //cobined graph labels object
+            const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find((graph) => graph.labels.includes(label));        //combined graph labels object
             if(groupObj){
                 groupObj.labels.map((graphLabel) => {       //disable all labels visibility of cobined graph  object
                     setVisibleGraphs((prev) => ({
@@ -149,7 +132,7 @@ const DataViewer: React.FC = () => {
                         }
                     }));
                 })
-                setgraphOptionsOpendLables((prev) => ({
+                setgraphOptionsOpendLables((prev) => ({             //toggle combined graph options visibility
                     ...prev,
                     [groupObj.title]: !prev[groupObj.title],
                 }));
@@ -161,7 +144,7 @@ const DataViewer: React.FC = () => {
                         visibility: !prev[label].visibility
                     }
                 }));
-                setgraphOptionsOpendLables((prev) => ({
+                setgraphOptionsOpendLables((prev) => ({      //toggle single label options visibility
                     ...prev,
                     [label]: !prev[label],
                 }));
@@ -184,13 +167,13 @@ const DataViewer: React.FC = () => {
     };
 
     const handleCheckboxChange = (item: types.LabelInfo) => {   //for labels dropdown selection
-        let fullLabel = `${item.label}${item.units && `(${item.units})`}`
+        let fullLabel = helperFunctions.getFullLabelWithUnits(item.label); // Get full label with units if available
         setSelectedOptions((prev) =>
             prev.includes(fullLabel)
                 ? prev.filter((item) => item !== fullLabel)
                 : [...prev, fullLabel]
         );
-        setVisibleGraphs((prev) => ({
+        setVisibleGraphs((prev) => ({               //updating visibility of label graph
             ...prev,
             [fullLabel]: {
                 ...prev[item.label],
@@ -200,7 +183,7 @@ const DataViewer: React.FC = () => {
     };
 
 
-    const handleAllSelectbBoxChange = (event: React.ChangeEvent<HTMLInputElement>) => {     //for dorpdown all selector
+    const handleAllSelectbBoxChange = (event: React.ChangeEvent<HTMLInputElement>) => {     //for dropdown all selector
         if (event.target.checked) {
             setSelectedOptions(initialDropdownOptions);     // Select all labels and show all graphs
             setVisibleGraphs(() => {
@@ -210,6 +193,7 @@ const DataViewer: React.FC = () => {
                     initialState[item.label] = {
                         visibility: true,
                         graphOptions: {
+                            "Remove": false,
                             "Logarithmic Scale": false,
                             "Axis Titles": false,
                             "Gridlines": false,
@@ -229,6 +213,7 @@ const DataViewer: React.FC = () => {
                     initialState[item.label] = {
                         visibility: false,
                         graphOptions: {
+                            "Remove": false,
                             "Logarithmic Scale": false,
                             "Axis Titles": false,
                             "Gridlines": false,
@@ -244,7 +229,6 @@ const DataViewer: React.FC = () => {
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => { // to handle date change
         const { value, name } = event.target;
-        console.log(`Selected ${name}:`, value);
         setSelectedDateRange((prev) => {
             const updatedRange = {
                 ...prev,
@@ -263,7 +247,7 @@ const DataViewer: React.FC = () => {
         }
 
         try {
-            const response = await axios.get(`http://localhost:8000/dataviewer/telemetry`, {
+            const response = await axios.get(CONSTANTS.GET_TELEMETRY_API_URL, {
                 params: {
                     start_date: selectedDateRange.startDate.toISOString(),
                     end_date: selectedDateRange.endDate.toISOString(),
@@ -271,11 +255,10 @@ const DataViewer: React.FC = () => {
             });
 
             const { telemetry_data } = response.data;
-            console.log("Fetched Telemetry Data:", telemetry_data);
             const updatedTelemetryData: { [key: string]: { value: number, timestamp: string }[] } = {};
             const timestampMap: { [key: string]: number } = {};
 
-            Object.values(telemetry_data).forEach((dataArray: any) => {
+            Object.values(telemetry_data).forEach((dataArray: any) => {         // Process each telemetry data array for timestamps
                 dataArray.forEach((entry: any) => {
                     if (!timestampMap[entry.time]) {
                         timestampMap[entry.time] = 1;
@@ -295,7 +278,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.SCITM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.slice(0, 14).forEach((value: number, index: number) => {
-                    const label = CONSTANTS.ALL_LABELS[index] ? `${CONSTANTS.ALL_LABELS[index].label}${CONSTANTS.ALL_LABELS[index].units ? `(${CONSTANTS.ALL_LABELS[index].units})` : ''}` : null;
+                    const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index].label) ;
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -309,7 +292,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.HKTM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.forEach((value: number, index: number) => {
-                    const label =  CONSTANTS.ALL_LABELS[index+14] ? `${CONSTANTS.ALL_LABELS[index+14].label}${CONSTANTS.ALL_LABELS[index+14].units ? `(${CONSTANTS.ALL_LABELS[index+14].units})` : ''}` : null;
+                    const label =  helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index+14].label)
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -321,11 +304,12 @@ const DataViewer: React.FC = () => {
 
             setTelemetryData(updatedTelemetryData);
             setFile(undefined) // Reset date range after fetching data
-            console.log("Updated Telemetry Data:", updatedTelemetryData);
         } catch (error) {
             console.error("Error fetching telemetry data:", error);
         }
     };
+
+
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTelemetryData({});
         const selectedFile = event.target.files?.[0];
@@ -457,7 +441,7 @@ const DataViewer: React.FC = () => {
                                             <label>{item.label}</label>
                                             <input
                                                 type="checkbox"
-                                                checked={selectedOptions.includes(`${item.label}${item.units && `(${item.units})`}`)}
+                                                checked={selectedOptions.includes(helperFunctions.getFullLabelWithUnits(item.label))}
                                                 onChange={() => handleCheckboxChange(item)}
                                             />
 
@@ -509,7 +493,6 @@ const DataViewer: React.FC = () => {
                             <div style={{ width: '65%' }}>
                                 <ResponsiveContainer width="100%" height={50} >
                                     <LineChart data={timeSliderData} >
-                                        {/* <XAxis dataKey="timestamp" /> */}
                                         <Brush
                                             dataKey="timestamp"
                                             height={30}
@@ -534,7 +517,7 @@ const DataViewer: React.FC = () => {
 
                                 if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
                                     groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
-                                    const mergedData = mergeTelemetryByTimestamp(groupObj.labels, telemetryData);       //merging mutiple label data pooints 
+                                    const mergedData = helperFunctions.mergeTelemetryByTimestamp(groupObj.labels, telemetryData);       //merging mutiple label data pooints 
                                     const graphLineToggles: Boolean[] = []      //array which contains labels visiblity of combined graphs
 
                                     groupObj.labels.map((obj) => (

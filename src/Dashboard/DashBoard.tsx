@@ -121,6 +121,7 @@ const Dashboard: React.FC = () => {
       initialState[item.label] = {
         visibility: false,
         graphOptions: {
+          "Remove": false,
           "Logarithmic Scale": false,
           "Axis Titles": false,
           "Gridlines": true,

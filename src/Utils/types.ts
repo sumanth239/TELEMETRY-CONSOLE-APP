@@ -7,6 +7,7 @@ export type LabelInfo = {
 
 
 export type GraphOptions = {
+    "Remove": boolean;
     "Logarithmic Scale": boolean;
     "Axis Titles": boolean;
     "Gridlines": boolean;

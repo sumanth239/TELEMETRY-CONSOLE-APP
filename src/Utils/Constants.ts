@@ -1,4 +1,7 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
+export const BASE_URL = "http://localhost:8000"
+export const GET_TELEMETRY_API_URL = `${BASE_URL}/telemetry`;
+export const MAX_TIME_SLIDER_INDEX = 60;
 export const TELE_COMMAND_TYPES = ["Real Time", "Time Tagged"];
 export const PRODUCTS = ["AstroLink Nano", "AstroBeam", "miniOCT"];
 export const COLOR_MAP = [ "#446BAD","#ff7300","#387908","#F05A7E","#82ca9d","#000000"];
