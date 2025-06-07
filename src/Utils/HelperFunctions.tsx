@@ -237,3 +237,21 @@ export function parseTimeToMillis(timestamp: string): number {
 
   return hours * 3600000 + minutes * 60000 + seconds * 1000;
 }
+
+
+
+export const systemModeIcon = (mode: string) => {
+  if (mode === "Safe Mode") return <i className="bi bi-pause-circle"></i>
+  else if (mode === "Maintenance Mode") return <i className="bi bi-tools"></i>
+  else if (mode === "Stand-By Mode") return <i className="bi bi-hourglass-split"></i>
+  else if (mode === "Downlink Mode") return <i className="bi bi-cloud-arrow-down"></i>
+}
+
+export const getLatestLabelValue = (telemetryData: any, label: string) => {
+  const labelData = telemetryData[label];
+  if (!labelData || !Array.isArray(labelData) || labelData.length === 0) {
+    return ""; // Return null if no data is found
+  }
+  const latestDataPoint = labelData[labelData.length - 1];
+  return resolveLabelValue(label, latestDataPoint.value); // Resolve and return the latest value
+};

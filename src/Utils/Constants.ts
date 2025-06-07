@@ -1,15 +1,15 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
 export const BASE_URL = "http://localhost:8000"
 export const GET_TELEMETRY_API_URL = `${BASE_URL}/telemetry`;
-export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/telecommands`;
+export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/dashboard/telecommands`;
 export const POST_TELECOMMABD_API_URL = `${BASE_URL}/dashboard/tecommand`
-export const SCITM_WEBSOCKET_URL = `"ws://127.0.0.1:8000/ws/SciTM"`
-export const HKTM_WEBSOCKET_URL = `"ws://127.0.0.1:8000/ws/HKTM"`
+export const SCITM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/SciTM"
+export const HKTM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/HKTM"
 export const MAX_TIME_SLIDER_INDEX = 60;
 export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
-export const DEFAULT_INITIAL_TEMP = 32.2
-export const DEFAULT_INITIAL_POWER = 0.0
-export const DEFAULT_INITIAL_SYSTEM_MODE = 0
+export const DEFAULT_INITIAL_TEMP = "32.2"
+export const DEFAULT_INITIAL_POWER = "0.0"
+export const DEFAULT_INITIAL_SYSTEM_MODE = "Safe Mode"
 export const MAX_POINTS = 10; 
 export const DEFAULT_ZOOM = 1; 
 export const TELE_COMMAND_TYPES = ["Real Time", "Time Tagged"];
