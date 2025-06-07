@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import "./DashBoard.css"; // Import the CSS file
 
 //components imports
-import LineChartComponent from "../Components/Charts/LineChart";
+import GraphComponent from "../Components/Graphs/Graph";
 import { confirmAction } from "../Components/PopUps/ConfirmAction";
 import { inputModalAction } from "../Components/PopUps/InputAction";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
@@ -904,7 +904,7 @@ const Dashboard: React.FC = () => {
                             </div>
                           )}
                         </div>
-                        <LineChartComponent
+                        <GraphComponent
                           graphLineToggles={graphLineToggles}
                           data={mergedData.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
                           graphOptions={visibleGraphs[label].graphOptions}
@@ -941,7 +941,7 @@ const Dashboard: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      <LineChartComponent
+                      <GraphComponent
                         graphLineToggles={[visibleGraphs[label].visibility]}
                         data={data.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
                         graphOptions={visibleGraphs[label].graphOptions}

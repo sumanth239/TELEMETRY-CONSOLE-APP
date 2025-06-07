@@ -6,7 +6,7 @@ import { useState, useRef ,useEffect} from "react";
 import "./DataViewer.css";
 
 //components imports
-import LineChartComponent from "../Components/Charts/LineChart";
+import GraphComponent from "../Components/Graphs/Graph";
 
 //library imports
 import * as XLSX from "xlsx";
@@ -563,7 +563,7 @@ const DataViewer: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <LineChartComponent graphLineToggles={graphLineToggles} data={mergedData.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                            <GraphComponent graphLineToggles={graphLineToggles} data={mergedData.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                         </div>
                                     )
                                 }
@@ -590,7 +590,7 @@ const DataViewer: React.FC = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <LineChartComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                        <GraphComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                     </div>
                                 ) : null
 

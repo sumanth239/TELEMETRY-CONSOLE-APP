@@ -30,7 +30,7 @@ const AlertPopup: React.FC<AlertPopupProps> = ({ onClose }) => {
     return [];
   });
 
-  useEffect(() => {       // to update session logs
+  useEffect(() => {       // to update alerts
     const handleSessionAlertsUpdated = () => {
       const sessionStr = localStorage.getItem("sessionStorage");
       if (!sessionStr) return;
