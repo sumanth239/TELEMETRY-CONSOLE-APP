@@ -56,6 +56,7 @@ export default function SignIn() {
       Logs: [],
       loginTime: new Date().toISOString(),
       alerts: [],
+      powerOn:false
     };
 
     localStorage.setItem("sessionStorage", JSON.stringify(logsData));                   // Store session data in localStorage

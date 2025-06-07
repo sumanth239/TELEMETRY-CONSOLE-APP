@@ -255,3 +255,22 @@ export const getLatestLabelValue = (telemetryData: any, label: string) => {
   const latestDataPoint = labelData[labelData.length - 1];
   return resolveLabelValue(label, latestDataPoint.value); // Resolve and return the latest value
 };
+
+export function hasGraphType(label: string): boolean {
+  const labelData = CONSTANTS.ALL_LABELS.find((item) => item.label === label);
+  return !!labelData?.graphType;
+}
+
+export function updatePowerOnStatus(isPowerOn: boolean): void {
+  const sessionStr: any = localStorage.getItem("sessionStorage");
+  if (!sessionStr) {
+    return;
+  }
+
+  const sessionData = JSON.parse(sessionStr);
+  sessionData.powerOn = isPowerOn;
+
+  localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
+  // 🔥 Dispatch custom event
+  window.dispatchEvent(new Event("powerOnStatusUpdated"));
+}

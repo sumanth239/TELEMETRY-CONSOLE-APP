@@ -1,6 +1,6 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
 export const BASE_URL = "http://localhost:8000"
-export const GET_TELEMETRY_API_URL = `${BASE_URL}/telemetry`;
+export const GET_TELEMETRY_API_URL = `${BASE_URL}/dataviewer/telemetry`;
 export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/dashboard/telecommands`;
 export const POST_TELECOMMABD_API_URL = `${BASE_URL}/dashboard/tecommand`
 export const SCITM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/SciTM"
@@ -12,9 +12,22 @@ export const DEFAULT_INITIAL_POWER = "0.0"
 export const DEFAULT_INITIAL_SYSTEM_MODE = "Safe Mode"
 export const MAX_POINTS = 10; 
 export const DEFAULT_ZOOM = 1; 
+export const TIMETAG_CMD_APID = 1
+export const REALTIME_CMD_APID = 0
 export const TELE_COMMAND_TYPES = ["Real Time", "Time Tagged"];
 export const PRODUCTS = ["AstroLink Nano", "AstroBeam", "miniOCT"];
 export const COLOR_MAP = [ "#446BAD","#ff7300","#387908","#F05A7E","#82ca9d","#000000"];
+export const SCITM_MAX_INDEX = 14
+export const FLOAT_INPUT_COMMANDS = [31, 90];
+export const NO_INPUT_COMMANDS = [6,32,5]
+export const MAX_VISIBLE_GRAPHS = 6
+export const POWER_ON_CMD_ID = 5
+export const SHUTDOWN_CMD_ID = 6
+export const INPUT_TYPES = {
+  NO_INPUT:0,
+  DROPDOWN:1,
+  VALUE:2
+}
 export const TELE_COMMANDS = [
   {
     cmd: "Power On",
