@@ -43,3 +43,6 @@ export interface DataPoint {
   "value": number,
   "timestamp": string
 }
+export type TelemetryData = {
+  [key: string]: { value: number; timestamp: string }[];
+};

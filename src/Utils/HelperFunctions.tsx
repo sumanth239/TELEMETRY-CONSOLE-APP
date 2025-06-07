@@ -220,3 +220,20 @@ export function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) 
     const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
     return mergedArray;
 }
+
+export function isArrayEmpty(arr:any) {
+  return Array.isArray(arr) && arr.length === 0;
+}
+
+export function parseTimeToMillis(timestamp: string): number {
+  const [time, meridian] = timestamp.split(' ');
+  const [hoursStr, minutesStr, secondsStr] = time.split(':');
+  let hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+  const seconds = parseInt(secondsStr, 10);
+
+  if (meridian && meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+  if (meridian && meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
+
+  return hours * 3600000 + minutes * 60000 + seconds * 1000;
+}

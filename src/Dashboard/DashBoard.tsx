@@ -28,22 +28,10 @@ const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
 const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 
-function parseTimeToMillis(timestamp: string): number {
-  const [time, meridian] = timestamp.split(' ');
-  const [hoursStr, minutesStr, secondsStr] = time.split(':');
-  let hours = parseInt(hoursStr, 10);
-  const minutes = parseInt(minutesStr, 10);
-  const seconds = parseInt(secondsStr, 10);
-
-  if (meridian && meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
-  if (meridian && meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
-
-  return hours * 3600000 + minutes * 60000 + seconds * 1000;
-}
 
 //Modifying intial state of graphs as visible
 CONSTANTS.ALL_LABELS.forEach((item) => {
-  if (item.label !== "Software Version") {
+  if (!item.graphType) {
     initialVisibility[item.label] = true;
 
   } else {
@@ -53,8 +41,8 @@ CONSTANTS.ALL_LABELS.forEach((item) => {
 
 });
 
-//Modifying intial state of grpahs options of label as false
-CONSTANTS.ALL_LABELS.slice(0, CONSTANTS.ALL_LABELS.length - 2).forEach((item) => {
+//Modifying intial state of graphs options of label as false
+CONSTANTS.ALL_LABELS.filter(item => item.graphType).forEach((item) => {
   const grpahObject = CONSTANTS.COMBINED_LABEL_GROUPS.find((graph) => graph.labels.includes(item.label))
   if (grpahObject) {
     initialGraphOptionsState[grpahObject.title] = false;
@@ -64,16 +52,13 @@ CONSTANTS.ALL_LABELS.slice(0, CONSTANTS.ALL_LABELS.length - 2).forEach((item) =>
 
 });
 
-type TelemetryData = {
-  [key: string]: { value: number; timestamp: string }[];
-};
 
 
 
 const Dashboard: React.FC = () => {
 
   //default intilizalize values
-  const MAX_POINTS = 10; const DEFAULT_ZOOM = 1; // 1x zoom (default view), higher means zoom in (fewer points)
+ // 1x zoom (default view), higher means zoom in (fewer points)
   const renderedLabels = new Set<string>();
   //states
   const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
@@ -82,9 +67,9 @@ const Dashboard: React.FC = () => {
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
   const [systemStatusLabels, setSystemStatusLabels] = useState({
-    "SystemMode": 0,
-    "Temperature": 32.2,
-    "TotalPowerConsumption": 0.0
+    "SystemMode": CONSTANTS.DEFAULT_INITIAL_SYSTEM_MODE,
+    "Temperature": CONSTANTS.DEFAULT_INITIAL_TEMP,
+    "TotalPowerConsumption": CONSTANTS.DEFAULT_INITIAL_POWER
   })
   const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
@@ -105,7 +90,7 @@ const Dashboard: React.FC = () => {
     return [];
   });
   const {  frequency } = useSettings();
-  const [processedTelemetryData, setProcessedTelemetryData] = useState<TelemetryData>({});
+  const [processedTelemetryData, setProcessedTelemetryData] = useState<types.TelemetryData>({});
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
@@ -117,7 +102,7 @@ const Dashboard: React.FC = () => {
   const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {
     const initialState: { [label: string]: types.GraphState } = {};
 
-    CONSTANTS.ALL_LABELS.forEach((item) => {
+    CONSTANTS.ALL_LABELS.filter(item => item.graphType).forEach((item) => {
       initialState[item.label] = {
         visibility: false,
         graphOptions: {
@@ -132,6 +117,7 @@ const Dashboard: React.FC = () => {
     return initialState;
   });
 
+  // use Effects
   useEffect(() => {
     setTeleCmdValueError([]); // Reset error
     let cmdInfo = CONSTANTS.TELE_COMMANDS.find((item) => item.cmd === teleCmdsFormData.teleCmd.cmd);
@@ -139,18 +125,16 @@ const Dashboard: React.FC = () => {
       ...prev,
       teleCmdValue: cmdInfo?.inputType === 1 ? [teleCmdsFormData.teleCmdValue[0]] : [], // Reset input value properly
     }));
-  }, [teleCmdsFormData.teleCmd]);
-  console.log("time", selectedDateTime)
-  // use Effects
+  }, [teleCmdsFormData.teleCmd,teleCmdsFormData.teleCmdValue]);
+
 
   useEffect(() => {
     const interval = setInterval(() => {
       const loginedTime = helperFunctions.getSessionStorageKey("loginTime") || new Date().toISOString();
 
       axios
-        .get('http://localhost:8000/dashboard/telecommands', { params: { from_time: loginedTime } })
+        .get(CONSTANTS.GET_TELECOMMANDS_API_URL, { params: { from_time: loginedTime } })
         .then(res => {
-          console.log('Fetched telecommands:', res.data);
           setTmtData(res.data.telecommands || []);  //setting the telecmds data to state
         })
         .catch(err => {
@@ -185,54 +169,27 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const graphElements = document.querySelectorAll('.graph');
-
-  //   const wheelHandler = (e: any) => {
-  //     e.preventDefault();
-  //     const label = e.currentTarget.getAttribute('data-label');
-  //     if (label) {
-  //       const delta = e.deltaY < 0 ? 1 : -1;
-  //       setZoomLevels((prev) => {
-  //         const current = prev[label] || DEFAULT_ZOOM;
-  //         const next = Math.max(1, current + delta);
-  //         return { ...prev, [label]: next };
-  //       });
-  //     }
-  //   };
-
-  //   graphElements.forEach(el => {
-  //     el.addEventListener('wheel', wheelHandler, { passive: false });
-  //   });
-
-  //   return () => {
-  //     graphElements.forEach(el => {
-  //       el.removeEventListener('wheel', wheelHandler);
-  //     });
-  //   };
-  // }, [visibleGraphs]); // Re-add listeners when visible graphs change
-
   useEffect(() => {
-    const processed: TelemetryData = Object.fromEntries(
+    const processed: types.TelemetryData = Object.fromEntries(
       Object.entries(telemetryData).map(([label, data]) => {
         const index = CONSTANTS.ALL_LABELS.findIndex((item) => item.label === label);
         const filtered = index >= 0 && index < 14 ? data.filter((_, i) => i % frequency === 0) : data;
-        return [label, filtered.slice(-MAX_POINTS)];
+        return [label, filtered.slice(-CONSTANTS.MAX_POINTS)];
       })
     );
 
-    const updatedData: TelemetryData = intialTelemeteryData;
+    const updatedData: types.TelemetryData = intialTelemeteryData;
 
     for (const label in processed) {
       const series = processed[label];
       if (series.length === 0) continue;
 
-      const baseTime = parseTimeToMillis(series[0].timestamp);
+      const baseTime = helperFunctions.parseTimeToMillis(series[0].timestamp);
 
       updatedData[label] = series.map((point, index) => {
         if (index === 0) return point;
 
-        const currentTime = parseTimeToMillis(point.timestamp);
+        const currentTime = helperFunctions.parseTimeToMillis(point.timestamp);
         const diffSeconds = Math.round((currentTime - baseTime) / 1000);
 
         return {
@@ -243,7 +200,7 @@ const Dashboard: React.FC = () => {
     }
 
     setProcessedTelemetryData(updatedData);
-  }, [telemetryData]);
+  }, [telemetryData,frequency]);
 
 
 
@@ -252,40 +209,40 @@ const Dashboard: React.FC = () => {
     if (!startSystem) return; // Exit if the system is not started
     if (startSystem) {
       console.log("connected")
-      const ws = new WebSocket("ws://127.0.0.1:8000/ws/SciTM");
+      const ws = new WebSocket(CONSTANTS.SCITM_WEBSOCKET_URL);
       ws.onmessage = (event) => {
 
         //logging telemetry data to export data through excel 
         if (isLogging) {
           const data = JSON.parse(event.data);
 
-          const newData = {
-            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
+            const newData = {
+            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }) + `.${new Date().getMilliseconds()}`,
             ...CONSTANTS.ALL_LABELS.slice(0, 14).reduce((acc, item, index) => {
               acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
             }, {} as { [key: string]: any })
-          };
+            };
 
           setExportTelemetryData((prevState) => [...prevState, newData]);
         }
 
         try {
           const incomingData = JSON.parse(event.data);
-          if (incomingData.length === 0) {
+          if (helperFunctions.isArrayEmpty(incomingData)) {
             confirmAction({
               title: 'New Alert',
-              text: 'Skipping packet, packet contains bit error.',
+              text: CONSTANTS.BIT_ERROR_ALERT,
               confirmButtonText: 'Acknowledge',
               cancelButtonText: 'Do it Later',
               confirmButtonColor: '#20409A',
               cancelButtonColor: '#e53e3e',
               onConfirm: () => {
-                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
+                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
                 return
               },
               onCancel: () => {
-                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
                 helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
               }
             });
@@ -300,7 +257,7 @@ const Dashboard: React.FC = () => {
 
             CONSTANTS.ALL_LABELS.slice(0, 14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
+                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) + `.${new Date().getMilliseconds()}` };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
               }
             });
@@ -319,9 +276,9 @@ const Dashboard: React.FC = () => {
         return () => { ws.close() }
       }
     }
-    console.log(telemetryData)
+
     if (startSystem) {
-      const ws = new WebSocket("ws://127.0.0.1:8000/ws/HKTM");
+      const ws = new WebSocket(CONSTANTS.HKTM_WEBSOCKET_URL);
       ws.onmessage = (event) => {   //on websocket connection
 
         //logging telemetry data to export data through excel 
@@ -345,16 +302,16 @@ const Dashboard: React.FC = () => {
           if (incomingData.length === 0) {
             confirmAction({
               title: 'New Alert',
-              text: 'Skipping packet, packet contains bit error.',
+              text: CONSTANTS.BIT_ERROR_ALERT,
               confirmButtonText: 'Acknowledge',
               cancelButtonText: 'Do it Later',
               confirmButtonColor: '#20409A',
               cancelButtonColor: '#e53e3e',
               onConfirm: () => {
-                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", true);
+                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
               },
               onCancel: () => {
-                helperFunctions.updateAlerts("Skipping packet, packet contains bit error.", false);
+                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
                 helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
               }
             });
@@ -417,17 +374,17 @@ const Dashboard: React.FC = () => {
     const teleCommand = teleCmdsFormData.teleCmd
     const teleCommandValue = teleCmdsFormData.teleCmdValue
     const apid = teleCmdsFormData.teleCmdType === "Real Time" ? 0 : 1;
-    const cmd = teleCmdsFormData.teleCmd
+   
 
-    if (cmd.cmdId === 5) {
+    if (teleCommand.cmdId === 5) {
       setStartSystem(true); // Start the system if not already started
     }
 
-    if (cmd.cmdId === 6) {
+    if (teleCommand.cmdId === 6) {
       setStartSystem(false); // Start the system if not already started
     }
 
-    if (cmd.cmdId === 0 || cmd.cmd === "") {
+    if (teleCommand.cmdId === 0 || teleCommand.cmd === "") {
       Swal.fire("Please select any of the teleCommand");
       return;
     }
@@ -437,7 +394,7 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    if (cmd.cmdId !== 6 && cmd.cmdId !== 32 && cmd.cmdId !== 5 && teleCommandValue.length === 0) {
+    if (teleCommand.cmdId !== 6 && teleCommand.cmdId !== 32 && teleCommand.cmdId !== 5 && teleCommandValue.length === 0) {
       Swal.fire("Please Enter valid data")
       return;
     }
@@ -445,7 +402,7 @@ const Dashboard: React.FC = () => {
     try {
       const teleCmdValues = teleCommandValue.map((val) => Number(val))
       console.log(teleCmdValues)
-      const response = await axios.post("http://127.0.0.1:8000/dashboard/tecommand", {
+      const response = await axios.post(CONSTANTS.BIT_ERROR_ALERT, {
         telecmd_id: Number(teleCommand.cmdId),
         telecmd: teleCommand.cmd,
         telecmd_value: teleCmdValues,
@@ -497,7 +454,7 @@ const Dashboard: React.FC = () => {
     // Add this to ensure the parent doesn't scroll
     if (e.currentTarget.contains(e.target as Node)) {
       setZoomLevels((prev) => {
-        const current = prev[label] || DEFAULT_ZOOM;
+        const current = prev[label] ;
         const delta = e.deltaY < 0 ? 1 : -1;
         const next = Math.max(1, current + delta);
         return { ...prev, [label]: next };
@@ -907,7 +864,7 @@ const Dashboard: React.FC = () => {
                         </div>
                         <GraphComponent
                           graphLineToggles={graphLineToggles}
-                          data={mergedData.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
+                          data={mergedData}
                           graphOptions={visibleGraphs[label].graphOptions}
                           timeSlider={false}
                           graphType={helperFunctions.getLabelGraphType(label)}
@@ -944,7 +901,7 @@ const Dashboard: React.FC = () => {
                       </div>
                       <GraphComponent
                         graphLineToggles={[visibleGraphs[label].visibility]}
-                        data={data.slice(-Math.min(10, Math.floor(MAX_POINTS / (zoomLevels[label] || DEFAULT_ZOOM))))}
+                        data={data.slice(-Math.min(10, Math.floor(CONSTANTS.MAX_POINTS / (zoomLevels[label] || CONSTANTS.DEFAULT_ZOOM))))}
                         graphOptions={visibleGraphs[label].graphOptions}
                         timeSlider={false}
                         graphType={helperFunctions.getLabelGraphType(label)}
