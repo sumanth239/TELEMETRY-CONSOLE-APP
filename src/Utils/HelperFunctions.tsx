@@ -3,14 +3,14 @@ import { saveAs } from "file-saver";
 import * as CONSTANTS from "./Constants";
 import * as types from "../Utils/types"
 
-
 export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.ExportToExcelProps): void => {    //function to export the data into excel sheet
   if (telemetryData.length === 0 || logsData.length === 0) {
     console.warn("No data available for export!");
     return;
   }
 
-  const FileName = fileName?.replace(/\s+/g, '') || `astrolink_${getFormattedDateTime()}.xlsx`;
+  const productName = getSessionStorageKey('product');
+  const FileName = fileName?.replace(/\s+/g, '') || `${productName}_${getFormattedDateTime()}.xlsx`;
   updateSessionLogs(`User choose ${FileName} filename for exported excel sheet`);
 
   const ws = XLSX.utils.json_to_sheet(telemetryData);
@@ -22,13 +22,14 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
 
 
   // ✅ Define column widths
-  ws["!cols"] = [
-    { wch: 20 }, // First column (e.g., timestamp)
-    ...Object.keys(telemetryData[0]).slice(1).map(() => ({ wch: 20 })) // Rest
+  ws["!cols"] = [             //for telemetry data
+    { wch: 25 }, // First column (e.g., timestamp)
+    // Apply the same width for all columns
+    ...Object.keys(telemetryData[0]).map(() => ({ wch: 30 }))
   ];
 
-  ws2["!cols"] = [
-    {wch : 23},
+  ws2["!cols"] = [            //for logs data
+    {wch : 25},
     {wch : 100}
   ]
   const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
@@ -273,4 +274,20 @@ export function updatePowerOnStatus(isPowerOn: boolean): void {
   localStorage.setItem("sessionStorage", JSON.stringify(sessionData));
   // 🔥 Dispatch custom event
   window.dispatchEvent(new Event("powerOnStatusUpdated"));
+}
+
+export function getUTCTimestampWithMilliseconds(): string {
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3,
+    hour12: true,
+  });
+
+  return formatter.format(new Date());
 }

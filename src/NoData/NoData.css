@@ -1,0 +1,24 @@
+.no-data-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    /* background-color: #f9fafb; */
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  .no-data-image {
+    width: 270px;
+    max-width: 80%;
+    /* margin-bottom: 1.5rem; */
+    opacity: 0.85;
+  }
+  
+  .no-data-message {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #6b7280;
+  }
+  

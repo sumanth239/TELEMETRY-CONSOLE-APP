@@ -1,6 +1,6 @@
 //default imports
 import React from "react";
-import { useState, useRef ,useEffect} from "react";
+import { useState, useRef, useEffect } from "react";
 
 //style sheet imports
 import "./DataViewer.css";
@@ -12,11 +12,14 @@ import GraphComponent from "../Components/Graphs/Graph";
 import * as XLSX from "xlsx";
 import * as helperFunctions from "../Utils/HelperFunctions";
 import { LineChart, ResponsiveContainer, Brush } from "recharts";
+import Swal from 'sweetalert2';
 
 //utilities imports
 import * as types from '../Utils/types';
 import * as CONSTANTS from "../Utils/Constants";
 import axios from "axios";
+import NoDataFound from "../NoData/NoData";
+import TimeSlider from "../Components/Graphs/TimeSlider";
 
 
 //Intials states of useState
@@ -25,7 +28,7 @@ const initialGraphOptionsState: { [key: string]: boolean } = {};
 const initialDropdownOptions: string[] = [];
 
 //Modifying intial states  
-CONSTANTS.ALL_LABELS.forEach((item) => {    //graphs visiblilty
+CONSTANTS.ALL_LABELS.filter(item => item.graphType).forEach((item) => {    //graphs visiblilty
     initialVisibility[item.label] = true;
 });
 
@@ -38,7 +41,7 @@ CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => {    //g
     }
 });
 
-CONSTANTS.ALL_LABELS.forEach((item) => (    //dropdown options
+CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => (    //dropdown options
     initialDropdownOptions.push(helperFunctions.getFullLabelWithUnits(item.label))
 ))
 
@@ -51,7 +54,7 @@ const DataViewer: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
         const initialState: { [label: string]: types.GraphState } = {};
-    
+
         CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => {
             let fullLabel = `${item.label}${item.units && `(${item.units})`}`
             initialState[fullLabel] = {
@@ -64,9 +67,9 @@ const DataViewer: React.FC = () => {
                 } as const,
             };
         });
-    
+
         return initialState;
-    });      
+    });
     //to handle the calendar selected start and end dates
     const [selectedDateRange, setSelectedDateRange] = useState<{ startDate: Date | null; endDate: Date | null }>({
         startDate: null,
@@ -74,8 +77,8 @@ const DataViewer: React.FC = () => {
     });
     const [telemetryData, setTelemetryData] = useState<{ [key: string]: { value: number, timestamp: string }[] }>({});
     const [timeSliderData, setTimeSliderData] = useState<any>([])
-    const [startIndex, setStartIndex] = useState(0);
-    const [endIndex, setEndIndex] = useState(0);
+    const [startIndex, setStartIndex] = useState(5);
+    const [endIndex, setEndIndex] = useState(10);
     const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
         initialGraphOptionsState
     );
@@ -86,10 +89,10 @@ const DataViewer: React.FC = () => {
     //use effetcts
     useEffect(() => {
         if (timeSliderData.length === 0) return;
-      
+
         const index = timeSliderData.length > CONSTANTS.MAX_TIME_SLIDER_INDEX ? CONSTANTS.MAX_TIME_SLIDER_INDEX : timeSliderData.length - 1;
         setEndIndex(index);
-      }, [timeSliderData]);
+    }, [timeSliderData]);
 
 
     //handler functions
@@ -107,7 +110,7 @@ const DataViewer: React.FC = () => {
         }));
     };
 
-    
+
 
     const handleBrushChange = (e: any) => {     //to hadle brush(time slider) range
         if (!e?.startIndex || !e?.endIndex) return;
@@ -122,7 +125,7 @@ const DataViewer: React.FC = () => {
     const changeGraphOption = (label: string, option: string) => {      //to change the graph otption
         if (option === "Remove") {
             const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find((graph) => graph.labels.includes(label));        //combined graph labels object
-            if(groupObj){
+            if (groupObj) {
                 groupObj.labels.map((graphLabel) => {       //disable all labels visibility of cobined graph  object
                     setVisibleGraphs((prev) => ({
                         ...prev,
@@ -136,7 +139,7 @@ const DataViewer: React.FC = () => {
                     ...prev,
                     [groupObj.title]: !prev[groupObj.title],
                 }));
-            }else{
+            } else {
                 setVisibleGraphs((prev) => ({       //disable only single label visibility
                     ...prev,
                     [label]: {
@@ -149,7 +152,7 @@ const DataViewer: React.FC = () => {
                     [label]: !prev[label],
                 }));
             }
-            
+
         }
 
         if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
@@ -203,7 +206,7 @@ const DataViewer: React.FC = () => {
 
                 return initialState;
             });
-            
+
         } else {
             setSelectedOptions([]);      // Clear selection and hide all graphs
             setVisibleGraphs(() => {
@@ -223,7 +226,7 @@ const DataViewer: React.FC = () => {
 
                 return initialState;
             });
-            
+
         }
     };
 
@@ -234,19 +237,36 @@ const DataViewer: React.FC = () => {
                 ...prev,
                 [name]: value ? new Date(value) : null,
             };
-            
+
             return updatedRange;
         });
         setFile(undefined); // Reset file when date range is changed
     };
 
     const fetchTelemetryData = async () => {
-        if (!selectedDateRange.startDate || !selectedDateRange.endDate) {
-            console.warn("Start date or end date is missing.");
+        if (!selectedDateRange.startDate || !selectedDateRange.endDate || selectedDateRange.startDate >= selectedDateRange.endDate) {
+            if (selectedDateRange.startDate && selectedDateRange.endDate && selectedDateRange.startDate >= selectedDateRange.endDate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Date Range',
+                    text: 'Start date must be earlier than end date.',
+                });
+                return;
+            }
             return;
         }
 
         try {
+            // Show loading popup
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Fetching telemetry data, please wait.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             const response = await axios.get(CONSTANTS.GET_TELEMETRY_API_URL, {
                 params: {
                     start_date: selectedDateRange.startDate.toISOString(),
@@ -278,7 +298,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.SCITM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.slice(0, 14).forEach((value: number, index: number) => {
-                    const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index].label) ;
+                    const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index].label);
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -292,7 +312,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.HKTM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.forEach((value: number, index: number) => {
-                    const label =  helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index+14].label)
+                    const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index + 14].label)
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -303,8 +323,23 @@ const DataViewer: React.FC = () => {
             });
 
             setTelemetryData(updatedTelemetryData);
-            setFile(undefined) // Reset date range after fetching data
+            setFile(undefined); // Reset date range after fetching data
+
+            // Close loading popup and show success message
+            Swal.close();
+            Swal.fire({
+                icon: 'success',
+                title: 'Data Imported',
+                text: 'Telemetry data has been successfully fetched.',
+            });
         } catch (error) {
+            // Close loading popup and show error message
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to fetch telemetry data. Please try again later.',
+            });
             console.error("Error fetching telemetry data:", error);
         }
     };
@@ -312,6 +347,8 @@ const DataViewer: React.FC = () => {
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTelemetryData({});
+        setEndIndex(10);
+        setStartIndex(5);
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
 
@@ -342,74 +379,93 @@ const DataViewer: React.FC = () => {
     const readExcelData = () => {
         setSelectedDateRange({ startDate: null, endDate: null }); // Reset date range when a new file is uploaded
         if (!file) {
-            console.warn("No file selected.");
+            Swal.fire({
+                icon: 'error',
+                title: 'No File Selected',
+                text: 'Please select a file to import data.',
+            });
             return;
         }
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            const data = new Uint8Array(e.target?.result as ArrayBuffer);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            const jsonData: any = XLSX.utils.sheet_to_json(sheet);
-            
-            const transformedData: any = {};
+            try {
+                const data = new Uint8Array(e.target?.result as ArrayBuffer);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const jsonData: any = XLSX.utils.sheet_to_json(sheet);
 
-            let firstTimestamp: number | null = null;
+                const transformedData: any = {};
 
-            jsonData.forEach((row: any, index: number) => {
-                const timestampStr = row["Timestamp"];
-                const timestamp = parseCustomTimestamp(timestampStr);
+                let firstTimestamp: number | null = null;
 
-                if (timestamp === null) {
-                    console.warn("Invalid timestamp:", timestampStr);
-                    return;
-                }
+                jsonData.forEach((row: any, index: number) => {
+                    const timestampStr = row["Timestamp"];
+                    const timestamp = parseCustomTimestamp(timestampStr);
 
-                if (index === 0) {
-                    firstTimestamp = timestamp;
-                }
-
-                Object.keys(row).forEach((key) => {
-                    // if (key === "Timestamp") return;
-
-                    if (!transformedData[key]) {
-                        transformedData[key] = [];
+                    if (timestamp === null) {
+                        console.warn("Invalid timestamp:", timestampStr);
+                        return;
                     }
 
-                    let timeInfo = {};
-
-                    if (index === 0 || index === jsonData.length - 1) {
-                        timeInfo = { timestamp: timestampStr };
-                    } else if (firstTimestamp !== null) {
-                        const diffSeconds = (timestamp - firstTimestamp) / 1000;
-                        timeInfo = { timestamp: diffSeconds };
+                    if (index === 0) {
+                        firstTimestamp = timestamp;
                     }
 
-                    transformedData[key].push({
-                        value: parseFloat(row[key]),
-                        ...timeInfo,
+                    Object.keys(row).forEach((key) => {
+                        if (!transformedData[key]) {
+                            transformedData[key] = [];
+                        }
+
+                        let timeInfo = {};
+
+                        if (index === 0 || index === jsonData.length - 1) {
+                            timeInfo = { timestamp: timestampStr };
+                        } else if (firstTimestamp !== null) {
+                            const diffSeconds = (timestamp - firstTimestamp) / 1000;
+                            timeInfo = { timestamp: timestampStr};
+                        }
+
+                        transformedData[key].push({
+                            value: parseFloat(row[key]),
+                            ...timeInfo,
+                        });
                     });
                 });
-            });
 
-            
-            setTimeSliderData(Object.entries(transformedData)[0][1]);       //data for the time slider 
-            setTelemetryData(transformedData);
-            
-            console.log("Transformed Telemetry Data:", transformedData);
+                setTimeSliderData(Object.entries(transformedData)[0][1]); // Data for the time slider
+                setTelemetryData(transformedData);
 
+                // Store excel logs data into state
+                const logsSheetName = workbook.SheetNames[1];
+                const logsSheet = workbook.Sheets[logsSheetName];
+                const logsJsonData: any = XLSX.utils.sheet_to_json(logsSheet);
+                setSessionLogsData(logsJsonData);
 
-
-            //to store excel logs data into state
-            const logsSheetName = workbook.SheetNames[1]
-            const logsSheet = workbook.Sheets[logsSheetName];
-            const logsJsonData: any = XLSX.utils.sheet_to_json(logsSheet);
-            setSessionLogsData(logsJsonData);
-
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Data Imported',
+                    text: 'Telemetry data has been successfully imported.',
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to read the file. Please ensure it is a valid Excel file.',
+                });
+                console.error("Error reading Excel file:", error);
+            }
         };
-        
+
+        reader.onerror = () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Read Error',
+                text: 'An error occurred while reading the file. Please try again.',
+            });
+        };
+
         reader.readAsArrayBuffer(file);
         setFile(undefined); // Reset file after reading
     };
@@ -420,7 +476,7 @@ const DataViewer: React.FC = () => {
             <div className="dataviewer-main-container">
                 <div className="calender-container">
                     <div className="dropdown-container">
-                        <button type="button"   className="dropdown-button" onClick={() => setIsOpen(!isOpen)}  >
+                        <button type="button" className="dropdown-button" onClick={() => setIsOpen(!isOpen)}  >
                             Select  labels &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i className={`bi ${isOpen ? "bi-caret-up-fill" : "bi-caret-down-fill"} dropdown-icon`}></i>
                         </button>
 
@@ -452,8 +508,8 @@ const DataViewer: React.FC = () => {
                         )}
                     </div>
                     <div className="time-range-container">
-                        <span>Select Start Date : <input type="datetime-local"  value={selectedDateRange.startDate ? selectedDateRange.startDate.toISOString().slice(0, -1) : ''} name="startDate" onChange={handleDateChange} step="1"></input></span>
-                        <span>Select End Date : <input type="datetime-local"  value={selectedDateRange.endDate ? selectedDateRange.endDate.toISOString().slice(0, -1) : ''} name="endDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select Start Date : <input type="datetime-local" value={selectedDateRange.startDate ? selectedDateRange.startDate.toISOString().slice(0, -1) : ''} name="startDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select End Date : <input type="datetime-local" value={selectedDateRange.endDate ? selectedDateRange.endDate.toISOString().slice(0, -1) : ''} name="endDate" onChange={handleDateChange} step="1"></input></span>
                     </div>
 
                     <ul className="data-buttons-container" >
@@ -478,11 +534,11 @@ const DataViewer: React.FC = () => {
 
                                     {/* condtionally rendering icons to handle graphs visibility */}
                                     {visibleGraphs[item]?.visibility ? (
-                                        <i  onClick={() => toggleGraph(item)}   className="bi bi-eye"   style={{cursor: "pointer",color: "black"}} ></i>
-                                    ) : 
-                                    (
-                                        <i  onClick={() => toggleGraph(item)}   className="bi bi-eye-slash-fill"    style={{cursor: "pointer",color: "black",}}></i>
-                                    )}
+                                        <i onClick={() => toggleGraph(item)} className="bi bi-eye" style={{ cursor: "pointer", color: "black" }} ></i>
+                                    ) :
+                                        (
+                                            <i onClick={() => toggleGraph(item)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
+                                        )}
 
                                 </div>
                             ))}
@@ -491,6 +547,16 @@ const DataViewer: React.FC = () => {
                     <div className="graphs-container">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <div style={{ width: '65%' }}>
+                                {/* <TimeSlider 
+                                        timeSliderData={timeSliderData}
+                                        onBrushChange={(start, end) => {
+                                            setStartIndex(start);
+                                            setEndIndex(end);
+                                          // handle range update logic
+                                        }}
+                                        startIndex={startIndex}
+                                        endIndex={endIndex}
+                                /> */}
                                 <ResponsiveContainer width="100%" height={50} >
                                     <LineChart data={timeSliderData} >
                                         <Brush
@@ -508,37 +574,70 @@ const DataViewer: React.FC = () => {
                         </div>
 
 
+                        {helperFunctions.isArrayEmpty(Object.entries(telemetryData)) ? (
+                            <NoDataFound message={CONSTANTS.NO_DATA_FOUND} />
+                        ) : (
+                            <div className="graphs-data-container">
+                                {/* Condtionly rendering the graphs based on visibility */}
 
-                        <div className="graphs-data-container">
-                            {/* Condtionly rendering the graphs based on visibility */}
-                            {Object.entries(telemetryData).map(([label, data]) => {
-                                if (renderedLabels.has(label)) return null;
-                                const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find(groupObj => groupObj.labels.includes(label));        //checking label is combined graph or not
+                                {Object.entries(telemetryData).map(([label, data]) => {
+                                    if (helperFunctions.isArrayEmpty(data)) {
+                                        return null;
+                                    }
+                                    if (renderedLabels.has(label)) return null;
+                                    const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find(groupObj => groupObj.labels.includes(label));        //checking label is combined graph or not
 
-                                if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
-                                    groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
-                                    const mergedData = helperFunctions.mergeTelemetryByTimestamp(groupObj.labels, telemetryData);       //merging mutiple label data pooints 
-                                    const graphLineToggles: Boolean[] = []      //array which contains labels visiblity of combined graphs
+                                    if (groupObj && groupObj.labels.some(lbl => visibleGraphs[lbl]?.visibility)) {
+                                        groupObj.labels.forEach(lbl => renderedLabels.add(lbl));
+                                        const mergedData = helperFunctions.mergeTelemetryByTimestamp(groupObj.labels, telemetryData);       //merging mutiple label data pooints 
+                                        const graphLineToggles: Boolean[] = []      //array which contains labels visiblity of combined graphs
 
-                                    groupObj.labels.map((obj) => (
-                                        graphLineToggles.push(visibleGraphs[obj].visibility)
-                                    ))
+                                        groupObj.labels.map((obj) => (
+                                            graphLineToggles.push(visibleGraphs[obj].visibility)
+                                        ))
 
-                                    return (
+                                        return (
+                                            <div className="graph">
+                                                <div className="graph-header">
+                                                    <p>{groupObj.title}</p>
+                                                    <button onClick={() => graphOptionsButtonHandler(groupObj.title)} className="view-more-button" >
+                                                        <i className="bi bi-three-dots-vertical" style={{ fontSize: "18px" }}></i>
+                                                    </button>
+
+                                                    {/* conditionally rendering graph options */}
+                                                    {graphOptionsOpendLables[groupObj.title] && (       //for combined graphs we send parameter title 
+                                                        <div className="graph-options-menu">
+                                                            <ul>
+                                                                {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
+                                                                    <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
+                                                                        }`}>
+                                                                        {item}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <GraphComponent graphLineToggles={graphLineToggles} data={mergedData.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                            </div>
+                                        )
+                                    }
+
+                                    renderedLabels.add(label);
+                                    return visibleGraphs[label]?.visibility ? (
                                         <div className="graph">
                                             <div className="graph-header">
-                                                <p>{groupObj.title}</p>
-                                                <button onClick={() => graphOptionsButtonHandler(groupObj.title)}   className="view-more-button" >
-                                                    <i  className="bi bi-three-dots-vertical"   style={{ fontSize: "18px" }}></i>
+                                                <p>{label}</p>
+                                                <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
+                                                    <i className="bi bi-three-dots-vertical" style={{ fontSize: "18px" }} />
                                                 </button>
 
                                                 {/* conditionally rendering graph options */}
-                                                {graphOptionsOpendLables[groupObj.title] && (       //for combined graphs we send parameter title 
+                                                {graphOptionsOpendLables[label] && (
                                                     <div className="graph-options-menu">
                                                         <ul>
                                                             {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
-                                                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""
-                                                                    }`}>
+                                                                <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""}`}>
                                                                     {item}
                                                                 </li>
                                                             ))}
@@ -546,39 +645,14 @@ const DataViewer: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <GraphComponent graphLineToggles={graphLineToggles} data={mergedData.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                            <GraphComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                         </div>
-                                    )
-                                }
+                                    ) : null
 
-                                renderedLabels.add(label);
-                                return visibleGraphs[label]?.visibility ? (
-                                    <div className="graph">
-                                        <div className="graph-header">
-                                            <p>{label}</p>
-                                            <button onClick={() => graphOptionsButtonHandler(label)}    className="view-more-button" >
-                                                <i  className="bi bi-three-dots-vertical"   style={{ fontSize: "18px" }} />
-                                            </button>
+                                })}
+                            </div>)
+                        }
 
-                                            {/* conditionally rendering graph options */}
-                                            {graphOptionsOpendLables[label] && (
-                                                <div className="graph-options-menu">
-                                                    <ul>
-                                                        {CONSTANTS.GRAPH_OPTIONS.map((item, index) => (
-                                                            <li onClick={() => changeGraphOption(label, item)} className={`graph-options-menu-item ${visibleGraphs[label]?.graphOptions[item as keyof types.GraphOptions] ? "selected" : ""}`}>
-                                                                {item}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <GraphComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
-                                    </div>
-                                ) : null
-
-                            })}
-                        </div>
                     </div>
 
                     {/*system log container */}

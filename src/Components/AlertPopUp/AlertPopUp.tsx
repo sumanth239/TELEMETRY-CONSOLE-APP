@@ -5,8 +5,12 @@ import { useEffect, useState } from 'react';
 //style sheet imports
 import "./AlertPopUp.css"
 
+//components imports
+import NoDataFound from '../../NoData/NoData';
+
 // utility imports
 import * as helperFunctions from "../../Utils/HelperFunctions";
+import * as CONSTANTS from "../../Utils/Constants";
 
 interface AlertPopupProps {
   onClose: () => void;
@@ -80,8 +84,7 @@ const AlertPopup: React.FC<AlertPopupProps> = ({ onClose }) => {
           </div>
 
         <div className='alerts-container'>
-          {alertsData.filter((item) => !item.Action).length === 0 ? (
-          <div className="no-alerts">There are no active alerts</div> ) : (
+          {alertsData.filter((item) => !item.Action).length === 0 ? (<NoDataFound  message={CONSTANTS.NO_ALERT_MESSAGE}/>) : (
             alertsData.map((item, index) => item.Action ? null : (
               <div className='alerts' key={index}>
                 <div className="alert-item">

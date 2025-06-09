@@ -28,6 +28,8 @@ export const INPUT_TYPES = {
   DROPDOWN:1,
   VALUE:2
 }
+export const NO_ALERT_MESSAGE = "No Alerts Found"
+export const NO_DATA_FOUND = "No Data Found"
 export const TELE_COMMANDS = [
   {
     cmd: "Power On",
@@ -190,14 +192,6 @@ export const TELE_COMMANDS = [
   },
 ];
 
-export const SYSTEM_LOGS = [
-  { timestamp: "21-02-2025 10:07 UTC", message: "System is undergoing software update" },
-  { timestamp: "21-02-2025 10:06 UTC", message: "CRC pass for Boot Image. System is ready for Software Update" },
-  { timestamp: "21-02-2025 10:05 UTC", message: "System is ready to receive Boot Image" },
-  { timestamp: "21-02-2025 10:00 UTC", message: "System Mode changed to Maintenance" },
-  { timestamp: "21-02-2025 09:51 UTC", message: "System Mode changed to Stand-By" },
-];
-
 export const SYSTEM_MODES = [
   "Safe Mode",
   "Maintenance Mode",
@@ -223,7 +217,7 @@ export const ALL_LABELS = [
   { label: "Beacon Status", units: "", graphType: "monotoneX" },
   { label: "FSM X angle", units: "deg", graphType: "monotoneX" },
   { label: "FSM Y angle", units: "deg", graphType: "monotoneX" },
-  { label: "Gimbal Current Comsumption", units: "A", graphType: "monotoneX" },
+  { label: "Gimbal Current ", units: "A", graphType: "monotoneX" },
   { label: "ODT Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Gimbal Temperature", units: "°C", graphType: "monotoneX" },
   { label: "EDFA Mode", units: "", graphType: "step" },

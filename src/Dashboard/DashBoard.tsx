@@ -224,11 +224,10 @@ const Dashboard: React.FC = () => {
         //logging telemetry data to export data through excel 
         if (isLogging) {
           const data = JSON.parse(event.data);
-
             const newData = {
-            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }) + `.${new Date().getMilliseconds()}`,
+            Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
             ...CONSTANTS.ALL_LABELS.slice(0, 14).reduce((acc, item, index) => {
-              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
+              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] !== undefined ? data[index] : null;
               return acc;
             }, {} as { [key: string]: any })
             };
@@ -238,6 +237,7 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
+          // console.log("incoming data" ,incomingData)                                                                    //console
           if (helperFunctions.isArrayEmpty(incomingData)) {
             confirmAction({
               title: 'New Alert',
@@ -263,11 +263,11 @@ const Dashboard: React.FC = () => {
 
             CONSTANTS.ALL_LABELS.slice(0, 14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) + `.${new Date().getMilliseconds()}` };
+                const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
               }
             });
-            console.log(updatedData)
+     
             return updatedData;
 
           });
@@ -291,7 +291,7 @@ const Dashboard: React.FC = () => {
         if (isLogging) {
           const data = JSON.parse(event.data);
           const newData = {
-            Timestamp: new Date().toLocaleString("en-GB", { timeZone: "UTC", hour12: true }),
+            Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
             ...CONSTANTS.ALL_LABELS.slice(14).reduce((acc, item, index) => {
               acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
               return acc;
@@ -304,7 +304,7 @@ const Dashboard: React.FC = () => {
 
         try {
           const incomingData = JSON.parse(event.data);
-          console.log(incomingData)
+         
           if (incomingData.length === 0) {
             confirmAction({
               title: 'New Alert',
@@ -325,18 +325,17 @@ const Dashboard: React.FC = () => {
           }
 
 
-          // console.log(incomingData)
+          
           setTelemetryData((prevData) => {
             const updatedData = { ...prevData };
 
             CONSTANTS.ALL_LABELS.slice(14).forEach((item, index) => {
               if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index], timestamp: new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour12: true }) };
+                const newEntry = { value: incomingData[index], timestamp:helperFunctions.getUTCTimestampWithMilliseconds()};
                 updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
               }
             });
-            console.log(updatedData)
-
+          
             return updatedData
 
           });
