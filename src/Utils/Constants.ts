@@ -5,6 +5,7 @@ export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/dashboard/telecommands`;
 export const POST_TELECOMMABD_API_URL = `${BASE_URL}/dashboard/tecommand`
 export const SCITM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/SciTM"
 export const HKTM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/HKTM"
+export const TELEMETRY_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/Telemetry"
 export const MAX_TIME_SLIDER_INDEX = 60;
 export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
 export const DEFAULT_INITIAL_TEMP = "32.2"
@@ -28,6 +29,7 @@ export const INPUT_TYPES = {
   DROPDOWN:1,
   VALUE:2
 }
+export const MAX_TELEMETRY_DURATION = 20
 export const NO_ALERT_MESSAGE = "No Alerts Found"
 export const NO_DATA_FOUND = "No Data Found"
 export const NO_SESSION_LOGS_FOUND ="No Session Logs Found"

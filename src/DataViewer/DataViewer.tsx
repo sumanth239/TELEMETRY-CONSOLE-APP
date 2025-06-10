@@ -19,7 +19,6 @@ import * as types from '../Utils/types';
 import * as CONSTANTS from "../Utils/Constants";
 import axios from "axios";
 import NoDataFound from "../NoData/NoData";
-import TimeSlider from "../Components/Graphs/TimeSlider";
 
 
 //Intials states of useState
@@ -89,21 +88,18 @@ const DataViewer: React.FC = () => {
 
     //use effetcts
     useEffect(() => {
-        if (timeSliderData.length === 0) return;
+        if (helperFunctions.isArrayEmpty(timeSliderData)) return;
 
         const index = timeSliderData.length > CONSTANTS.MAX_TIME_SLIDER_INDEX ? CONSTANTS.MAX_TIME_SLIDER_INDEX : timeSliderData.length - 1;
         setEndIndex(index);
     }, [timeSliderData]);
-    console.log("start index", startIndex)
-    console.log("End inde", endIndex)
-    console.log(telemetryData)
 
 
     //handler functions
     const toggleGraph = (label: string) => {        // to Toggle graph visibility
         const visibleGraphCount = Object.values(visibleGraphs).filter(graph => graph.visibility).length;
         if (!visibleGraphs[label].visibility && visibleGraphCount >= CONSTANTS.MAX_VISIBLE_GRAPHS) {
-              Swal.fire({
+              Swal.fire({                                                       //popup for limiting the graphs
                 title: 'Limit Reached',
                 text: 'You can only view up to 6 graphs at a time.',
                 icon: 'warning',
@@ -259,7 +255,7 @@ const DataViewer: React.FC = () => {
         setFile(undefined); // Reset file when date range is changed
     };
 
-    const fetchTelemetryData = async () => {
+    const fetchTelemetryData = async () => {                            //fetching telemetry data from the backend
         if (!selectedDateRange.startDate || !selectedDateRange.endDate || selectedDateRange.startDate >= selectedDateRange.endDate) {
             if (selectedDateRange.startDate && selectedDateRange.endDate && selectedDateRange.startDate >= selectedDateRange.endDate) {
                 Swal.fire({
@@ -273,7 +269,7 @@ const DataViewer: React.FC = () => {
             return;
         }
         const timeDifInMinutes = helperFunctions.getTimeDifferenceInMinutes(selectedDateRange.startDate, selectedDateRange.endDate)
-        if (timeDifInMinutes > 20) {
+        if (timeDifInMinutes > CONSTANTS.MAX_TELEMETRY_DURATION) {
             Swal.fire({
                 icon: 'error',
                 title: 'Invalid Date Range',
@@ -426,7 +422,7 @@ const DataViewer: React.FC = () => {
         const upData = filteredData.map((point, index) => {
             const timestamp = new Date(point.timestamp);
             const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
-            console.log(timestamp.getTime(), baseTime)
+       
             const formattedTimestamp = index === 0
                 ? timestamp.toLocaleTimeString('en-US', { hour12: false })
                 : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
@@ -613,16 +609,6 @@ const DataViewer: React.FC = () => {
                     <div className="graphs-container">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <div style={{ width: '60%' }}>
-                                {/* <TimeSlider 
-                                        timeSliderData={timeSliderData}
-                                        onBrushChange={(start, end) => {
-                                            setStartIndex(start);
-                                            setEndIndex(end);
-                                          // handle range update logic
-                                        }}
-                                        startIndex={startIndex}
-                                        endIndex={endIndex}
-                                /> */}
                                 <ResponsiveContainer width="100%" height={50} >
                                     <LineChart data={timeSliderData} >
                                         <Brush
