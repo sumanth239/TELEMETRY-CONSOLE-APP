@@ -46,11 +46,11 @@ const Sidebar: React.FC = () => {
 
       <div className="sidebar-bottom">
       <SidebarItem
-          to="/"
+          to="/signout"
           icon="bi-box-arrow-right"
           label="Logout"
           isOpen={isOpen}
-          isActive={location.pathname === "/logout"}
+          isActive={location.pathname === "/signout"}
         />
         <SidebarItem
           to="/help"
