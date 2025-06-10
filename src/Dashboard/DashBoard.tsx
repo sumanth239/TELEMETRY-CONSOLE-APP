@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
 
     return [];
   });
-  const {  frequency } = useSettings();
+  const { frequency } = useSettings();
   const [processedTelemetryData, setProcessedTelemetryData] = useState<types.TelemetryData>(intialTelemeteryData);
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
@@ -124,7 +124,7 @@ const Dashboard: React.FC = () => {
       ...prev,
       teleCmdValue: cmdInfo?.inputType === 1 ? [teleCmdsFormData.teleCmdValue[0]] : [], // Reset input value properly
     }));
-  }, [teleCmdsFormData.teleCmd ]);
+  }, [teleCmdsFormData.teleCmd]);
 
 
   useEffect(() => {
@@ -169,7 +169,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if(!startSystem) return ;
+    if (!startSystem) return;
     const processed: types.TelemetryData = Object.fromEntries(
       Object.entries(telemetryData).map(([label, data]) => {
         const index = CONSTANTS.ALL_LABELS.findIndex((item) => item.label === label);
@@ -189,9 +189,9 @@ const Dashboard: React.FC = () => {
       updatedData[label] = series.map((point, index) => {
         const timestamp = new Date(point.timestamp);
         const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
-        console.log(timestamp.getTime(),baseTime)
-        const formattedTimestamp = index === 0 
-          ? timestamp.toLocaleTimeString('en-US', { hour12: false }) 
+
+        const formattedTimestamp = index === 0
+          ? timestamp.toLocaleTimeString('en-US', { hour12: false })
           : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
 
         return {
@@ -200,19 +200,19 @@ const Dashboard: React.FC = () => {
         };
       });
     }
-    
-    if(startSystem){
-        setSystemStatusLabels((prevData) => ({                      //updating system status labels
-            ...prevData,
-            SystemMode: helperFunctions.getLatestLabelValue(updatedData, "System Mode") ,
-            Temperature: helperFunctions.getLatestLabelValue(updatedData,"ODT Temperature") ,
-            TotalPowerConsumption:helperFunctions.getLatestLabelValue(updatedData,"Total Power")
-            
-          }))
+
+    if (startSystem) {
+      setSystemStatusLabels((prevData) => ({                      //updating system status labels
+        ...prevData,
+        SystemMode: helperFunctions.getLatestLabelValue(updatedData, "System Mode"),
+        Temperature: helperFunctions.getLatestLabelValue(updatedData, "ODT Temperature"),
+        TotalPowerConsumption: helperFunctions.getLatestLabelValue(updatedData, "Total Power")
+
+      }))
     }
-    
+
     setProcessedTelemetryData(updatedData);
-  }, [telemetryData,frequency]);
+  }, [telemetryData, frequency]);
 
 
 
@@ -220,28 +220,35 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (!startSystem) return; // Ensure WebSocket connection is only active when the system is true
 
-    const ws = new WebSocket(CONSTANTS.SCITM_WEBSOCKET_URL);
-    const ws2 = new WebSocket(CONSTANTS.HKTM_WEBSOCKET_URL)
+    const ws = new WebSocket(CONSTANTS.TELEMETRY_WEBSOCKET_URL)
 
     ws.onmessage = (event) => {
-      if (!startSystem) return; // Double-check to ensure no processing happens if the system is false
-      
-      // Logging telemetry data to export data through Excel
-      if (isLogging) {
-        const data = JSON.parse(event.data);
-        const newData = {
-          Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
-          ...CONSTANTS.ALL_LABELS.slice(0, 14).reduce((acc, item, index) => {
-            acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] !== undefined ? data[index] : null;
-            return acc;
-          }, {} as { [key: string]: any }),
-        };
-
-        setExportTelemetryData((prevState) => [...prevState, newData]);
-      }
 
       try {
-        const incomingData = JSON.parse(event.data);
+
+        const response = JSON.parse(event.data);
+        //extracting response object
+        const telemetryType = response?.type
+        const incomingData = response?.data
+
+        const startIndex = telemetryType === "SCITM" ? 0 : CONSTANTS.SCITM_MAX_INDEX;
+        const endIndex = telemetryType === "SCITM" ? CONSTANTS.SCITM_MAX_INDEX : CONSTANTS.ALL_LABELS.length;
+
+        if (!startSystem) return; // Double-check to ensure no processing happens if the system is false
+
+        // Logging telemetry data to export data through Excel
+        if (isLogging) {
+
+          const newData = {
+            Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
+            ...CONSTANTS.ALL_LABELS.slice(startIndex, endIndex).reduce((acc, item, index) => {               //using startIndex and endIndex to update different packets
+              acc[`${item.label}${item.units && `(${item.units})`}`] = incomingData[index] !== undefined ? incomingData[index] : null;
+              return acc;
+            }, {} as { [key: string]: any }),
+          };
+
+          setExportTelemetryData((prevState) => [...prevState, newData]);
+        }
 
         if (helperFunctions.isArrayEmpty(incomingData)) {
           confirmAction({
@@ -264,7 +271,7 @@ const Dashboard: React.FC = () => {
         setTelemetryData((prevData) => {
           const updatedData = { ...prevData };
 
-          CONSTANTS.ALL_LABELS.slice(0, 14).forEach((item, index) => {
+          CONSTANTS.ALL_LABELS.slice(startIndex, endIndex).forEach((item, index) => {
             if (incomingData[index] !== undefined) {
               const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
               updatedData[item.label] = [...(prevData[item.label] || []), newEntry]; // Updating real-time telemetry data
@@ -273,78 +280,29 @@ const Dashboard: React.FC = () => {
 
           return updatedData;
         });
+
       } catch (error) {
-        console.error("WebSocket Data Error:", error);
-      }
-    };
-
-    ws2.onmessage = (event) => {
-      if (!startSystem) return; // Double-check to ensure no processing happens if the system is false
-      
-      // Logging telemetry data to export data through Excel
-      if (isLogging) {
-        const data = JSON.parse(event.data);
-        const newData = {
-          Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
-          ...CONSTANTS.ALL_LABELS.slice(14).reduce((acc, item, index) => {
-            acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] !== undefined ? data[index] : null;
-            return acc;
-          }, {} as { [key: string]: any }),
-        };
-
-        setExportTelemetryData((prevState) => [...prevState, newData]);
-      }
-
-      try {
-        const incomingData = JSON.parse(event.data);
-
-        if (helperFunctions.isArrayEmpty(incomingData)) {
-          confirmAction({
-            title: 'New Alert',
-            text: CONSTANTS.BIT_ERROR_ALERT,
-            confirmButtonText: 'Acknowledge',
-            cancelButtonText: 'Do it Later',
-            confirmButtonColor: '#20409A',
-            cancelButtonColor: '#e53e3e',
-            onConfirm: () => {
-              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
-            },
-            onCancel: () => {
-              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
-              helperFunctions.updateSessionLogs(`ignored alert: Skipping packet, packet contains bit error.`);
-            },
-          });
-        }
-
-        setTelemetryData((prevData) => {
-          const updatedData = { ...prevData };
-
-          CONSTANTS.ALL_LABELS.slice(14).forEach((item, index) => {
-            if (incomingData[index] !== undefined) {
-              const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
-              updatedData[item.label] = [...(prevData[item.label] || []), newEntry]; // Updating real-time telemetry data
-            }
-          });
-
-          return updatedData;
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: `Failed to connect websocket,${error}`,
         });
-      } catch (error) {
+        console.error("Error fetching telemetry data:", error);
         console.error("WebSocket Data Error:", error);
       }
-    };
-
-    ws.onerror = (error) => console.error("WebSocket Error:", error);
-    ws.onclose = () => console.log("WebSocket Disconnected");
-
-    ws2.onerror = (error) => console.error("WebSocket Error:", error);
-    ws2.onclose = () => console.log("WebSocket Disconnected");
-
-    return () => {
-      ws.close(); // Ensure WebSocket is closed when the component unmounts or dependencies change
-      ws2.close();
     };
 
     
+    ws.onerror = (error) => console.error("WebSocket Error:", error);
+    ws.onclose = () => console.log("WebSocket Disconnected");
+
+
+    return () => {
+      ws.close(); // Ensure WebSocket is closed when the component unmounts or dependencies change
+    };
+
+
   }, [startSystem, isLogging]);
 
 
@@ -395,17 +353,17 @@ const Dashboard: React.FC = () => {
       if (teleCommand.cmdId === CONSTANTS.POWER_ON_CMD_ID) {
         helperFunctions.updatePowerOnStatus(true); // Start the system if not already started
       }
-  
+
       if (teleCommand.cmdId === CONSTANTS.SHUTDOWN_CMD_ID) {
-          helperFunctions.updatePowerOnStatus(false); // Start the system if not already started
+        helperFunctions.updatePowerOnStatus(false); // Start the system if not already started
       }
-      
+
     } catch (error) {
       console.error("FAILED to send telecommand:", error);
     }
 
 
-    
+
   };
 
 
@@ -441,7 +399,7 @@ const Dashboard: React.FC = () => {
     // Add this to ensure the parent doesn't scroll
     if (e.currentTarget.contains(e.target as Node)) {
       setZoomLevels((prev) => {
-        const current = prev[label] ;
+        const current = prev[label];
         const delta = e.deltaY < 0 ? 1 : -1;
         const next = Math.max(1, current + delta);
         return { ...prev, [label]: next };
@@ -571,7 +529,7 @@ const Dashboard: React.FC = () => {
       if (isNaN(numValue) && value !== "") {
         error = `Value must be a number.`;
       } else {
-        if (!CONSTANTS.FLOAT_INPUT_COMMANDS.includes(teleCmdsFormData.teleCmd.cmdId )) {
+        if (!CONSTANTS.FLOAT_INPUT_COMMANDS.includes(teleCmdsFormData.teleCmd.cmdId)) {
           if (typeof numValue === 'number' && !Number.isInteger(numValue)) {
             error = `Float value is not allowed`
           }
@@ -633,7 +591,7 @@ const Dashboard: React.FC = () => {
   };
 
   //function to render different input fields for different commands
-  const renderTeleCmdsExtraFields = () => {         
+  const renderTeleCmdsExtraFields = () => {
     let cmd = teleCmdsFormData.teleCmd.cmd;
     if (!cmd) return null;
 
@@ -771,15 +729,15 @@ const Dashboard: React.FC = () => {
                     </div>
                     <p className="label-key"> {helperFunctions.getLabelUnits(label) && `${helperFunctions.getLabelUnits(label)}`}</p>
 
-                   { /* Conditionally rendering icons to handle graphs visibility */}
+                    { /* Conditionally rendering icons to handle graphs visibility */}
                     {helperFunctions.hasGraphType(label) && (
-                        visibleGraphs[label]?.visibility ? (
-                            <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black" }}></i>
-                        ) : (
-                            <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black" }}></i>
-                        )
+                      visibleGraphs[label]?.visibility ? (
+                        <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black" }}></i>
+                      ) : (
+                        <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black" }}></i>
+                      )
                     )}
-                     
+
                   </div>
                 ))}
               </div>
@@ -887,17 +845,17 @@ const Dashboard: React.FC = () => {
 
                   <div className="step-circle"
                     style={{
-                          backgroundColor: data.status === 'PENDING' ? '#E6E6E6' :
-                          data.status === 'FAILED' ? '#F8CECC' :
+                      backgroundColor: data.status === 'PENDING' ? '#E6E6E6' :
+                        data.status === 'FAILED' ? '#F8CECC' :
                           data.status === 'SUCCESS' ? '#D5E8D4' : '#666666'
                     }}>
                   </div>
                   <div className="step-line"
                     style={{
-                          backgroundColor: data.status === 'PENDING' ? '#666666' :
-                          data.status === 'FAILED' ? '#B85450' :
+                      backgroundColor: data.status === 'PENDING' ? '#666666' :
+                        data.status === 'FAILED' ? '#B85450' :
                           data.status === 'SUCCESS' ? '#82B366' : '#666666',
-                          display: index === Object.entries(tmtData).length - 1 ? "none" : "block",
+                      display: index === Object.entries(tmtData).length - 1 ? "none" : "block",
                     }}>
                   </div>
                   <p className="step-text">
