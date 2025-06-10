@@ -219,6 +219,7 @@ export function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) 
 
     // Convert map to sorted array
     const mergedArray = Object.values(mergedMap);
+    console.log(mergedArray,",merged data")
     return mergedArray;
 }
 
@@ -291,4 +292,11 @@ export function getUTCTimestampWithMilliseconds(): string {
   });
 
   return formatter.format(new Date());
+}
+
+export function getTimeDifferenceInMinutes(date1:any, date2:any) {
+  const d1:any = new Date(date1);
+  const d2:any = new Date(date2);
+  const diffInMs = Math.abs(d2 - d1);
+  return Math.floor(diffInMs / (1000 * 60));
 }

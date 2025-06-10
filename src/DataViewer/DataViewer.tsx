@@ -52,13 +52,14 @@ const DataViewer: React.FC = () => {
     //states 
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
+    const [isImported ,setIsImported] = useState(false);
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
         const initialState: { [label: string]: types.GraphState } = {};
 
-        CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => {
+        CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item,index) => {
             let fullLabel = `${item.label}${item.units && `(${item.units})`}`
             initialState[fullLabel] = {
-                visibility: true,
+                visibility: true?index < CONSTANTS.MAX_VISIBLE_GRAPHS : false,
                 graphOptions: {
                     "Remove": false,
                     "Logarithmic Scale": false,
@@ -93,10 +94,25 @@ const DataViewer: React.FC = () => {
         const index = timeSliderData.length > CONSTANTS.MAX_TIME_SLIDER_INDEX ? CONSTANTS.MAX_TIME_SLIDER_INDEX : timeSliderData.length - 1;
         setEndIndex(index);
     }, [timeSliderData]);
+    console.log("start index", startIndex)
+    console.log("End inde", endIndex)
+    console.log(telemetryData)
 
 
     //handler functions
     const toggleGraph = (label: string) => {        // to Toggle graph visibility
+        const visibleGraphCount = Object.values(visibleGraphs).filter(graph => graph.visibility).length;
+        if (!visibleGraphs[label].visibility && visibleGraphCount >= CONSTANTS.MAX_VISIBLE_GRAPHS) {
+              Swal.fire({
+                title: 'Limit Reached',
+                text: 'You can only view up to 6 graphs at a time.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#20409A',
+              });
+              return;
+            }
+
         setVisibleGraphs((prev) => ({
             ...prev,
             [label]: {
@@ -253,6 +269,16 @@ const DataViewer: React.FC = () => {
                 });
                 return;
             }
+
+            return;
+        }
+        const timeDifInMinutes = helperFunctions.getTimeDifferenceInMinutes(selectedDateRange.startDate, selectedDateRange.endDate)
+        if (timeDifInMinutes > 20) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Date Range',
+                text: 'You can select maximum 20 minutes range',
+            });
             return;
         }
 
@@ -332,6 +358,8 @@ const DataViewer: React.FC = () => {
                 title: 'Data Imported',
                 text: 'Telemetry data has been successfully fetched.',
             });
+
+            setIsImported(true);
         } catch (error) {
             // Close loading popup and show error message
             Swal.close();
@@ -374,6 +402,43 @@ const DataViewer: React.FC = () => {
 
         const formatted = new Date(year, month - 1, day, hours, minutes, seconds);
         return isNaN(formatted.getTime()) ? null : formatted.getTime();
+    };
+
+    const filterDataByTimeRange = (data: types.DataPoint[]) => {                                     //to filter the data based on the timeslider
+        if (startIndex < 0 || endIndex >= timeSliderData.length || startIndex > endIndex) {
+            console.error("Invalid start or end index");
+            return [];
+        }
+
+        const startTimestamp = timeSliderData[startIndex]?.timestamp;
+        const endTimestamp = timeSliderData[endIndex]?.timestamp;
+
+        if (!startTimestamp || !endTimestamp) {
+            console.error("Invalid timestamps in timeSliderData");
+            return [];
+        }
+
+        const filteredData = data.filter((item) => {
+            const itemTimestamp = item.timestamp;
+            return itemTimestamp >= startTimestamp && itemTimestamp <= endTimestamp;
+        });
+        const baseTime = helperFunctions.parseTimeToMillis(filteredData[0].timestamp)
+        const upData = filteredData.map((point, index) => {
+            const timestamp = new Date(point.timestamp);
+            const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
+            console.log(timestamp.getTime(), baseTime)
+            const formattedTimestamp = index === 0
+                ? timestamp.toLocaleTimeString('en-US', { hour12: false })
+                : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
+
+            return {
+                ...point,
+                timestamp: formattedTimestamp,
+            };
+        });
+
+        // return filteredData
+        return upData
     };
 
     const readExcelData = () => {
@@ -437,12 +502,13 @@ const DataViewer: React.FC = () => {
                 setTimeSliderData(Object.entries(transformedData)[0][1]); // Data for the time slider
                 setTelemetryData(transformedData);
 
+
                 // Store excel logs data into state
                 const logsSheetName = workbook.SheetNames[1];
                 const logsSheet = workbook.Sheets[logsSheetName];
                 const logsJsonData: any = XLSX.utils.sheet_to_json(logsSheet);
                 setSessionLogsData(logsJsonData);
-
+                setIsImported(true);
                 Swal.fire({
                     icon: 'success',
                     title: 'Data Imported',
@@ -508,8 +574,8 @@ const DataViewer: React.FC = () => {
                         )}
                     </div>
                     <div className="time-range-container">
-                        <span>Select Start Date : <input type="datetime-local" value={selectedDateRange.startDate ? selectedDateRange.startDate.toISOString().slice(0, -1) : ''} name="startDate" onChange={handleDateChange} step="1"></input></span>
-                        <span>Select End Date : <input type="datetime-local" value={selectedDateRange.endDate ? selectedDateRange.endDate.toISOString().slice(0, -1) : ''} name="endDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select Start Date : <input type="datetime-local"  name="startDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select End Date : <input type="datetime-local"  name="endDate" onChange={handleDateChange} step="1"></input></span>
                     </div>
 
                     <ul className="data-buttons-container" >
@@ -546,7 +612,7 @@ const DataViewer: React.FC = () => {
                     </div>
                     <div className="graphs-container">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div style={{ width: '65%' }}>
+                            <div style={{ width: '60%' }}>
                                 {/* <TimeSlider 
                                         timeSliderData={timeSliderData}
                                         onBrushChange={(start, end) => {
@@ -574,7 +640,7 @@ const DataViewer: React.FC = () => {
                         </div>
 
 
-                        {helperFunctions.isArrayEmpty(Object.entries(telemetryData)) ? (
+                        {isImported && helperFunctions.isArrayEmpty(Object.entries(telemetryData)) ? (
                             <NoDataFound message={CONSTANTS.NO_DATA_FOUND} />
                         ) : (
                             <div className="graphs-data-container">
@@ -618,7 +684,7 @@ const DataViewer: React.FC = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <GraphComponent graphLineToggles={graphLineToggles} data={mergedData.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                                <GraphComponent graphLineToggles={graphLineToggles} data={filterDataByTimeRange(mergedData)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                             </div>
                                         )
                                     }
@@ -645,7 +711,7 @@ const DataViewer: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <GraphComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={data.slice(startIndex, endIndex)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
+                                            <GraphComponent graphLineToggles={[visibleGraphs[label]?.visibility]} data={filterDataByTimeRange(data)} graphOptions={visibleGraphs[label].graphOptions} timeSlider={true} graphType={helperFunctions.getLabelGraphType(label)} />
                                         </div>
                                     ) : null
 
@@ -660,7 +726,7 @@ const DataViewer: React.FC = () => {
 
                         <p>Session Log</p>
                         <div className="logs-container">
-                            {helperFunctions.isArrayEmpty(sessionLogsData) ? <NoDataFound message={CONSTANTS.NO_SESSION_LOGS_FOUND} /> : (
+                            {isImported && helperFunctions.isArrayEmpty(sessionLogsData) ? <NoDataFound message={CONSTANTS.NO_SESSION_LOGS_FOUND} /> : (
                                 sessionLogsData.map((log, index) => (
                                     <div key={index} className="log-entry">
                                         <p className="timestamp">{log.TimeStamp} UTC :</p>
