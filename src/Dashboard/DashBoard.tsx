@@ -187,14 +187,16 @@ const Dashboard: React.FC = () => {
       const baseTime = helperFunctions.parseTimeToMillis(series[0].timestamp);
 
       updatedData[label] = series.map((point, index) => {
-        if (index === 0) return point;
-
-        const currentTime = helperFunctions.parseTimeToMillis(point.timestamp);
-        const diffSeconds = Math.round((currentTime - baseTime) / 1000);
+        const timestamp = new Date(point.timestamp);
+        const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
+        console.log(timestamp.getTime(),baseTime)
+        const formattedTimestamp = index === 0 
+          ? timestamp.toLocaleTimeString('en-US', { hour12: false }) 
+          : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
 
         return {
           ...point,
-          timestamp: `+${diffSeconds}s`,
+          timestamp: formattedTimestamp,
         };
       });
     }
@@ -216,144 +218,133 @@ const Dashboard: React.FC = () => {
 
   //websockets
   useEffect(() => {
-    if(!startSystem) return ;
-    
+    if (!startSystem) return; // Ensure WebSocket connection is only active when the system is true
+
     const ws = new WebSocket(CONSTANTS.SCITM_WEBSOCKET_URL);
+    const ws2 = new WebSocket(CONSTANTS.HKTM_WEBSOCKET_URL)
+
     ws.onmessage = (event) => {
+      if (!startSystem) return; // Double-check to ensure no processing happens if the system is false
+      
+      // Logging telemetry data to export data through Excel
+      if (isLogging) {
+        const data = JSON.parse(event.data);
+        const newData = {
+          Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
+          ...CONSTANTS.ALL_LABELS.slice(0, 14).reduce((acc, item, index) => {
+            acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] !== undefined ? data[index] : null;
+            return acc;
+          }, {} as { [key: string]: any }),
+        };
 
-        //logging telemetry data to export data through excel 
-        if (isLogging) {
-          const data = JSON.parse(event.data);
-            const newData = {
-            Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
-            ...CONSTANTS.ALL_LABELS.slice(0, 14).reduce((acc, item, index) => {
-              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] !== undefined ? data[index] : null;
-              return acc;
-            }, {} as { [key: string]: any })
-            };
-
-          setExportTelemetryData((prevState) => [...prevState, newData]);
-        }
-
-        try {
-          const incomingData = JSON.parse(event.data);
-          // console.log("incoming data" ,incomingData)                                                                    //console
-          if (helperFunctions.isArrayEmpty(incomingData)) {
-            confirmAction({
-              title: 'New Alert',
-              text: CONSTANTS.BIT_ERROR_ALERT,
-              confirmButtonText: 'Acknowledge',
-              cancelButtonText: 'Do it Later',
-              confirmButtonColor: '#20409A',
-              cancelButtonColor: '#e53e3e',
-              onConfirm: () => {
-                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
-                return
-              },
-              onCancel: () => {
-                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
-                helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
-              }
-            });
-          }
-          
-
-          setTelemetryData((prevData) => {
-            const updatedData = { ...prevData };
-
-            CONSTANTS.ALL_LABELS.slice(0, 14).forEach((item, index) => {
-              if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
-                updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
-              }
-            });
-     
-            return updatedData;
-
-          });
-        } catch (error) {
-          console.error("WebSocket Data Error:", error);
-        }
-
-        ws.onerror = (error) => console.error("WebSocket Error:", error);
-        ws.onclose = () => console.log("WebSocket Disconnected");
-
-        
-        return () => { ws.close() }
+        setExportTelemetryData((prevState) => [...prevState, newData]);
       }
-    
 
-    if (startSystem) {
-      const ws = new WebSocket(CONSTANTS.HKTM_WEBSOCKET_URL);
-      ws.onmessage = (event) => {   //on websocket connection
+      try {
+        const incomingData = JSON.parse(event.data);
 
-        //logging telemetry data to export data through excel 
-        if (isLogging) {
-          const data = JSON.parse(event.data);
-          const newData = {
-            Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
-            ...CONSTANTS.ALL_LABELS.slice(14).reduce((acc, item, index) => {
-              acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] || null;
-              return acc;
-            }, {} as { [key: string]: any })
-          };
-
-          setExportTelemetryData((prevState) => [...prevState, newData]);
-        }
-
-
-        try {
-          const incomingData = JSON.parse(event.data);
-         
-          if (incomingData.length === 0) {
-            confirmAction({
-              title: 'New Alert',
-              text: CONSTANTS.BIT_ERROR_ALERT,
-              confirmButtonText: 'Acknowledge',
-              cancelButtonText: 'Do it Later',
-              confirmButtonColor: '#20409A',
-              cancelButtonColor: '#e53e3e',
-              onConfirm: () => {
-                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
-              },
-              onCancel: () => {
-                helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
-                helperFunctions.updateSessionLogs(`ingnored alert: Skipping packet, packet contains bit error.`)
-              }
-            });
-
-          }
-
-
-          
-          setTelemetryData((prevData) => {
-            const updatedData = { ...prevData };
-
-            CONSTANTS.ALL_LABELS.slice(14).forEach((item, index) => {
-              if (incomingData[index] !== undefined) {
-                const newEntry = { value: incomingData[index], timestamp:helperFunctions.getUTCTimestampWithMilliseconds()};
-                updatedData[item.label] = [...(prevData[item.label] || []), newEntry];   //updating real time telemetry data i.e generated and received from backend
-              }
-            });
-          
-            return updatedData
-
+        if (helperFunctions.isArrayEmpty(incomingData)) {
+          confirmAction({
+            title: 'New Alert',
+            text: CONSTANTS.BIT_ERROR_ALERT,
+            confirmButtonText: 'Acknowledge',
+            cancelButtonText: 'Do it Later',
+            confirmButtonColor: '#20409A',
+            cancelButtonColor: '#e53e3e',
+            onConfirm: () => {
+              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
+            },
+            onCancel: () => {
+              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
+              helperFunctions.updateSessionLogs(`ignored alert: Skipping packet, packet contains bit error.`);
+            },
           });
-        } catch (error) {
-          console.error("WebSocket Data Error:", error);
         }
-      };
 
-      ws.onerror = (error) => console.error("WebSocket Error:", error);
-      ws.onclose = () => console.log("WebSocket Disconnected");
+        setTelemetryData((prevData) => {
+          const updatedData = { ...prevData };
 
-      // Update every second
+          CONSTANTS.ALL_LABELS.slice(0, 14).forEach((item, index) => {
+            if (incomingData[index] !== undefined) {
+              const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
+              updatedData[item.label] = [...(prevData[item.label] || []), newEntry]; // Updating real-time telemetry data
+            }
+          });
 
-      return () => { ws.close() };   //close websocket connection and clear interval for every second
+          return updatedData;
+        });
+      } catch (error) {
+        console.error("WebSocket Data Error:", error);
+      }
+    };
 
-    }
+    ws2.onmessage = (event) => {
+      if (!startSystem) return; // Double-check to ensure no processing happens if the system is false
+      
+      // Logging telemetry data to export data through Excel
+      if (isLogging) {
+        const data = JSON.parse(event.data);
+        const newData = {
+          Timestamp: helperFunctions.getUTCTimestampWithMilliseconds(),
+          ...CONSTANTS.ALL_LABELS.slice(14).reduce((acc, item, index) => {
+            acc[`${item.label}${item.units && `(${item.units})`}`] = data[index] !== undefined ? data[index] : null;
+            return acc;
+          }, {} as { [key: string]: any }),
+        };
 
+        setExportTelemetryData((prevState) => [...prevState, newData]);
+      }
 
+      try {
+        const incomingData = JSON.parse(event.data);
+
+        if (helperFunctions.isArrayEmpty(incomingData)) {
+          confirmAction({
+            title: 'New Alert',
+            text: CONSTANTS.BIT_ERROR_ALERT,
+            confirmButtonText: 'Acknowledge',
+            cancelButtonText: 'Do it Later',
+            confirmButtonColor: '#20409A',
+            cancelButtonColor: '#e53e3e',
+            onConfirm: () => {
+              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
+            },
+            onCancel: () => {
+              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
+              helperFunctions.updateSessionLogs(`ignored alert: Skipping packet, packet contains bit error.`);
+            },
+          });
+        }
+
+        setTelemetryData((prevData) => {
+          const updatedData = { ...prevData };
+
+          CONSTANTS.ALL_LABELS.slice(14).forEach((item, index) => {
+            if (incomingData[index] !== undefined) {
+              const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
+              updatedData[item.label] = [...(prevData[item.label] || []), newEntry]; // Updating real-time telemetry data
+            }
+          });
+
+          return updatedData;
+        });
+      } catch (error) {
+        console.error("WebSocket Data Error:", error);
+      }
+    };
+
+    ws.onerror = (error) => console.error("WebSocket Error:", error);
+    ws.onclose = () => console.log("WebSocket Disconnected");
+
+    ws2.onerror = (error) => console.error("WebSocket Error:", error);
+    ws2.onclose = () => console.log("WebSocket Disconnected");
+
+    return () => {
+      ws.close(); // Ensure WebSocket is closed when the component unmounts or dependencies change
+      ws2.close();
+    };
+
+    
   }, [startSystem, isLogging]);
 
 

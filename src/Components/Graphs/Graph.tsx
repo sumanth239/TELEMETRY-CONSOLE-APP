@@ -15,7 +15,7 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
 
   //
   const getSeries = () => {
-    if (!data.length) return [];
+    if (!data?.length) return [];
 
     const keys = Object.keys(data[0]).filter((key) => key !== "timestamp");
 
@@ -28,12 +28,12 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
         step: graphType === "step" ? "middle" : undefined,
         showSymbol: true,       // Show symbols for data points
         symbolSize: (value: any, params: any) => {
-          return params.dataIndex === data.length - 1 ? 6 : 3;
+          return params.dataIndex === data?.length - 1 ? 6 : 3;
         },
         itemStyle: {
           color: CONSTANTS.COLOR_MAP[index]
         },
-        data: data.map(d => [d.timestamp, d[key as keyof types.DataPoint]]), // Convert to [timestamp, value] pairs
+        data: data?.map(d => [d.timestamp, d[key as keyof types.DataPoint]]), // Convert to [timestamp, value] pairs
       };
     }).filter(Boolean);     // Filter out null values for toggled-off lines
   };
@@ -41,10 +41,11 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
   const mainSeries = getSeries();
   // Add blinking effect at the latest point of each line series
   const blinkingPoints = mainSeries.map((series) => {
-    const lastData = series?.data[series.data.length - 1];
+    const lastData = series?.data[series?.data?.length - 1];
     return {
       type: 'effectScatter',
       name: `${series?.name}-blinking`,
+      animation: false,
       coordinateSystem: 'cartesian2d',
       data: [lastData],
       symbolSize: 10,
@@ -96,7 +97,7 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
       name: graphOptions["Axis Titles"] ? "timestamp" : '',
       nameLocation: 'middle',     // ⬅️ Places it in the center
       nameGap: 20,                // ⬅️ Distance below the axis
-      data: data.map(d => d.timestamp),
+      data: data?.map(d => d.timestamp),
       axisLabel: {
         fontSize: 10
       },
@@ -133,7 +134,7 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
       <ReactECharts
         option={option}
         notMerge={true}
-        lazyUpdate={true}
+        lazyUpdate={false}
         style={{ width: '100%', height: '100%'}}
       />
     </div>

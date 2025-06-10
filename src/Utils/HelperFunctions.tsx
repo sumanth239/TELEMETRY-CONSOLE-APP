@@ -218,7 +218,7 @@ export function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) 
     });
 
     // Convert map to sorted array
-    const mergedArray = Object.values(mergedMap).sort((a: any, b: any) => a.timestamp - b.timestamp);
+    const mergedArray = Object.values(mergedMap);
     return mergedArray;
 }
 
@@ -227,16 +227,17 @@ export function isArrayEmpty(arr:any) {
 }
 
 export function parseTimeToMillis(timestamp: string): number {
-  const [time, meridian] = timestamp.split(' ');
+  const [datePart, timePart] = timestamp.split(', ');
+  const [time, meridian] = timePart.split(' ');
   const [hoursStr, minutesStr, secondsStr] = time.split(':');
   let hours = parseInt(hoursStr, 10);
   const minutes = parseInt(minutesStr, 10);
-  const seconds = parseInt(secondsStr, 10);
+  const [seconds, milliseconds] = secondsStr.split('.').map(Number);
 
   if (meridian && meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
   if (meridian && meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
 
-  return hours * 3600000 + minutes * 60000 + seconds * 1000;
+  return hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds;
 }
 
 

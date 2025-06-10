@@ -423,8 +423,8 @@ const DataViewer: React.FC = () => {
                         if (index === 0 || index === jsonData.length - 1) {
                             timeInfo = { timestamp: timestampStr };
                         } else if (firstTimestamp !== null) {
-                            const diffSeconds = (timestamp - firstTimestamp) / 1000;
-                            timeInfo = { timestamp: timestampStr};
+                            // const diffSeconds = (timestamp - firstTimestamp) / 1000;
+                            timeInfo = { timestamp: timestampStr };
                         }
 
                         transformedData[key].push({
@@ -660,12 +660,16 @@ const DataViewer: React.FC = () => {
 
                         <p>Session Log</p>
                         <div className="logs-container">
-                            {sessionLogsData.map((log, index) => (
-                                <div key={index} className="log-entry">
-                                    <p className="timestamp">{log.TimeStamp} UTC :</p>
-                                    <p>{log.Action}</p>
-                                </div>
-                            ))}
+                            {helperFunctions.isArrayEmpty(sessionLogsData) ? <NoDataFound message={CONSTANTS.NO_SESSION_LOGS_FOUND} /> : (
+                                sessionLogsData.map((log, index) => (
+                                    <div key={index} className="log-entry">
+                                        <p className="timestamp">{log.TimeStamp} UTC :</p>
+                                        <p>{log.Action}</p>
+                                    </div>
+                                ))
+                            )
+                            }
+
                         </div>
                     </div>
                 </div>

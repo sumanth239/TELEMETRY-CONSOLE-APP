@@ -30,6 +30,7 @@ export const INPUT_TYPES = {
 }
 export const NO_ALERT_MESSAGE = "No Alerts Found"
 export const NO_DATA_FOUND = "No Data Found"
+export const NO_SESSION_LOGS_FOUND ="No Session Logs Found"
 export const TELE_COMMANDS = [
   {
     cmd: "Power On",
@@ -248,7 +249,7 @@ export const COMBINED_LABEL_GROUPS = [
 export const COMBINED_LABEL_GROUPS_WITH_UNITS = [
   { title: "Motor Angles", labels: ["Azimuth Angle(deg)", "Elevation Angle(deg)"] },
   { title: "Quadcell Channels", labels: ["Quadcell Channel 1", "Quadcell Channel 2", "Quadcell Channel 3", "Quadcell Channel 4"] },
-  { title: "FSM Angles", labels: ["FSM X angle", "FSM Y angle"] },
+  { title: "FSM Angles", labels: ["FSM X angle(deg)", "FSM Y angle(deg)"] },
 ];
 
 export const LABEL_VALUE_MAPPINGS: Record<string, Record<number | string, string>> = {
