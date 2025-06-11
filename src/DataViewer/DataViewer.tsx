@@ -20,71 +20,26 @@ import * as types from '../Utils/types';
 import * as CONSTANTS from "../Utils/Constants";
 import axios from "axios";
 import NoDataFound from "../NoData/NoData";
-
-
-//Intials states of useState
-const initialVisibility: { [key: string]: boolean } = {};
-const initialGraphOptionsState: { [key: string]: boolean } = {};
-const initialDropdownOptions: string[] = [];
-
-//Modifying intial states  
-CONSTANTS.ALL_LABELS.filter(item => item.graphType).forEach((item) => {    //graphs visiblilty
-    initialVisibility[item.label] = true;
-});
-
-CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => {    //graph options
-    const grpahObject = CONSTANTS.COMBINED_LABEL_GROUPS.find((graph) => graph.labels.includes(item.label))
-    if (grpahObject) {
-        initialGraphOptionsState[grpahObject.title] = false;
-    } else {
-        initialGraphOptionsState[item.label] = false;
-    }
-});
-
-CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item) => (    //dropdown options
-    initialDropdownOptions.push(helperFunctions.getFullLabelWithUnits(item.label))
-))
+import { useDataViewerStore } from "../Store/useDataViewerStore";
 
 
 const DataViewer: React.FC = () => {
     //constants 
     const renderedLabels = new Set<string>();
+
     //states 
-    const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
-    const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
-    const [isImported, setIsImported] = useState(false);
-    const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
-        const initialState: { [label: string]: types.GraphState } = {};
-
-        CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item, index) => {
-            let fullLabel = `${item.label}${item.units && `(${item.units})`}`
-            initialState[fullLabel] = {
-                visibility: true ? index < CONSTANTS.MAX_VISIBLE_GRAPHS : false,
-                graphOptions: {
-                    "Remove": false,
-                    "Logarithmic Scale": false,
-                    "Axis Titles": false,
-                    "Gridlines": true,
-                } as const,
-            };
-        });
-
-        return initialState;
-    });
-    //to handle the calendar selected start and end dates
-    const [selectedDateRange, setSelectedDateRange] = useState<{ startDate: Date | null; endDate: Date | null }>({
-        startDate: null,
-        endDate: null,
-    });
-    const [telemetryData, setTelemetryData] = useState<{ [key: string]: { value: number, timestamp: string }[] }>({});
-    const [timeSliderData, setTimeSliderData] = useState<any>([])
-    const [startIndex, setStartIndex] = useState(5);
-    const [endIndex, setEndIndex] = useState(10);
-    const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(     //to handle the graph options visibility
-        initialGraphOptionsState
-    );
-    const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
-    const [file, setFile] = useState<File>();
+    const {initialDropdownOptions ,selectedOptions ,setSelectedOptions} = useDataViewerStore();             //to handle label selections from dropdown
+    const [isOpen, setIsOpen] = useState<boolean>(false);                                                   //to handle label selections
+    const {isImported , setIsImported} = useDataViewerStore();                                              //to check data is imported or not
+    const {initialVisibleGraphs ,visibleGraphs ,setVisibleGraphs} = useDataViewerStore();                   //to handle graphs visiblity
+    const { selectedDateRange, setSelectedDateRange } = useDataViewerStore();                               //to handle the calendar selected start and end dates
+    const {telemetryData, setTelemetryData} = useDataViewerStore();                                         //to handle telemetry data
+    const {timeSliderData, setTimeSliderData} = useDataViewerStore();                                       //for global timeslider
+    const {startIndex, setStartIndex} = useDataViewerStore();                                               //to filter data
+    const {endIndex, setEndIndex} = useDataViewerStore();                                                   //to filter data
+    const {initialGraphOptionsState,graphOptionsOpendLables, setGraphOptionsOpendLables} =  useDataViewerStore();  //to handle the graph options visibility
+    const {sessionLogsData, setSessionLogsData} = useDataViewerStore();                                     //state to log the data 
+    const {file, setFile} = useDataViewerStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     //use effetcts
@@ -110,17 +65,20 @@ const DataViewer: React.FC = () => {
             return;
         }
 
-        setVisibleGraphs((prev) => ({
-            ...prev,
+        const newVisibleGraphs = {              //getting current state
+            ...visibleGraphs,
             [label]: {
-                ...prev[label],
+                ...visibleGraphs[label],
                 graphOptions: {
-                    ...prev[label].graphOptions,
-                    Remove: !prev[label].graphOptions.Remove,                       //toggle remove option
+                    ...visibleGraphs[label].graphOptions,
+                    Remove: !visibleGraphs[label].graphOptions.Remove,
                 },
-                visibility: !prev[label].visibility         //toggle visibility
+                visibility: !visibleGraphs[label].visibility,
             }
-        }));
+        };
+
+        setVisibleGraphs(newVisibleGraphs);     // Zustand setter
+
     };
 
 
@@ -132,113 +90,102 @@ const DataViewer: React.FC = () => {
     };
 
     const graphOptionsButtonHandler = (label: string) => {      //for Graph options visibilty
-        setgraphOptionsOpendLables((prev) => ({ ...prev, [label]: prev[label] ? !prev[label] : true }));
+        const updatedGraphOptionsOpendLables = {                //getting current state
+            ...graphOptionsOpendLables,
+            [label]: graphOptionsOpendLables[label] ? !graphOptionsOpendLables[label] : true,
+          };
+          
+          setGraphOptionsOpendLables(updatedGraphOptionsOpendLables);       // Zustand setter
+          
     };
 
     const changeGraphOption = (label: string, option: string) => {      //to change the graph otption
         if (option === "Remove") {
             const groupObj = CONSTANTS.COMBINED_LABEL_GROUPS_WITH_UNITS.find((graph) => graph.labels.includes(label));        //combined graph labels object
             if (groupObj) {
-                groupObj.labels.map((graphLabel) => {       //disable all labels visibility of cobined graph  object
-                    setVisibleGraphs((prev) => ({
-                        ...prev,
-                        [graphLabel]: {
-                            ...prev[graphLabel],
-                            visibility: !prev[graphLabel].visibility
-                        }
-                    }));
-                })
-                setgraphOptionsOpendLables((prev) => ({             //toggle combined graph options visibility
-                    ...prev,
-                    [groupObj.title]: !prev[groupObj.title],
-                }));
+                const updatedVisibleGraphs = { ...visibleGraphs };                  //getting current state
+
+                groupObj.labels.forEach((graphLabel) => {
+                    updatedVisibleGraphs[graphLabel] = {
+                        ...visibleGraphs[graphLabel],
+                        visibility: !visibleGraphs[graphLabel].visibility,          //updating visiblity of all labesl in a group object
+                    };
+                });
+
+                setVisibleGraphs(updatedVisibleGraphs);                 // Zustand setter
+
+                const updatedGraphOptionsOpenedLabels = {                   //getting current state
+                    ...graphOptionsOpendLables,
+                    [groupObj.title]: !graphOptionsOpendLables[groupObj.title],
+                  };
+                  
+                  setGraphOptionsOpendLables(updatedGraphOptionsOpenedLabels);          // Zustand setter
+                  
             } else {
-                setVisibleGraphs((prev) => ({       //disable only single label visibility
-                    ...prev,
+                const updatedVisibleGraphs = {                      //getting current state
+                    ...visibleGraphs,
                     [label]: {
-                        ...prev[label],
-                        visibility: !prev[label].visibility
+                        ...visibleGraphs[label],
+                        visibility: !visibleGraphs[label].visibility,
                     }
-                }));
-                setgraphOptionsOpendLables((prev) => ({      //toggle single label options visibility
-                    ...prev,
-                    [label]: !prev[label],
-                }));
+                };
+
+                setVisibleGraphs(updatedVisibleGraphs);             // Zustand setter
+
+                const updatedGraphOptionsOpendLables = {            //getting current state
+                    ...graphOptionsOpendLables,
+                    [label]: !graphOptionsOpendLables[label],
+                  };
+                  
+                  setGraphOptionsOpendLables(updatedGraphOptionsOpendLables);       // Zustand setter
+                  
             }
 
         }
 
         if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
 
-        setVisibleGraphs((prev) => ({       //upadting label graph options
-            ...prev,
+        const updatedVisibleGraphs = {              //getting current state
+            ...visibleGraphs,
             [label]: {
-                ...prev[label],
+                ...visibleGraphs[label],
                 graphOptions: {
-                    ...prev[label].graphOptions,
-                    [option]: !prev[label].graphOptions[option as keyof types.GraphOptions],
+                    ...visibleGraphs[label].graphOptions,
+                    [option]: !visibleGraphs[label].graphOptions[option as keyof types.GraphOptions],   
                 },
             },
-        }));
+        };
+
+        setVisibleGraphs(updatedVisibleGraphs);         // Zustand setter
+
     };
 
     const handleCheckboxChange = (item: types.LabelInfo) => {   //for labels dropdown selection
         let fullLabel = helperFunctions.getFullLabelWithUnits(item.label); // Get full label with units if available
-        setSelectedOptions((prev) =>
-            prev.includes(fullLabel)
-                ? prev.filter((item) => item !== fullLabel)
-                : [...prev, fullLabel]
-        );
-        setVisibleGraphs((prev) => ({               //updating visibility of label graph
-            ...prev,
+        const newSelectedOptions = selectedOptions.includes(fullLabel) ? selectedOptions.filter((item) => item !== fullLabel) : [...selectedOptions, fullLabel];         //updating selected options
+        setSelectedOptions(newSelectedOptions);
+        const updatedVisibleGraphs = {          //getting current state
+            ...visibleGraphs,
             [fullLabel]: {
-                ...prev[item.label],
-                visibility: !prev[item.label].visibility
-            }
-        }));
+                ...visibleGraphs[fullLabel],
+                visibility: !visibleGraphs[fullLabel].visibility,
+            },
+        };
+
+        setVisibleGraphs(updatedVisibleGraphs);     // Zustand setter
+
+
     };
 
 
     const handleAllSelectbBoxChange = (event: React.ChangeEvent<HTMLInputElement>) => {     //for dropdown all selector
         if (event.target.checked) {
             setSelectedOptions(initialDropdownOptions);     // Select all labels and show all graphs
-            setVisibleGraphs(() => {
-                const initialState: { [label: string]: types.GraphState } = {};
-
-                CONSTANTS.ALL_LABELS.forEach((item) => {
-                    initialState[item.label] = {
-                        visibility: true,
-                        graphOptions: {
-                            "Remove": false,
-                            "Logarithmic Scale": false,
-                            "Axis Titles": false,
-                            "Gridlines": false,
-                        },
-                    };
-                });
-
-                return initialState;
-            });
+            setVisibleGraphs(initialVisibleGraphs);
 
         } else {
             setSelectedOptions([]);      // Clear selection and hide all graphs
-            setVisibleGraphs(() => {
-                const initialState: { [label: string]: types.GraphState } = {};
-
-                CONSTANTS.ALL_LABELS.forEach((item) => {
-                    initialState[item.label] = {
-                        visibility: false,
-                        graphOptions: {
-                            "Remove": false,
-                            "Logarithmic Scale": false,
-                            "Axis Titles": false,
-                            "Gridlines": false,
-                        },
-                    };
-                });
-
-                return initialState;
-            });
+            setVisibleGraphs(initialVisibleGraphs);
 
         }
     };
@@ -255,14 +202,13 @@ const DataViewer: React.FC = () => {
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => { // to handle date change
         const { value, name } = event.target;
-        setSelectedDateRange((prev) => {
-            const updatedRange = {
-                ...prev,
-                [name]: value ? new Date(value) : null,
-            };
+        const updatedDateRange = {              //getting current state
+            ...selectedDateRange,
+            [name]: value ? new Date(value) : null,
+        };
 
-            return updatedRange;
-        });
+        setSelectedDateRange(updatedDateRange);             // Zustand setter
+
         setFile(undefined); // Reset file when date range is changed
     };
 
@@ -321,12 +267,12 @@ const DataViewer: React.FC = () => {
                 });
             });
 
-            const timeSliderDataArray = Object.entries(timestampMap).map(([timestamp, value]) => ({
+            const timeSliderDataArray = Object.entries(timestampMap).map(([timestamp, value]) => ({             //getting current state      
                 timestamp,
                 value,
             }));
 
-            setTimeSliderData(timeSliderDataArray);
+            setTimeSliderData(timeSliderDataArray);                 // Zustand setter
             // Process SCITM data
             telemetry_data.SCITM.forEach((entry: any) => {
                 const timestamp = entry.time;
@@ -355,7 +301,7 @@ const DataViewer: React.FC = () => {
                 });
             });
 
-            setTelemetryData(updatedTelemetryData);
+            setTelemetryData(updatedTelemetryData);                     // Zustand setter
             setFile(undefined); // Reset date range after fetching data
 
             // Close loading popup and show success message
@@ -381,9 +327,9 @@ const DataViewer: React.FC = () => {
 
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setTelemetryData({});
-        setEndIndex(10);
-        setStartIndex(5);
+        setTelemetryData({});       // Zustand setter
+        setEndIndex(10);            // Zustand setter
+        setStartIndex(5);           // Zustand setter
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
 
@@ -393,7 +339,7 @@ const DataViewer: React.FC = () => {
             return;
         }
 
-        setFile(selectedFile);
+        setFile(selectedFile);      // Zustand setter
         setSelectedDateRange({ startDate: null, endDate: null }); // Reset date range when a new file is uploaded
     };
 
@@ -506,8 +452,8 @@ const DataViewer: React.FC = () => {
                     });
                 });
 
-                setTimeSliderData(Object.entries(transformedData)[0][1]); // Data for the time slider
-                setTelemetryData(transformedData);
+                setTimeSliderData(Object.entries(transformedData)[0][1] as any[]); // Data for the time slider
+                setTelemetryData(transformedData);      // Zustand setter
 
 
                 // Store excel logs data into state
