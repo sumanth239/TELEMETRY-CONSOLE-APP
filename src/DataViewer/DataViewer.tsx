@@ -28,18 +28,18 @@ const DataViewer: React.FC = () => {
     const renderedLabels = new Set<string>();
 
     //states 
-    const {initialDropdownOptions ,selectedOptions ,setSelectedOptions} = useDataViewerStore();             //to handle label selections from dropdown
+    const { initialDropdownOptions, selectedOptions, setSelectedOptions } = useDataViewerStore();             //to handle label selections from dropdown
     const [isOpen, setIsOpen] = useState<boolean>(false);                                                   //to handle label selections
-    const {isImported , setIsImported} = useDataViewerStore();                                              //to check data is imported or not
-    const {initialVisibleGraphs ,visibleGraphs ,setVisibleGraphs} = useDataViewerStore();                   //to handle graphs visiblity
+    const { isImported, setIsImported } = useDataViewerStore();                                              //to check data is imported or not
+    const { initialVisibleGraphs, visibleGraphs, setVisibleGraphs } = useDataViewerStore();                   //to handle graphs visiblity
     const { selectedDateRange, setSelectedDateRange } = useDataViewerStore();                               //to handle the calendar selected start and end dates
-    const {telemetryData, setTelemetryData} = useDataViewerStore();                                         //to handle telemetry data
-    const {timeSliderData, setTimeSliderData} = useDataViewerStore();                                       //for global timeslider
-    const {startIndex, setStartIndex} = useDataViewerStore();                                               //to filter data
-    const {endIndex, setEndIndex} = useDataViewerStore();                                                   //to filter data
-    const {initialGraphOptionsState,graphOptionsOpendLables, setGraphOptionsOpendLables} =  useDataViewerStore();  //to handle the graph options visibility
-    const {sessionLogsData, setSessionLogsData} = useDataViewerStore();                                     //state to log the data 
-    const {file, setFile} = useDataViewerStore();
+    const { telemetryData, setTelemetryData } = useDataViewerStore();                                         //to handle telemetry data
+    const { timeSliderData, setTimeSliderData } = useDataViewerStore();                                       //for global timeslider
+    const { startIndex, setStartIndex } = useDataViewerStore();                                               //to filter data
+    const { endIndex, setEndIndex } = useDataViewerStore();                                                   //to filter data
+    const { initialGraphOptionsState, graphOptionsOpendLables, setGraphOptionsOpendLables } = useDataViewerStore();  //to handle the graph options visibility
+    const { sessionLogsData, setSessionLogsData } = useDataViewerStore();                                     //state to log the data 
+    const { file, setFile } = useDataViewerStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     //use effetcts
@@ -70,8 +70,7 @@ const DataViewer: React.FC = () => {
             [label]: {
                 ...visibleGraphs[label],
                 graphOptions: {
-                    ...visibleGraphs[label].graphOptions,
-                    Remove: !visibleGraphs[label].graphOptions.Remove,
+                    ...visibleGraphs[label].graphOptions
                 },
                 visibility: !visibleGraphs[label].visibility,
             }
@@ -93,10 +92,10 @@ const DataViewer: React.FC = () => {
         const updatedGraphOptionsOpendLables = {                //getting current state
             ...graphOptionsOpendLables,
             [label]: graphOptionsOpendLables[label] ? !graphOptionsOpendLables[label] : true,
-          };
-          
-          setGraphOptionsOpendLables(updatedGraphOptionsOpendLables);       // Zustand setter
-          
+        };
+
+        setGraphOptionsOpendLables(updatedGraphOptionsOpendLables);       // Zustand setter
+
     };
 
     const changeGraphOption = (label: string, option: string) => {      //to change the graph otption
@@ -117,10 +116,10 @@ const DataViewer: React.FC = () => {
                 const updatedGraphOptionsOpenedLabels = {                   //getting current state
                     ...graphOptionsOpendLables,
                     [groupObj.title]: !graphOptionsOpendLables[groupObj.title],
-                  };
-                  
-                  setGraphOptionsOpendLables(updatedGraphOptionsOpenedLabels);          // Zustand setter
-                  
+                };
+
+                setGraphOptionsOpendLables(updatedGraphOptionsOpenedLabels);          // Zustand setter
+
             } else {
                 const updatedVisibleGraphs = {                      //getting current state
                     ...visibleGraphs,
@@ -135,28 +134,30 @@ const DataViewer: React.FC = () => {
                 const updatedGraphOptionsOpendLables = {            //getting current state
                     ...graphOptionsOpendLables,
                     [label]: !graphOptionsOpendLables[label],
-                  };
-                  
-                  setGraphOptionsOpendLables(updatedGraphOptionsOpendLables);       // Zustand setter
-                  
+                };
+
+                setGraphOptionsOpendLables(updatedGraphOptionsOpendLables);       // Zustand setter
+
             }
 
+        } else {
+            if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
+
+            const updatedVisibleGraphs = {              //getting current state
+                ...visibleGraphs,
+                [label]: {
+                    ...visibleGraphs[label],
+                    graphOptions: {
+                        ...visibleGraphs[label].graphOptions,
+                        [option]: !visibleGraphs[label].graphOptions[option as keyof types.GraphOptions],
+                    },
+                },
+            };
+
+            setVisibleGraphs(updatedVisibleGraphs);         // Zustand setter
         }
 
-        if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
 
-        const updatedVisibleGraphs = {              //getting current state
-            ...visibleGraphs,
-            [label]: {
-                ...visibleGraphs[label],
-                graphOptions: {
-                    ...visibleGraphs[label].graphOptions,
-                    [option]: !visibleGraphs[label].graphOptions[option as keyof types.GraphOptions],   
-                },
-            },
-        };
-
-        setVisibleGraphs(updatedVisibleGraphs);         // Zustand setter
 
     };
 
