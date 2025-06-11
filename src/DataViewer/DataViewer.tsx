@@ -13,6 +13,7 @@ import * as XLSX from "xlsx";
 import * as helperFunctions from "../Utils/HelperFunctions";
 import { LineChart, ResponsiveContainer, Brush } from "recharts";
 import Swal from 'sweetalert2';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 //utilities imports
 import * as types from '../Utils/types';
@@ -51,14 +52,14 @@ const DataViewer: React.FC = () => {
     //states 
     const [selectedOptions, setSelectedOptions] = useState<string[]>(initialDropdownOptions);   //to handle label selections
     const [isOpen, setIsOpen] = useState<boolean>(false);   //to handle label selections
-    const [isImported ,setIsImported] = useState(false);
+    const [isImported, setIsImported] = useState(false);
     const [visibleGraphs, setVisibleGraphs] = useState<{ [label: string]: types.GraphState }>(() => {        //to handle the  graphs visibility
         const initialState: { [label: string]: types.GraphState } = {};
 
-        CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item,index) => {
+        CONSTANTS.ALL_LABELS.filter(label => label.graphType).forEach((item, index) => {
             let fullLabel = `${item.label}${item.units && `(${item.units})`}`
             initialState[fullLabel] = {
-                visibility: true?index < CONSTANTS.MAX_VISIBLE_GRAPHS : false,
+                visibility: true ? index < CONSTANTS.MAX_VISIBLE_GRAPHS : false,
                 graphOptions: {
                     "Remove": false,
                     "Logarithmic Scale": false,
@@ -99,15 +100,15 @@ const DataViewer: React.FC = () => {
     const toggleGraph = (label: string) => {        // to Toggle graph visibility
         const visibleGraphCount = Object.values(visibleGraphs).filter(graph => graph.visibility).length;
         if (!visibleGraphs[label].visibility && visibleGraphCount >= CONSTANTS.MAX_VISIBLE_GRAPHS) {
-              Swal.fire({                                                       //popup for limiting the graphs
+            Swal.fire({                                                       //popup for limiting the graphs
                 title: 'Limit Reached',
                 text: 'You can only view up to 6 graphs at a time.',
                 icon: 'warning',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#20409A',
-              });
-              return;
-            }
+            });
+            return;
+        }
 
         setVisibleGraphs((prev) => ({
             ...prev,
@@ -240,6 +241,16 @@ const DataViewer: React.FC = () => {
             });
 
         }
+    };
+
+    // handle reorder logic
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+
+        const newOrder = Array.from(selectedOptions);
+        const [movedItem] = newOrder.splice(result.source.index, 1);
+        newOrder.splice(result.destination.index, 0, movedItem);
+        setSelectedOptions(newOrder); // Zustand setter
     };
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => { // to handle date change
@@ -422,7 +433,7 @@ const DataViewer: React.FC = () => {
         const upData = filteredData.map((point, index) => {
             const timestamp = new Date(point.timestamp);
             const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
-       
+
             const formattedTimestamp = index === 0
                 ? timestamp.toLocaleTimeString('en-US', { hour12: false })
                 : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
@@ -570,8 +581,8 @@ const DataViewer: React.FC = () => {
                         )}
                     </div>
                     <div className="time-range-container">
-                        <span>Select Start Date : <input type="datetime-local"  name="startDate" onChange={handleDateChange} step="1"></input></span>
-                        <span>Select End Date : <input type="datetime-local"  name="endDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select Start Date : <input type="datetime-local" name="startDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select End Date : <input type="datetime-local" name="endDate" onChange={handleDateChange} step="1"></input></span>
                     </div>
 
                     <ul className="data-buttons-container" >
@@ -589,22 +600,46 @@ const DataViewer: React.FC = () => {
                 </div>
                 <div className="graphs-main-container">
                     <div className="labels-container">
-                        <div className="labels-data-container">
-                            {selectedOptions.map((item) => (
-                                <div className="labels-data" key={item}>
-                                    <p className="label-text">{item} </p>
-
-                                    {/* condtionally rendering icons to handle graphs visibility */}
-                                    {visibleGraphs[item]?.visibility ? (
-                                        <i onClick={() => toggleGraph(item)} className="bi bi-eye" style={{ cursor: "pointer", color: "black" }} ></i>
-                                    ) :
-                                        (
-                                            <i onClick={() => toggleGraph(item)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black", }}></i>
-                                        )}
-
-                                </div>
-                            ))}
-                        </div>
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="labels">
+                                {(provided) => (
+                                    <div
+                                        className="labels-data-container"
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                    >
+                                        {selectedOptions.map((item, index) => (
+                                            <Draggable key={item} draggableId={item} index={index}>
+                                                {(provided) => (
+                                                    <div
+                                                        className="labels-data"
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                    >
+                                                        <p className="label-text">{item}</p>
+                                                        {visibleGraphs[item]?.visibility ? (
+                                                            <i
+                                                                onClick={() => toggleGraph(item)}
+                                                                className="bi bi-eye"
+                                                                style={{ cursor: "pointer", color: "black" }}
+                                                            ></i>
+                                                        ) : (
+                                                            <i
+                                                                onClick={() => toggleGraph(item)}
+                                                                className="bi bi-eye-slash-fill"
+                                                                style={{ cursor: "pointer", color: "black" }}
+                                                            ></i>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
                     </div>
                     <div className="graphs-container">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>

@@ -1,6 +1,7 @@
 //default imports
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
 
 //style sheet imports
 import "./SideBar.css";
@@ -9,7 +10,36 @@ import "./SideBar.css";
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-
+  const handleSignOut = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to log out?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, log out",
+      cancelButtonText: "Cancel",
+      allowOutsideClick: false, // Prevent closing on outside click
+      allowEscapeKey: false, // Prevent closing on escape key
+      allowEnterKey: false, // Prevent closing on enter key
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Remove the sessionStorage key
+        localStorage.removeItem("sessionStorage");
+        Swal.fire({
+          title: "Logged Out!",
+          text: "You have been logged out.",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 2000, // Display for 3 seconds
+        }).then(() => {
+          // Redirect to sign-in path
+          window.location.href = "/signin";
+        });
+      } 
+    });
+  };
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
@@ -17,7 +47,7 @@ const Sidebar: React.FC = () => {
 
       <button className="toggle-btn" onClick={toggleSidebar}>
         {isOpen ? <i className="bi bi-x"></i> : <i className="bi bi-list"></i>}
-       
+
       </button>
 
       <div className="sidebar-top">
@@ -45,13 +75,11 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className="sidebar-bottom">
-      <SidebarItem
-          to="/signout"
-          icon="bi-box-arrow-right"
-          label="Logout"
-          isOpen={isOpen}
-          isActive={location.pathname === "/signout"}
-        />
+        <div className={`sidebar-item logout-item`} onClick={handleSignOut}>
+          <i className={`bi bi-box-arrow-right icon`}></i>
+          {isOpen && <span className="label">Logout</span>}
+        </div>
+
         <SidebarItem
           to="/help"
           icon="bi bi-question-circle-fill"
@@ -59,7 +87,7 @@ const Sidebar: React.FC = () => {
           isOpen={isOpen}
           isActive={location.pathname === "/help"}
         />
-       
+
       </div>
     </div>
   );
@@ -81,7 +109,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isActive,
 }) => (
   <Link to={to} className={`sidebar-item ${isActive ? "active" : ""}`}>
-      <i className={`bi ${icon} icon ${isActive ? "icon-active" : ""}`}></i>
+    <i className={`bi ${icon} icon ${isActive ? "icon-active" : ""}`}></i>
     {isOpen && <span className="label">{label}</span>}
   </Link>
 );

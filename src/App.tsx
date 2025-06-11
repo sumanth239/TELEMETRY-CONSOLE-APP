@@ -8,7 +8,6 @@ import SignIn from './SignIn/SignIn';
 import SignUp from './SignUp/SignUp';
 import TelecommandInfo from './HelpScreen/TelecommandInfo';
 import SettingsScreen, { SettingsProvider } from './SettingsSceen/SettingScreen';
-import SignOut from './SignOut/SignOut';
 
 function App() {
   return (
@@ -26,7 +25,6 @@ function App() {
             <Route path='help' element={<TelecommandInfo />} />
             <Route path='settings' element={<SettingsScreen />} />
             <Route path='signin' element={<SignIn />} />
-            <Route path='signout' element={<SignOut />} />
           </Route>
         </Routes>
       </Router>
