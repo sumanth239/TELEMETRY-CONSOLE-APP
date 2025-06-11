@@ -228,15 +228,40 @@ export function isArrayEmpty(arr:any) {
 }
 
 export function parseTimeToMillis(timestamp: string): number {
+  if (!timestamp || typeof timestamp !== 'string') {
+    console.error("Invalid timestamp format");
+    return NaN;
+  }
+
   const [datePart, timePart] = timestamp.split(', ');
+  if (!timePart) {
+    console.error("Timestamp missing time part");
+    return NaN;
+  }
+
   const [time, meridian] = timePart.split(' ');
+  if (!time || !meridian) {
+    console.error("Invalid time or meridian format");
+    return NaN;
+  }
+
   const [hoursStr, minutesStr, secondsStr] = time.split(':');
+  if (!hoursStr || !minutesStr || !secondsStr) {
+    console.error("Invalid time format");
+    return NaN;
+  }
+
   let hours = parseInt(hoursStr, 10);
   const minutes = parseInt(minutesStr, 10);
-  const [seconds, milliseconds] = secondsStr.split('.').map(Number);
+  const [seconds, milliseconds = 0] = secondsStr.split('.').map(Number);
 
-  if (meridian && meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
-  if (meridian && meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
+  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || isNaN(milliseconds)) {
+    console.error("Invalid numeric values in timestamp");
+    return NaN;
+  }
+
+  if (meridian.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+  if (meridian.toLowerCase() === 'am' && hours === 12) hours = 0;
 
   return hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds;
 }
