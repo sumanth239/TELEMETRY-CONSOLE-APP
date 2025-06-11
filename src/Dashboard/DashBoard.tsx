@@ -15,6 +15,7 @@ import { useSettings } from "../SettingsSceen/SettingScreen";
 import * as types from '../Utils/types';
 import axios from "axios";
 import Swal from 'sweetalert2';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 //utilities imports
 import * as helperFunctions from "../Utils/HelperFunctions";
@@ -115,6 +116,7 @@ const Dashboard: React.FC = () => {
 
     return initialState;
   });
+  const [labelOrder, setLabelOrder] = useState(Object.keys(processedTelemetryData));    //state to keeps track of the current order in which labels are displayed.
 
   // use Effects
   useEffect(() => {
@@ -293,7 +295,7 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    
+
     ws.onerror = (error) => console.error("WebSocket Error:", error);
     ws.onclose = () => console.log("WebSocket Disconnected");
 
@@ -309,6 +311,12 @@ const Dashboard: React.FC = () => {
 
 
   //handler functions
+
+
+  useEffect(() => {           //Whenever processedTelemetryData changes (e.g., new labels or data update), we reset the label order to match it
+    setLabelOrder(Object.keys(processedTelemetryData));
+  }, [processedTelemetryData]);
+
 
   // Command Processing
   const formHandler = async (event: any) => {
@@ -629,6 +637,16 @@ const Dashboard: React.FC = () => {
 
   }
 
+  
+  const onDragEnd = (result: DropResult) => {     //Triggered when the user finishes a drag.And update the label order based on drag result
+    if (!result.destination) return;
+
+    const reordered = Array.from(labelOrder);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+
+    setLabelOrder(reordered);
+  };
 
   return (
     <>
@@ -720,27 +738,43 @@ const Dashboard: React.FC = () => {
               {exportTelemetryData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
             </div>
             <div className="labels-and-graphs-container">
-              <div className="labels-data-container">
-                {Object.entries(processedTelemetryData).map(([label, data], index) => (
-                  <div className="labels-data" key={`${label}-${index}`}>
-                    <p className="label-key">{label} </p>
-                    <div>
-                      <p className="label-value"> {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}</p>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="labels">
+                  {(provided) => (
+                    <div className="labels-data-container" ref={provided.innerRef} {...provided.droppableProps} >
+                      {labelOrder.map((label, index) => {
+                        const data = processedTelemetryData[label];
+                        return (
+                          <Draggable key={label} draggableId={label} index={index}>
+                            {(provided) => (
+                              <div className="labels-data" ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} >
+                                <p className="label-key">{label}</p>
+                                <div>
+                                  <p className="label-value">
+                                    {helperFunctions.resolveLabelValue(label, data[data.length - 1]?.value)}
+                                  </p>
+                                </div>
+                                <p className="label-key">
+                                  {helperFunctions.getLabelUnits(label) && `${helperFunctions.getLabelUnits(label)}`}
+                                </p>
+
+                                {helperFunctions.hasGraphType(label) && (
+                                  visibleGraphs[label]?.visibility ? (
+                                    <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black" }}></i>
+                                  ) : (
+                                    <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black" }}></i>
+                                  )
+                                )}
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
                     </div>
-                    <p className="label-key"> {helperFunctions.getLabelUnits(label) && `${helperFunctions.getLabelUnits(label)}`}</p>
-
-                    { /* Conditionally rendering icons to handle graphs visibility */}
-                    {helperFunctions.hasGraphType(label) && (
-                      visibleGraphs[label]?.visibility ? (
-                        <i onClick={() => toggleGraph(label)} className="bi bi-eye" style={{ cursor: "pointer", color: "black" }}></i>
-                      ) : (
-                        <i onClick={() => toggleGraph(label)} className="bi bi-eye-slash-fill" style={{ cursor: "pointer", color: "black" }}></i>
-                      )
-                    )}
-
-                  </div>
-                ))}
-              </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
 
               {/* graphs container*/}
               <div className="graphs-data-container">
