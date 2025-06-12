@@ -9,9 +9,10 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
     return;
   }
 
+  const userName = getSessionStorageKey("userName");// Get user name from session storage
   const productName = getSessionStorageKey('product');
   const FileName = fileName?.replace(/\s+/g, '') || `${productName}_${getFormattedDateTime()}.xlsx`;
-  updateSessionLogs(`User choose ${FileName} filename for exported excel sheet`);
+  updateSessionLogs(`${userName} choose ${FileName} filename for exported excel sheet`);
 
   const ws = XLSX.utils.json_to_sheet(telemetryData);
   const ws2 = XLSX.utils.json_to_sheet(logsData);
@@ -19,16 +20,11 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
   XLSX.utils.book_append_sheet(wb, ws, "TelemetryData");
   XLSX.utils.book_append_sheet(wb, ws2, "LogsData");
 
-
-
   // ✅ Define column widths
-  ws["!cols"] = Object.keys(telemetryData[0]).map((key) => {
-    const maxLength = Math.max(
-      key.length, // Header length
-      ...telemetryData.map((row: any) => (row[key] ? row[key].toString().length : 0)) // Max length of data in the column
-    );
-    return { wch: Math.min(maxLength + 5, 50) }; // Add padding and set a max width limit
-  });
+  ws["!cols"] = [
+    { wch: 25 },
+    ...Array(35).fill({ wch: 30 })
+  ];
 
   ws2["!cols"] = [            //for logs data
     {wch : 25},
@@ -182,7 +178,6 @@ export function updateAlertsAction(index: number): void {
       alert.Action = true;
     });
   } else if (index >= 0 && index < sessionData.alerts.length) {
-    console.log("Updating alert at index:", index);
     sessionData.alerts[index].Action = true;
   }
 
@@ -221,7 +216,6 @@ export function mergeTelemetryByTimestamp(labels: string[], telemetryData: any) 
 
     // Convert map to sorted array
     const mergedArray = Object.values(mergedMap);
-    console.log(mergedArray,",merged data")
     return mergedArray;
 }
 
@@ -317,7 +311,7 @@ export function getUTCTimestampWithMilliseconds(): string {
     fractionalSecondDigits: 3,
     hour12: true,
   });
-  console.log(" getUTCTimestampWithMilliseconds()",formatter.format(new Date()))
+ 
   return formatter.format(new Date());
 }
 
