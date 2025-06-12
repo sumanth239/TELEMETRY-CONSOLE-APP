@@ -315,7 +315,7 @@ export function getUTCTimestampWithMilliseconds(): string {
     fractionalSecondDigits: 3,
     hour12: true,
   });
-
+  console.log(" getUTCTimestampWithMilliseconds()",formatter.format(new Date()))
   return formatter.format(new Date());
 }
 
