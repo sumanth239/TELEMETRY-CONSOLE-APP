@@ -22,11 +22,13 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
 
 
   // ✅ Define column widths
-  ws["!cols"] = [             //for telemetry data
-    { wch: 25 }, // First column (e.g., timestamp)
-    // Apply the same width for all columns
-    ...Object.keys(telemetryData[0]).map(() => ({ wch: 30 }))
-  ];
+  ws["!cols"] = Object.keys(telemetryData[0]).map((key) => {
+    const maxLength = Math.max(
+      key.length, // Header length
+      ...telemetryData.map((row: any) => (row[key] ? row[key].toString().length : 0)) // Max length of data in the column
+    );
+    return { wch: Math.min(maxLength + 5, 50) }; // Add padding and set a max width limit
+  });
 
   ws2["!cols"] = [            //for logs data
     {wch : 25},

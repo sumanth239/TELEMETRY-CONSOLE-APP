@@ -57,7 +57,7 @@ const DataViewer: React.FC = () => {
         if (!visibleGraphs[label].visibility && visibleGraphCount >= CONSTANTS.MAX_VISIBLE_GRAPHS) {
             Swal.fire({                                                       //popup for limiting the graphs
                 title: 'Limit Reached',
-                text: 'You can only view up to 6 graphs at a time.',
+                text: `You can only view up to ${CONSTANTS.MAX_VISIBLE_GRAPHS} graphs at a time.`,
                 icon: 'warning',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#20409A',

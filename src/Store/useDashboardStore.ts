@@ -86,6 +86,9 @@ type GlobalStore = {
     systemStatusLabels : { [key: string]: string | number };
     setSystemStatusLabels : (data:{ [key: string]: string | number }) => void
 
+    labelOrder : string[];
+    setLabelOrder:(data: string[] ) => void 
+
 };
 
 // Zustand store
@@ -124,6 +127,9 @@ export const useDashboardStore = create<GlobalStore>((set) => ({
     setExportTelemetryData : (telemetryData) => set({telemetryData:{}}),
 
     systemStatusLabels : initialSystemStatusLabels,
-    setSystemStatusLabels : (data :{ [key: string]: string | number }) => set({systemStatusLabels: data})
+    setSystemStatusLabels : (data :{ [key: string]: string | number }) => set({systemStatusLabels: data}),
+
+    labelOrder: Object.keys(intialTelemeteryData),
+    setLabelOrder: (data: string[]) => set({ labelOrder: data })
 
 }));

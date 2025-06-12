@@ -8,6 +8,7 @@ interface ConfirmOptions {
     cancelButtonText?: string;
     confirmButtonColor?: string;
     cancelButtonColor?: string;
+    allowOutsideClick?: boolean,
     icon?: SweetAlertOptions['icon'];
     onConfirm: () => void | Promise<void>;
     onCancel?: () => void | Promise<void>; 
@@ -23,6 +24,7 @@ export const confirmAction = async ({           //confrimation pop up
     icon = 'warning',
     onConfirm,
     onCancel,
+    allowOutsideClick,
 }: ConfirmOptions): Promise<void> => {
     const result = await Swal.fire({
         title,
@@ -33,6 +35,7 @@ export const confirmAction = async ({           //confrimation pop up
         cancelButtonText,
         confirmButtonColor,
         cancelButtonColor,
+        allowOutsideClick,
     });
 
     if (result.isConfirmed) {

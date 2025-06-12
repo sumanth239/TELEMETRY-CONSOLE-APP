@@ -16,6 +16,7 @@ import * as types from '../Utils/types';
 import axios from "axios";
 import Swal from 'sweetalert2';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { useDashboardStore } from "../Store/useDashboardStore";
 
 //utilities imports
 import * as helperFunctions from "../Utils/HelperFunctions";
@@ -61,6 +62,7 @@ const Dashboard: React.FC = () => {
   //default intilizalize values
   const renderedLabels = new Set<string>();
   const startSystem = helperFunctions.getSessionStorageKey("powerOn");    //to know system is live or not
+  const alertsCount = helperFunctions.getActiveAlertsCount()
   //states
   const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
   const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);   //to handle real time telemetry data 
@@ -73,7 +75,7 @@ const Dashboard: React.FC = () => {
   })
   const [teleCmdValueError, setTeleCmdValueError] = useState<string[]>([]); //to handle telecmd input validation errors
   const [graphOptionsOpendLables, setgraphOptionsOpendLables] = useState(initialGraphOptionsState);   //state to handle the graph options visibility
-  const [isLogging, setIsLogging] = useState(false);   //state to handle telemetry data logging
+  const { isLogging, setIsLogging } = useDashboardStore();  //state to handle telemetry data logging
   const [sessionLogsData, setSessionLogsData] = useState<{ [key: string]: any }[]>(() => {       //state to log the data 
     const sessionStr = localStorage.getItem("sessionStorage");
     if (!sessionStr) return [];
@@ -116,7 +118,7 @@ const Dashboard: React.FC = () => {
 
     return initialState;
   });
-  const [labelOrder, setLabelOrder] = useState(Object.keys(processedTelemetryData));    //state to keeps track of the current order in which labels are displayed.
+  const {labelOrder, setLabelOrder} = useDashboardStore();;    //state to keeps track of the current order in which labels are displayed.
 
   // use Effects
   useEffect(() => {
@@ -253,6 +255,7 @@ const Dashboard: React.FC = () => {
         }
 
         if (helperFunctions.isArrayEmpty(incomingData)) {
+          helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
           confirmAction({
             title: 'New Alert',
             text: CONSTANTS.BIT_ERROR_ALERT,
@@ -260,13 +263,14 @@ const Dashboard: React.FC = () => {
             cancelButtonText: 'Do it Later',
             confirmButtonColor: '#20409A',
             cancelButtonColor: '#e53e3e',
+            allowOutsideClick: false,
             onConfirm: () => {
-              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, true);
+              helperFunctions.updateAlertsAction(alertsCount)
             },
-            onCancel: () => {
-              helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
-              helperFunctions.updateSessionLogs(`ignored alert: Skipping packet, packet contains bit error.`);
-            },
+            // onCancel: () => {
+            //   helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
+            //   helperFunctions.updateSessionLogs(`ignored alert: Skipping packet, packet contains bit error.`);
+            // },
           });
         }
 
@@ -311,12 +315,6 @@ const Dashboard: React.FC = () => {
 
 
   //handler functions
-
-
-  useEffect(() => {           //Whenever processedTelemetryData changes (e.g., new labels or data update), we reset the label order to match it
-    setLabelOrder(Object.keys(processedTelemetryData));
-  }, [processedTelemetryData]);
-
 
   // Command Processing
   const formHandler = async (event: any) => {
@@ -382,7 +380,7 @@ const Dashboard: React.FC = () => {
     if (!visibleGraphs[label].visibility && visibleGraphCount >= CONSTANTS.MAX_VISIBLE_GRAPHS) {
       Swal.fire({
         title: 'Limit Reached',
-        text: 'You can only view up to 6 graphs at a time.',
+        text: `You can only view up to ${CONSTANTS.MAX_VISIBLE_GRAPHS} graphs at a time.`,
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#20409A',
@@ -679,7 +677,7 @@ const Dashboard: React.FC = () => {
                 className="text"
                 style={{ color: helperFunctions.getActiveAlertsCount() > 0 ? "#B85450" : "rgba(142, 238, 171, 0.795)" }}
               >
-                Alerts : {helperFunctions.getActiveAlertsCount()} &nbsp; &nbsp;&nbsp;
+                Alerts : {alertsCount} &nbsp; &nbsp;&nbsp;
                 <i className="bi bi-box-arrow-up-right" onClick={() => setShowAlert(true)} ></i>
               </span>
 
