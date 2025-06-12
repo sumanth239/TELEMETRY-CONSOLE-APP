@@ -120,7 +120,7 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
     },
     series: [...mainSeries, ...blinkingPoints],
     dataZoom: timeSlider ? [
-      {
+      {bottom:'3%',
         type: 'slider',
         start: 0,
         end: 100,
@@ -130,7 +130,7 @@ const GraphComponent: React.FC<ChildProps> = ({ data, graphOptions, timeSlider, 
   };
 
   return (
-    <div style={{ width: '100%', height: timeSlider ? "88%" : "100%" }}>
+    <div style={{ width: '100%', height: timeSlider ? "85%" : "100%" }}>
       <ReactECharts
         option={option}
         notMerge={true}

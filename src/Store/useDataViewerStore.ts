@@ -12,7 +12,7 @@ const initialVisibleGraphs: { [label: string]: types.GraphState } = CONSTANTS.AL
     .reduce((acc, item, index) => {
         const fullLabel = helperFunctions.getFullLabelWithUnits(item.label);
         acc[fullLabel] = {
-            visibility: false,
+            visibility: index < CONSTANTS.MAX_VISIBLE_GRAPHS ? true : false,
             graphOptions: {
                 "Remove": false,
                 "Logarithmic Scale": false,

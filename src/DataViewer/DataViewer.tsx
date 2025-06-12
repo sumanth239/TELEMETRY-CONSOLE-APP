@@ -169,7 +169,7 @@ const DataViewer: React.FC = () => {
             ...visibleGraphs,
             [fullLabel]: {
                 ...visibleGraphs[fullLabel],
-                visibility: !visibleGraphs[fullLabel].visibility,
+                visibility:false,
             },
         };
 
