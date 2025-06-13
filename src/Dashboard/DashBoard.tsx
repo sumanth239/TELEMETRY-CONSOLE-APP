@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
       Object.entries(telemetryData).map(([label, data]) => {
         const index = CONSTANTS.ALL_LABELS.findIndex((item) => item.label === label);
         const filtered = index >= 0 && index < CONSTANTS.SCITM_MAX_INDEX ? data.filter((_, i) => i % frequency === 0) : data;
-        return [label, filtered];
+        return [label, filtered.slice(-CONSTANTS.MAX_POINTS)];
       })
     );
 
@@ -277,7 +277,7 @@ const Dashboard: React.FC = () => {
           CONSTANTS.ALL_LABELS.slice(startIndex, endIndex).forEach((item, index) => {
             if (incomingData[index] !== undefined) {
               const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
-              updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-CONSTANTS.MAX_POINTS); // Updating real-time telemetry data
+              updatedData[item.label] = [...(prevData[item.label] || []), newEntry]; // Updating real-time telemetry data
             }
           });
 
