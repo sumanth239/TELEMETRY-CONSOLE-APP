@@ -1,5 +1,5 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
-export const SERVER = "127.0.0.1:8002"
+export const SERVER = "192.168.0.131:8002"
 export const BASE_URL = `http://${SERVER}`
 export const GET_TELEMETRY_API_URL = `${BASE_URL}/dataviewer/telemetry`;
 export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/dashboard/telecommands`;
