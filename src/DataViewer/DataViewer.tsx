@@ -186,7 +186,17 @@ const DataViewer: React.FC = () => {
 
         } else {
             setSelectedOptions([]);      // Clear selection and hide all graphs
-            setVisibleGraphs(initialVisibleGraphs);
+            const updatedVisibleGraphs = Object.fromEntries(
+                Object.entries(visibleGraphs).map(([label, graphState]) => [
+                  label,
+                  {
+                    ...graphState,
+                    visibility: false,
+                  },
+                ])
+              );
+            setVisibleGraphs(updatedVisibleGraphs);
+              
 
         }
     };

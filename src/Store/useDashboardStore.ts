@@ -66,7 +66,12 @@ type GlobalStore = {
     // Graphs Visibilitty
     initialVisibleGraphs: { [label: string]: types.GraphState };
     visibleGraphs: { [label: string]: types.GraphState };
-    setVisibleGraphs: (graphs: { [label: string]: types.GraphState }) => void;
+    setVisibleGraphs: (
+        updater:
+          | { [label: string]: types.GraphState }
+          | ((prev: { [label: string]: types.GraphState }) => { [label: string]: types.GraphState })
+      ) => void;
+      
 
     // Telemetry Data
     initialTelemetryData: { [key: string]: { value: number; timestamp: string }[] }
@@ -108,7 +113,16 @@ export const useDashboardStore = create<GlobalStore>((set) => ({
     // Graphs Visibilitty
     initialVisibleGraphs: initialVisibleGraphs,
     visibleGraphs: initialVisibleGraphs,
-    setVisibleGraphs: (graphs: any) => set({ visibleGraphs: graphs }),
+    setVisibleGraphs: (
+        updater:
+          | { [label: string]: types.GraphState }
+          | ((prev: { [label: string]: types.GraphState }) => { [label: string]: types.GraphState })
+      ) =>
+        set((state) => ({
+          visibleGraphs:
+            typeof updater === 'function' ? updater(state.visibleGraphs) : updater,
+        })),
+      
 
     // Telemetry Data
     initialTelemetryData: intialTelemeteryData,

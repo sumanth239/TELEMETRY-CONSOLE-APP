@@ -28,7 +28,7 @@ import * as CONSTANTS from "../Utils/Constants";
 // Initialization and State Management
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
-const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
+// const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 
 
 //Modifying intial state of graphs as visible
@@ -39,7 +39,7 @@ CONSTANTS.ALL_LABELS.forEach((item) => {
   } else {
     initialVisibility[item.label] = false;
   }
-  intialTelemeteryData[item.label] = [];
+  // intialTelemeteryData[item.label] = [];
 
 });
 
@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
   const alertsCount = helperFunctions.getActiveAlertsCount()
   //states
   const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
-  const [telemetryData, setTelemetryData] = useState(intialTelemeteryData);   //to handle real time telemetry data 
+  const {initialTelemetryData,telemetryData, setTelemetryData} = useDashboardStore();   //to handle real time telemetry data 
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
   const [systemStatusLabels, setSystemStatusLabels] = useState({
@@ -92,7 +92,7 @@ const Dashboard: React.FC = () => {
     return [];
   });
   const { frequency } = useSettings();
-  const [processedTelemetryData, setProcessedTelemetryData] = useState<types.TelemetryData>(intialTelemeteryData);
+  const [processedTelemetryData, setProcessedTelemetryData] = useState<types.TelemetryData>(initialTelemetryData);
   const [exportTelemetryData, setExportTelemetryData] = useState<{ [key: string]: any }[]>([]);  //state to log the data 
   const [showAlert, setShowAlert] = useState(false);
   const [teleCmdsFormData, setTeleCmdsFormData] = useState({ //state to handle all tele cmds states ,telecmd type i.e Real time or Time Tagged,telecmd,telecmd value i.e input by user
@@ -183,7 +183,7 @@ const Dashboard: React.FC = () => {
       })
     );
 
-    const updatedData: types.TelemetryData = intialTelemeteryData;
+    const updatedData: types.TelemetryData = initialTelemetryData;
 
     for (const label in processed) {
       const series = processed[label];
