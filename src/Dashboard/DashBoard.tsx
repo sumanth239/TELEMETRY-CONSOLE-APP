@@ -120,6 +120,7 @@ const Dashboard: React.FC = () => {
   });
   const {labelOrder, setLabelOrder} = useDashboardStore();;    //state to keeps track of the current order in which labels are displayed.
 
+  console.log(telemetryData)
   // use Effects
   useEffect(() => {
     setTeleCmdValueError([]); // Reset error
@@ -178,7 +179,7 @@ const Dashboard: React.FC = () => {
       Object.entries(telemetryData).map(([label, data]) => {
         const index = CONSTANTS.ALL_LABELS.findIndex((item) => item.label === label);
         const filtered = index >= 0 && index < CONSTANTS.SCITM_MAX_INDEX ? data.filter((_, i) => i % frequency === 0) : data;
-        return [label, filtered.slice(-CONSTANTS.MAX_POINTS)];
+        return [label, filtered];
       })
     );
 
@@ -191,11 +192,11 @@ const Dashboard: React.FC = () => {
       const baseTime = helperFunctions.parseTimeToMillis(series[0].timestamp);
 
       updatedData[label] = series.map((point, index) => {
-        const [datePart, timePart] = point.timestamp.split(', ')
+        const timestamp = new Date();
         const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
 
         const formattedTimestamp = index === 0
-          ? timePart
+          ? timestamp.toISOString().split('T')[1].split('Z')[0]
           : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
 
         return {
@@ -276,7 +277,7 @@ const Dashboard: React.FC = () => {
           CONSTANTS.ALL_LABELS.slice(startIndex, endIndex).forEach((item, index) => {
             if (incomingData[index] !== undefined) {
               const newEntry = { value: incomingData[index], timestamp: helperFunctions.getUTCTimestampWithMilliseconds() };
-              updatedData[item.label] = [...(prevData[item.label] || []), newEntry]; // Updating real-time telemetry data
+              updatedData[item.label] = [...(prevData[item.label] || []), newEntry].slice(-CONSTANTS.MAX_POINTS); // Updating real-time telemetry data
             }
           });
 
