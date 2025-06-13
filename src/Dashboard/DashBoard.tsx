@@ -191,11 +191,11 @@ const Dashboard: React.FC = () => {
       const baseTime = helperFunctions.parseTimeToMillis(series[0].timestamp);
 
       updatedData[label] = series.map((point, index) => {
-        const timestamp = new Date(point.timestamp);
+        const [datePart, timePart] = point.timestamp.split(', ')
         const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
 
         const formattedTimestamp = index === 0
-          ? timestamp.toLocaleTimeString('en-US', { hour12: false })
+          ? timePart
           : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
 
         return {
@@ -267,10 +267,6 @@ const Dashboard: React.FC = () => {
             onConfirm: () => {
               helperFunctions.updateAlertsAction(alertsCount)
             },
-            // onCancel: () => {
-            //   helperFunctions.updateAlerts(CONSTANTS.BIT_ERROR_ALERT, false);
-            //   helperFunctions.updateSessionLogs(`ignored alert: Skipping packet, packet contains bit error.`);
-            // },
           });
         }
 

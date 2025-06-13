@@ -1,11 +1,12 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
-export const BASE_URL = "http://localhost:8000"
+export const SERVER = "127.0.0.1:8002"
+export const BASE_URL = `http://${SERVER}`
 export const GET_TELEMETRY_API_URL = `${BASE_URL}/dataviewer/telemetry`;
 export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/dashboard/telecommands`;
 export const POST_TELECOMMABD_API_URL = `${BASE_URL}/dashboard/tecommand`
-export const SCITM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/SciTM"
-export const HKTM_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/HKTM"
-export const TELEMETRY_WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/Telemetry"
+export const SCITM_WEBSOCKET_URL = `ws://${SERVER}/ws/SciTM`
+export const HKTM_WEBSOCKET_URL = `ws://${SERVER}/ws/HKTM`
+export const TELEMETRY_WEBSOCKET_URL = `ws://${SERVER}/ws/Telemetry`
 export const MAX_TIME_SLIDER_INDEX = 60;
 export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
 export const DEFAULT_INITIAL_TEMP = "32.2"
