@@ -169,7 +169,7 @@ const DataViewer: React.FC = () => {
             ...visibleGraphs,
             [fullLabel]: {
                 ...visibleGraphs[fullLabel],
-                visibility:false,
+                visibility: false,
             },
         };
 
@@ -246,15 +246,17 @@ const DataViewer: React.FC = () => {
                     Swal.showLoading();
                 },
             });
+            
 
-            const response = await axios.get(CONSTANTS.GET_TELEMETRY_API_URL, {
-                params: {
-                    start_date: selectedDateRange.startDate.toISOString(),
-                    end_date: selectedDateRange.endDate.toISOString(),
-                },
+            const params = new URLSearchParams({
+                start_date: helperFunctions.toISTDateString(selectedDateRange.startDate),
+                end_date: helperFunctions.toISTDateString(selectedDateRange.endDate),
             });
 
-            const { telemetry_data } = response.data;
+            const response = await fetch(`${CONSTANTS.GET_TELEMETRY_API_URL}?${params.toString()}`);
+            const data = await response.json();
+
+            const { telemetry_data } = data;
             const updatedTelemetryData: { [key: string]: { value: number, timestamp: string }[] } = {};
             const timestampMap: { [key: string]: number } = {};
 
@@ -268,10 +270,13 @@ const DataViewer: React.FC = () => {
                 });
             });
 
-            const timeSliderDataArray = Object.entries(timestampMap).map(([timestamp, value]) => ({             //getting current state      
-                timestamp,
-                value,
-            }));
+            const timeSliderDataArray = Object.entries(timestampMap)
+                .map(([timestamp, value]) => ({
+                    timestamp,
+                    value,
+                }))
+                .sort((a, b) => helperFunctions.parseTimeToMillis(a.timestamp) - helperFunctions.parseTimeToMillis(b.timestamp));
+
 
             setTimeSliderData(timeSliderDataArray);                 // Zustand setter
             // Process SCITM data
@@ -376,13 +381,13 @@ const DataViewer: React.FC = () => {
             const itemTimestamp = item.timestamp;
             return itemTimestamp >= startTimestamp && itemTimestamp <= endTimestamp;
         });
-        const baseTime = helperFunctions.parseTimeToMillis(filteredData[0].timestamp)
+        const baseTime = helperFunctions.parseTimeToMillis(filteredData[0]?.timestamp)
         const upData = filteredData.map((point, index) => {
-            const timestamp = new Date(point.timestamp);
+            const [datePart, timePart] = point.timestamp.split(', ');
             const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
 
             const formattedTimestamp = index === 0
-                ? timestamp.toLocaleTimeString('en-US', { hour12: false })
+                ? timePart
                 : `+${((miliTime - baseTime) / 1000).toFixed(1)}s`;
 
             return {

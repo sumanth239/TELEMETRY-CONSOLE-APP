@@ -321,3 +321,9 @@ export function getTimeDifferenceInMinutes(date1:any, date2:any) {
   const diffInMs = Math.abs(d2 - d1);
   return Math.floor(diffInMs / (1000 * 60));
 }
+
+export function toISTDateString(date: Date): string {
+  const offset = date.getTimezoneOffset() * 60000;
+  const localDate = new Date(date.getTime() - offset);
+  return localDate.toISOString().slice(0, 19).replace("T", " ");
+}
