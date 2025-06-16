@@ -235,8 +235,8 @@ export const ALL_LABELS = [
   { label: "EDFA Laser Temperature", units: "°C", graphType: "monotoneX" },
   { label: "EDFA Internal Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Beacon Exposure", units: "°C", graphType: "monotoneX" },
-  { label: "Beacon Sensor Temperature", units: "°C", graphType: "monotoneX" },
-  { label: "TEC Laser Temperature", units: "°C", graphType: "monotoneX" },
+  { label: "Beacon  Temperature", units: "°C", graphType: "monotoneX" },
+  { label: "TEC  Temperature", units: "°C", graphType: "monotoneX" },
   { label: "TEC Voltage", units: "V", graphType: "monotoneX" },
   { label: "TEC Current", units: "A", graphType: "monotoneX" },
   { label: "ODT 5V Rail", units: "V", graphType: "monotoneX" },
@@ -412,12 +412,12 @@ export const TELE_COMMANDS_INFO = [
     description: "Exposure level of the beacon detector. Adjusted automatically based on ambient light conditions and signal strength."
   },
   { 
-    label: "Beacon Sensor Temperature", 
+    label: "Beacon  Temperature", 
     units: "°C", 
     description: "Operating temperature of the beacon detection sensor. Temperature affects sensitivity and noise characteristics."
   },
   { 
-    label: "TEC Laser Temperature", 
+    label: "TEC  Temperature", 
     units: "°C", 
     description: "Temperature of the Thermoelectric Cooler for the laser system. Maintains precise wavelength by controlling laser diode temperature."
   },
