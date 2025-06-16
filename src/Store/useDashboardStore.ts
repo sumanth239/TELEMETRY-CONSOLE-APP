@@ -94,6 +94,13 @@ type GlobalStore = {
     labelOrder : string[];
     setLabelOrder:(data: string[] ) => void 
 
+    scheduledTimeTagCmds: { id: number; command: string; timeStamp: Date | null ;values: any[]}[];
+    setScheduledTimeTagCmds: (
+        updater:
+          | { id: number; command: string; timeStamp: Date | null;values: any[] }[]
+          | ((prev: { id: number; command: string; timeStamp: Date | null ;values: any[]}[]) => { id: number; command: string; timeStamp: Date | null ; values: any[]}[])
+      ) => void
+
 };
 
 // Zustand store
@@ -144,6 +151,19 @@ export const useDashboardStore = create<GlobalStore>((set) => ({
     setSystemStatusLabels : (data :{ [key: string]: string | number }) => set({systemStatusLabels: data}),
 
     labelOrder: Object.keys(intialTelemeteryData),
-    setLabelOrder: (data: string[]) => set({ labelOrder: data })
+    setLabelOrder: (data: string[]) => set({ labelOrder: data }),
+
+    scheduledTimeTagCmds: [],
+    setScheduledTimeTagCmds: (
+        updater:
+          | { id: number; command: string; timeStamp: Date | null ;values: any[] }[]
+          | ((prev: { id: number; command: string; timeStamp: Date | null ;values: any[]}[]) => { id: number; command: string; timeStamp: Date | null ;values: any[]}[])
+      ) =>
+        set((state) => ({
+          scheduledTimeTagCmds:
+            typeof updater === 'function' ? updater(state.scheduledTimeTagCmds) : updater,
+        })),
+      
+    
 
 }));

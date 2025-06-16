@@ -22,14 +22,16 @@ export const SCITM_MAX_INDEX = 14
 export const MAX_VISIBLE_GRAPHS = 4
 export const POWER_ON_CMD_ID = 5
 export const SHUTDOWN_CMD_ID = 6
+export const TIME_TAG_COMMANDS_LIST_CMD_ID = 100
 export const FLOAT_INPUT_COMMANDS = [31, 90];
-export const NO_INPUT_COMMANDS = [6,32,5]
+export const NO_INPUT_COMMANDS = [6,32,5,100]
 export const MAX_TELEMETRY_DURATION = 20
 
 export const NO_ALERT_MESSAGE = "No Alerts Found"
 export const NO_DATA_FOUND = "No Data Found"
 export const NO_SESSION_LOGS_FOUND ="No Session Logs Found"
 export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
+export const NO_SCHEDULED_COMMANDS = "No TimeTag commands are Scheduled"
 
 // Objects constants data
 export const COLOR_MAP = [ "#446BAD","#ff7300","#387908","#F05A7E","#82ca9d","#000000"];
@@ -199,6 +201,12 @@ export const TELE_COMMANDS = [
       { label: "Current Control", value: 2 },
       { label: "OFF", value: 3 },
     ],
+  },
+  {
+    cmd: "TimeTag Commands List",
+    cmdId: 100,
+    inputType: 0,
+    inputValues: [],
   },
 ];
 

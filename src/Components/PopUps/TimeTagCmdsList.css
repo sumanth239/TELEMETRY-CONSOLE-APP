@@ -1,0 +1,92 @@
+.scheduled-cmd-overlay-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 800;
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+  }
+  .scheduled-cmds-main-container {
+    margin: 12% 24.5%;
+    width: 50%;
+    background-color: white;
+    border-radius: 20px;
+    color: black;
+    font-size: var(--font-size-body);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); 
+    position: relative;
+  }
+  
+  .scheduled-cmds-container {
+    border-top: 2px solid grey;
+    height: 70%;
+    overflow-y: scroll;
+  }
+
+  .scheduled-cmds-header-container {
+    font-size: var(--font-size-heading);
+    color: var(--buttons-color);
+    font-weight: bold;
+    padding: 0 20px;
+    text-align: center;
+  }
+  .scheduled-cmds-header-container i:hover {
+    cursor: pointer;
+  }
+  
+  .scheduled-cmds-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .scheduled-cmds-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr 2fr 1fr;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .scheduled-cmds-row.header {
+    font-weight: bold;
+    background-color: #f0f0f0;
+  }
+  
+  .scheduled-cmds-row span {
+    overflow-wrap: break-word;
+  }
+  
+  .action-button {
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .scheduled-cmds-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+  
+  .send-button {
+    padding: 10px 20px;
+    /* background-color: #1976d2; */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  @media screen and (min-width: 780px) and (max-width: 1800px) {  
+    .scheduled-cmds{
+      font-size: 14px;
+    }
+  }
