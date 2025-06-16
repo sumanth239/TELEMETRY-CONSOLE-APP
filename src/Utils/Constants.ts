@@ -1,4 +1,5 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
+// BackEnd URLS
 export const SERVER = "192.168.0.131:8002"
 export const BASE_URL = `http://${SERVER}`
 export const GET_TELEMETRY_API_URL = `${BASE_URL}/dataviewer/telemetry`;
@@ -7,33 +8,38 @@ export const POST_TELECOMMABD_API_URL = `${BASE_URL}/dashboard/tecommand`
 export const SCITM_WEBSOCKET_URL = `ws://${SERVER}/ws/SciTM`
 export const HKTM_WEBSOCKET_URL = `ws://${SERVER}/ws/HKTM`
 export const TELEMETRY_WEBSOCKET_URL = `ws://${SERVER}/ws/Telemetry`
+
+// Others
 export const MAX_TIME_SLIDER_INDEX = 60;
-export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
 export const DEFAULT_INITIAL_TEMP = "32.2"
 export const DEFAULT_INITIAL_POWER = "0.0"
 export const DEFAULT_INITIAL_SYSTEM_MODE = "Safe Mode"
 export const MAX_POINTS = 10; 
 export const DEFAULT_ZOOM = 1; 
-export const TIMETAG_CMD_APID = 1
-export const REALTIME_CMD_APID = 0
-export const TELE_COMMAND_TYPES = ["Real Time", "Time Tagged"];
-export const PRODUCTS = ["AstroLink Nano", "AstroBeam", "miniOCT"];
-export const COLOR_MAP = [ "#446BAD","#ff7300","#387908","#F05A7E","#82ca9d","#000000"];
+export const TIMETAG_CMD_APID = 501
+export const REALTIME_CMD_APID = 500
 export const SCITM_MAX_INDEX = 14
-export const FLOAT_INPUT_COMMANDS = [31, 90];
-export const NO_INPUT_COMMANDS = [6,32,5]
 export const MAX_VISIBLE_GRAPHS = 4
 export const POWER_ON_CMD_ID = 5
 export const SHUTDOWN_CMD_ID = 6
+export const FLOAT_INPUT_COMMANDS = [31, 90];
+export const NO_INPUT_COMMANDS = [6,32,5]
+export const MAX_TELEMETRY_DURATION = 20
+
+export const NO_ALERT_MESSAGE = "No Alerts Found"
+export const NO_DATA_FOUND = "No Data Found"
+export const NO_SESSION_LOGS_FOUND ="No Session Logs Found"
+export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
+
+// Objects constants data
+export const COLOR_MAP = [ "#446BAD","#ff7300","#387908","#F05A7E","#82ca9d","#000000"];
+export const TELE_COMMAND_TYPES = ["Real Time", "Time Tagged"];
+export const PRODUCTS = ["AstroLink Nano", "AstroBeam", "miniOCT"];
 export const INPUT_TYPES = {
   NO_INPUT:0,
   DROPDOWN:1,
   VALUE:2
 }
-export const MAX_TELEMETRY_DURATION = 20
-export const NO_ALERT_MESSAGE = "No Alerts Found"
-export const NO_DATA_FOUND = "No Data Found"
-export const NO_SESSION_LOGS_FOUND ="No Session Logs Found"
 export const TELE_COMMANDS = [
   {
     cmd: "Power On",

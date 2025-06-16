@@ -345,7 +345,7 @@ const Dashboard: React.FC = () => {
         telecmd: teleCommand.cmd,
         telecmd_value: teleCmdValues,
         apid: apid,
-        timestamp: apid === 1 ? selectedDateTime : new Date().toISOString(),
+        timestamp: apid === CONSTANTS.TIMETAG_CMD_APID ? selectedDateTime : new Date().toISOString(),
       }, {
         headers: {
           "Accept": "application/json",
