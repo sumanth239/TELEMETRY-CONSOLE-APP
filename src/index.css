@@ -11,6 +11,13 @@ body {
   padding: 0;
   box-sizing: border-box;
 }
+/* Apply font to all SweetAlert2 popups globally */
+.swal2-popup {
+  font-family: 'Lato', sans-serif !important; /* Use your preferred font */
+  font-size: 16px;
+  color: #1e293b; /* Optional: uniform text color */
+}
+
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
