@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
   const alertsCount = helperFunctions.getActiveAlertsCount()
   //states
   const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
-  const {initialTelemetryData,telemetryData, setTelemetryData} = useDashboardStore();   //to handle real time telemetry data 
+  const { initialTelemetryData, telemetryData, setTelemetryData } = useDashboardStore();   //to handle real time telemetry data 
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
   const [systemStatusLabels, setSystemStatusLabels] = useState({
@@ -121,8 +121,8 @@ const Dashboard: React.FC = () => {
 
     return initialState;
   });
-  const {labelOrder, setLabelOrder} = useDashboardStore();;    //state to keeps track of the current order in which labels are displayed.
-  const {scheduledTimeTagCmds,setScheduledTimeTagCmds} = useDashboardStore();
+  const { labelOrder, setLabelOrder } = useDashboardStore();;    //state to keeps track of the current order in which labels are displayed.
+  const { scheduledTimeTagCmds, setScheduledTimeTagCmds } = useDashboardStore();
 
   // use Effects
   useEffect(() => {
@@ -340,52 +340,63 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    if(teleCmdsFormData.teleCmdType === "Real Time") {
-      try {
-        const teleCmdValues = teleCommandValues.map((val) => Number(val))
-        const response = await axios.post(CONSTANTS.POST_TELECOMMABD_API_URL, {
-          telecmd_id: Number(teleCommand.cmdId),
-          telecmd: teleCommand.cmd,
-          telecmd_value: teleCmdValues,
-          apid: apid,
-          timestamp: apid === CONSTANTS.TIMETAG_CMD_APID ? selectedDateTime : new Date().toISOString(),
-        }, {
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-  
-        if (teleCommand.cmdId === CONSTANTS.POWER_ON_CMD_ID) {
-          helperFunctions.updatePowerOnStatus(true); // Start the system if not already started
-        }
-  
-        if (teleCommand.cmdId === CONSTANTS.SHUTDOWN_CMD_ID) {
-          helperFunctions.updatePowerOnStatus(false); // Start the system if not already started
-        }
+    if (teleCmdsFormData.teleCmdType === "Real Time") {
+      confirmAction({
+        title: 'Send Command',
+        text: `Are you sure you want to send ${teleCommand.cmd}  command now?`,
+        confirmButtonText: 'Send',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#20409A',
+        cancelButtonColor: '#e53e3e',
+        allowOutsideClick: false,
+        onConfirm: async () => {
+          try {
+            const teleCmdValues = teleCommandValues.map((val) => Number(val))
+            const response = await axios.post(CONSTANTS.POST_TELECOMMABD_API_URL, {
+              telecmd_id: Number(teleCommand.cmdId),
+              telecmd: teleCommand.cmd,
+              telecmd_value: teleCmdValues,
+              apid: apid,
+              timestamp: apid === CONSTANTS.TIMETAG_CMD_APID ? selectedDateTime : new Date().toISOString(),
+            }, {
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+              },
+            });
 
-        if (teleCommand.cmdId === CONSTANTS.TIME_TAG_COMMANDS_LIST_CMD_ID) {
-          setShowTimeTagList(true); // Show the scheduled timetag commands
+            if (teleCommand.cmdId === CONSTANTS.POWER_ON_CMD_ID) {
+              helperFunctions.updatePowerOnStatus(true); // Start the system if not already started
+            }
+
+            if (teleCommand.cmdId === CONSTANTS.SHUTDOWN_CMD_ID) {
+              helperFunctions.updatePowerOnStatus(false); // Start the system if not already started
+            }
+
+            helperFunctions.updateSessionLogs(`executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
+          } catch (error) {
+            console.error("FAILED to send telecommand:", error);
+          }
+        },
+        onCancel: () => {
+          helperFunctions.updateSessionLogs(`cancelled sending ${teleCommand.cmd} Real Time command.`);
         }
-        
-        helperFunctions.updateSessionLogs(`executed ${teleCmdsFormData.teleCmdType} ${teleCmdsFormData.teleCmd.cmd} command`)
-      } catch (error) {
-        console.error("FAILED to send telecommand:", error);
+      });
+
+    } else if (teleCmdsFormData.teleCmdType === "Time Tagged") {
+      const timeTagCmdObject = {
+        id: teleCommand.cmdId,
+        command: teleCommand.cmd,
+        timeStamp: selectedDateTime,
+        values: teleCommandValues
       }
-    }else if(teleCmdsFormData.teleCmdType === "Time Tagged"){
-        const timeTagCmdObject = {
-          id:teleCommand.cmdId,
-          command:teleCommand.cmd,
-          timeStamp:selectedDateTime ,
-          values:teleCommandValues
-        }
 
-        setScheduledTimeTagCmds((prev) => [...prev, timeTagCmdObject]);
-        helperFunctions.updateSessionLogs(`added ${teleCmdsFormData.teleCmd.cmd} command to TimeTag commands list`)
+      setScheduledTimeTagCmds((prev) => [...prev, timeTagCmdObject]);
+      helperFunctions.updateSessionLogs(`added ${teleCmdsFormData.teleCmd.cmd} command to TimeTag commands list`)
 
     }
 
-    
+
 
 
 
@@ -654,7 +665,7 @@ const Dashboard: React.FC = () => {
 
   }
 
-  
+
   const onDragEnd = (result: DropResult) => {     //Triggered when the user finishes a drag.And update the label order based on drag result
     if (!result.destination) return;
 
@@ -706,7 +717,7 @@ const Dashboard: React.FC = () => {
 
           <div className="commands-main-container">
             {/* comands data container */}
-            {showTimeTagList  && <TimeTagCommandsList  onClose={() => setShowTimeTagList(false)} /> }
+            {showTimeTagList && <TimeTagCommandsList onClose={() => setShowTimeTagList(false)} />}
             <div className="commands-data-container">
               <div>
                 <select onChange={CommandTypeHandler}>
@@ -889,7 +900,7 @@ const Dashboard: React.FC = () => {
           {/*Time tag container */}
           <div className="time-tag-container">
 
-           <div className="time-tag-header-container"> <p>Command Queue</p><button onClick={() =>  setShowTimeTagList(true)}>View TimeTag List</button></div>
+            <div className="time-tag-header-container"> <p>Command Queue</p><button onClick={() => setShowTimeTagList(true)}>View TimeTag List</button></div>
             <div className="time-tag-commands-container">
               {/* Time tags with steppers */}
               {tmtData.map((data: any, index) => (

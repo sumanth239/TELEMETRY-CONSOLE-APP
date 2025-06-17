@@ -143,7 +143,7 @@ const TimeTagCommandsList: React.FC<ScheduledCommandsProps> = ({ onClose }) => {
                     <div className="scheduled-cmds-footer">
                         <button className="send-button" onClick={() => {
                             submitHandler();
-                            helperFunctions.updateSessionLogs("Sent all scheduled Time Tag commands.");
+                            // helperFunctions.updateSessionLogs("Sent all scheduled Time Tag commands.");
                         }}>
                             Send
                         </button>
