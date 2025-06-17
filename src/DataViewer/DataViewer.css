@@ -151,7 +151,7 @@
     cursor: pointer;
     font-size: var(--font-size-body);
     font-weight: bold;
-    text-align: right;
+    text-align: left;
   }
   .dataviewer-main-container .graphs-main-container  .labels-data-container .labels-data div{
     background-color: white;

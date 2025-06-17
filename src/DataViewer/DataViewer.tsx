@@ -188,15 +188,15 @@ const DataViewer: React.FC = () => {
             setSelectedOptions([]);      // Clear selection and hide all graphs
             const updatedVisibleGraphs = Object.fromEntries(
                 Object.entries(visibleGraphs).map(([label, graphState]) => [
-                  label,
-                  {
-                    ...graphState,
-                    visibility: false,
-                  },
+                    label,
+                    {
+                        ...graphState,
+                        visibility: false,
+                    },
                 ])
-              );
+            );
             setVisibleGraphs(updatedVisibleGraphs);
-              
+
 
         }
     };
@@ -256,7 +256,7 @@ const DataViewer: React.FC = () => {
                     Swal.showLoading();
                 },
             });
-            
+
 
             const params = new URLSearchParams({
                 start_date: helperFunctions.toISTDateString(selectedDateRange.startDate),
@@ -606,12 +606,12 @@ const DataViewer: React.FC = () => {
                     <div className="graphs-container">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <div style={{ width: '60%' }}>
-                                <ResponsiveContainer width="100%" height={50} >
-                                    <LineChart data={timeSliderData} >
+                                <ResponsiveContainer width="100%" height={50}>
+                                    <LineChart data={timeSliderData}>
                                         <Brush
                                             dataKey="timestamp"
                                             height={30}
-                                            stroke="#8884d8"
+                                            stroke="#20409A" // Outline color of brush (blue)
                                             onChange={handleBrushChange}
                                             startIndex={startIndex}
                                             endIndex={endIndex}
@@ -619,6 +619,7 @@ const DataViewer: React.FC = () => {
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
+
                             </div>
                         </div>
 
