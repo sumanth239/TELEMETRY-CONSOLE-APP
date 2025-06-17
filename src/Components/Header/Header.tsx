@@ -10,8 +10,9 @@ import * as helperFunctions from "../../Utils/HelperFunctions";
 const Header: React.FC = () => {
     const { timezone } = useSettings();
     const { formattedDate, formattedTime, localDate, localTime } = useCurrentTime();  //custom hook for utc date and time
-    const productName = helperFunctions.getSessionStorageKey("product") || "AstroLink 10G ODT"; // Get product name from session storage
+    const productName = helperFunctions.getSessionStorageKey("product") || "miniOCT"; // Get product name from session storage
     const userName = (helperFunctions.getSessionStorageKey("userName") || "User") // Get user name from session storage
+    const [continent,city] = timezone.split('/')            //splitting timezone to get the city
     return (
         <div className="header-main-container">
 
@@ -24,7 +25,7 @@ const Header: React.FC = () => {
             {/* Date and time contianer */}
             <div className="date-time-container">
                 <p>{formattedDate}&nbsp;&nbsp;|&nbsp;&nbsp;{formattedTime}&nbsp;&nbsp;UTC </p>
-                <p> {localDate}&nbsp;&nbsp;|&nbsp;&nbsp;{localTime}&nbsp;&nbsp;{timezone}</p>
+                <p> {localDate}&nbsp;&nbsp;|&nbsp;&nbsp;{localTime}&nbsp;&nbsp;{city}</p>
             </div>
 
             <div className="settings-help-container">
