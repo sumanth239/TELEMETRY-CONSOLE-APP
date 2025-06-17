@@ -82,7 +82,7 @@ const TimeTagCommandsList: React.FC<ScheduledCommandsProps> = ({ onClose }) => {
         >
             <div className='scheduled-cmds-main-container'>
                 <div className='scheduled-cmds-header-container'>
-                    <p>SCHEDULED TIME TAG COMMANDS  </p>
+                    <p>SCHEDULED TIME TAG COMMANDS LIST </p>
                 </div>
 
                 
