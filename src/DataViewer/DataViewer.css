@@ -36,7 +36,7 @@
 }
 
 .dataviewer-main-container .calender-container .dropdown-container .dropdown-menu {
-  width: 160px;
+  width: 180px;
   text-overflow: ellipsis;
   background-color:white;
   color: black;
@@ -46,7 +46,7 @@
   left: 177px;
   border-radius: 5PX;
   overflow-y: scroll;
-  height: 300px;
+  height: 320px;
   z-index: 10;
   border: 1px solid var(--greay-background);
   box-shadow: 1px 1px  1px 1px #888888;

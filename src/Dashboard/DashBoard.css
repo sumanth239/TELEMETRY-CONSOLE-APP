@@ -1075,3 +1075,26 @@
 }
 
 }
+.swal-form {
+  text-align: left;
+}
+
+.swal-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.swal-checkbox-container {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  background-color: #fafafa;
+}
+
+.swal-checkbox-item {
+  margin-bottom: 4px;
+}

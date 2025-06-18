@@ -28,7 +28,7 @@ const DataViewer: React.FC = () => {
     const renderedLabels = new Set<string>();
 
     //states 
-    const { initialDropdownOptions, selectedOptions, setSelectedOptions } = useDataViewerStore();             //to handle label selections from dropdown
+    const {initialDropdownOptions, dropdownOptions,setDropdownOptions, selectedOptions, setSelectedOptions } = useDataViewerStore();             //to handle label selections from dropdown
     const [isOpen, setIsOpen] = useState<boolean>(false);                                                   //to handle label selections
     const { isImported, setIsImported } = useDataViewerStore();                                              //to check data is imported or not
     const { initialVisibleGraphs, visibleGraphs, setVisibleGraphs } = useDataViewerStore();                   //to handle graphs visiblity
@@ -161,8 +161,8 @@ const DataViewer: React.FC = () => {
 
     };
 
-    const handleCheckboxChange = (item: types.LabelInfo) => {   //for labels dropdown selection
-        let fullLabel = helperFunctions.getFullLabelWithUnits(item.label); // Get full label with units if available
+    const handleCheckboxChange = (item: string) => {   //for labels dropdown selection
+        let fullLabel = helperFunctions.getFullLabelWithUnits(item); // Get full label with units if available
         const newSelectedOptions = selectedOptions.includes(fullLabel) ? selectedOptions.filter((item) => item !== fullLabel) : [...selectedOptions, fullLabel];         //updating selected options
         setSelectedOptions(newSelectedOptions);
         const updatedVisibleGraphs = {          //getting current state
@@ -287,7 +287,8 @@ const DataViewer: React.FC = () => {
                 }))
                 .sort((a, b) => helperFunctions.parseTimeToMillis(a.timestamp) - helperFunctions.parseTimeToMillis(b.timestamp));
 
-
+            setDropdownOptions(initialDropdownOptions);             //updating selectedoptions when user choose import data from database
+            setSelectedOptions(initialDropdownOptions);
             setTimeSliderData(timeSliderDataArray);                 // Zustand setter
             // Process SCITM data
             telemetry_data.SCITM.forEach((entry: any) => {
@@ -430,6 +431,16 @@ const DataViewer: React.FC = () => {
                 const sheet = workbook.Sheets[sheetName];
                 const jsonData: any = XLSX.utils.sheet_to_json(sheet);
 
+                const excelSheetLabels = Object.keys(jsonData[0]);          //extracting labels data for dropdownOptions
+
+                const filteredSelectedOptions = selectedOptions.filter(option =>
+                    excelSheetLabels.includes(helperFunctions.getFullLabelWithUnits(option))
+                );
+
+                // Update the state
+                setDropdownOptions(filteredSelectedOptions);
+                setSelectedOptions(filteredSelectedOptions);
+
                 const transformedData: any = {};
 
                 let firstTimestamp: number | null = null;
@@ -522,18 +533,18 @@ const DataViewer: React.FC = () => {
                                         <label>All</label>
                                         <input
                                             type="checkbox"
-                                            checked={selectedOptions.length === initialDropdownOptions.length}
+                                            checked={selectedOptions.length === dropdownOptions.length}
                                             onChange={handleAllSelectbBoxChange}
                                         />
 
                                     </li>
-                                    {CONSTANTS.ALL_LABELS.map((item, index) => (
-                                        <li key={item.label} className="dropdown-item">
-                                            <label>{item.label}</label>
+                                    {dropdownOptions.map((label, index) => (
+                                        <li key={label} className="dropdown-item">
+                                            <label>{label}</label>
                                             <input
                                                 type="checkbox"
-                                                checked={selectedOptions.includes(helperFunctions.getFullLabelWithUnits(item.label))}
-                                                onChange={() => handleCheckboxChange(item)}
+                                                checked={selectedOptions.includes(helperFunctions.getFullLabelWithUnits(label))}
+                                                onChange={() => handleCheckboxChange(label)}
                                             />
 
                                         </li>

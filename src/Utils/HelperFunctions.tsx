@@ -12,7 +12,7 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
   const userName = getSessionStorageKey("userName");// Get user name from session storage
   const productName = getSessionStorageKey('product');
   const FileName = fileName?.replace(/\s+/g, '') || `${productName}_${getFormattedDateTime()}.xlsx`;
-  updateSessionLogs(`${userName} choose ${FileName} filename for exported excel sheet`);
+  updateSessionLogs(`choose ${FileName} filename for exported excel sheet`);
 
   const ws = XLSX.utils.json_to_sheet(telemetryData);
   const ws2 = XLSX.utils.json_to_sheet(logsData);

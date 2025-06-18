@@ -4,8 +4,7 @@ import * as helperFunctions from "../Utils/HelperFunctions";
 import * as types from "../Utils/types";
 
 // Initialize dropdown options from constants
-const initialDropdownOptions: string[] = CONSTANTS.ALL_LABELS.filter(label => label.graphType)
-    .map(item => helperFunctions.getFullLabelWithUnits(item.label));
+const initialDropdownOptions: string[] = CONSTANTS.ALL_LABELS.filter((item) => item.graphType).map(item => helperFunctions.getFullLabelWithUnits(item.label));
 
 // Intialize graphs visblity and adding graphoptions to it
 const initialVisibleGraphs: { [label: string]: types.GraphState } = CONSTANTS.ALL_LABELS.filter(label => label.graphType)
@@ -38,8 +37,12 @@ const initialGraphOptionsState: { [key: string]: boolean } = CONSTANTS.ALL_LABEL
 type GlobalStore = {
 
     // DropDown Options
-    initialDropdownOptions: string[];
-    selectedOptions: string[];
+    initialDropdownOptions: string[];                   //i.e all labels 
+
+    dropdownOptions: string[];                          //Dropdown options based on the import mode (Database,File) ,if Database All labels else choosen labels
+    setDropdownOptions :(options: string[]) => void;
+
+    selectedOptions: string[];              //selected dropdown options
     setSelectedOptions: (options: string[]) => void;
 
     // Graph Options
@@ -87,6 +90,10 @@ export const useDataViewerStore = create<GlobalStore>((set) => ({
 
     // DropDown Options
     initialDropdownOptions: initialDropdownOptions,
+
+    dropdownOptions: initialDropdownOptions,            // default dropdown  selections
+    setDropdownOptions:(options) => set({  dropdownOptions: options }),
+
     selectedOptions: [...initialDropdownOptions], // default initial selection
     setSelectedOptions: (options) => set({ selectedOptions: options }),
 

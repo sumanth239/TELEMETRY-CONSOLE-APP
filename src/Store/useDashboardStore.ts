@@ -4,8 +4,7 @@ import * as helperFunctions from "../Utils/HelperFunctions";
 import * as types from "../Utils/types";
 
 // Initialize dropdown options from constants
-const initialDropdownOptions: string[] = CONSTANTS.ALL_LABELS.filter(label => label.graphType)
-    .map(item => helperFunctions.getFullLabelWithUnits(item.label));
+const initialDropdownOptions: string[] = CONSTANTS.ALL_LABELS.map(item => helperFunctions.getFullLabelWithUnits(item.label));
 
 // Intialize graphs visblity and adding graphoptions to it
 const initialVisibleGraphs: { [label: string]: types.GraphState } = CONSTANTS.ALL_LABELS.filter(label => label.graphType)

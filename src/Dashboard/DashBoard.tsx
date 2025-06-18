@@ -607,23 +607,74 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const handleExportData = () => {                                  //alert pop up for excel sheet name
-    helperFunctions.updateSessionLogs(`started exporting telemetry data`);
-    inputModalAction({
+  const handleExportData = async () => {                                  //alert pop up for excel sheet name
+
+    const htmlForm = `
+        <div class="swal-form">
+          <label class="swal-label">Select Labels:</label>
+          <div class="swal-checkbox-container">
+            ${CONSTANTS.ALL_LABELS.map(item => `
+              <div class="swal-checkbox-item">
+                <input type="checkbox" id="label-${item.label}" name="labels" value="${item.label}">
+                <label for="label-${item.label}">${item.label}</label>
+              </div>
+            `).join('')}
+          </div>
+      
+          <div class="swal-filename-group">
+            <label for="filename" class="swal-label">Filename:</label>
+            <input id="filename" type="text" class="swal2-input" placeholder="e.g. TelemetryData" />
+          </div>
+        </div>
+      `;
+
+
+
+    Swal.fire({
       title: 'Export Telemetry Data',
-      text: 'Enter a filename for the Excel export:',
+      html: htmlForm,
       confirmButtonText: 'Export',
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#2563eb',
-      inputType: 'text',
-      inputPlaceholder: 'e.g. TelemetryData',
-      onConfirm: (fileName) => {
-        helperFunctions.exportToExcel({ telemetryData: exportTelemetryData, logsData: sessionLogsData, fileName });
-        setExportTelemetryData([]);
-      },
-    });
+      showCancelButton: true,
+      focusConfirm: false,
+      preConfirm: () => {
+        const selected = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="labels"]:checked')).map(cb => cb.value);
+        const fileName = (document.getElementById('filename') as HTMLInputElement)?.value.trim();
+        if (helperFunctions.isArrayEmpty(selected)) {
+          Swal.showValidationMessage('Please select at least one label');
+          return;
+        }
 
-    setExportTelemetryData([]);
+        return { fileName, selectedLabels: selected };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const { fileName, selectedLabels } = result.value;
+        selectedLabels.unshift("Timestamp")         //adding timstamp along with the selected labels
+       
+        const filteredTelemetryData = exportTelemetryData.map(entry => {
+          const filteredEntry: { [key: string]: any } = {};
+          selectedLabels.forEach((label: string) => {
+            const fullLabel = helperFunctions.getFullLabelWithUnits(label)
+            if (fullLabel in entry) {
+              filteredEntry[fullLabel] = entry[fullLabel];
+            }
+          });
+          return filteredEntry;
+        });
+        
+        helperFunctions.updateSessionLogs(`started exporting telemetry data`);
+
+        helperFunctions.exportToExcel({
+          telemetryData: filteredTelemetryData,
+          logsData: sessionLogsData,
+          fileName,
+        });
+        
+        setExportTelemetryData([]); // if needed
+      }
+    });
   };
 
   //function to render different input fields for different commands
