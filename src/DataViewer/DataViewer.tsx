@@ -28,7 +28,7 @@ const DataViewer: React.FC = () => {
     const renderedLabels = new Set<string>();
 
     //states 
-    const {initialDropdownOptions, dropdownOptions,setDropdownOptions, selectedOptions, setSelectedOptions } = useDataViewerStore();             //to handle label selections from dropdown
+    const { initialDropdownOptions, dropdownOptions, setDropdownOptions, selectedOptions, setSelectedOptions } = useDataViewerStore();             //to handle label selections from dropdown
     const [isOpen, setIsOpen] = useState<boolean>(false);                                                   //to handle label selections
     const { isImported, setIsImported } = useDataViewerStore();                                              //to check data is imported or not
     const { initialVisibleGraphs, visibleGraphs, setVisibleGraphs } = useDataViewerStore();                   //to handle graphs visiblity
@@ -41,6 +41,8 @@ const DataViewer: React.FC = () => {
     const { sessionLogsData, setSessionLogsData } = useDataViewerStore();                                     //state to log the data 
     const { file, setFile } = useDataViewerStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const startDateInputRef = useRef<HTMLInputElement>(null);
+    const endDateInputRef = useRef<HTMLInputElement>(null);
 
     //use effetcts
     useEffect(() => {
@@ -220,7 +222,11 @@ const DataViewer: React.FC = () => {
 
         setSelectedDateRange(updatedDateRange);             // Zustand setter
 
-        setFile(undefined); // Reset file when date range is changed
+        // Reset file when date range is changed
+        setFile(undefined);
+        if (fileInputRef?.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const fetchTelemetryData = async () => {                            //fetching telemetry data from the backend
@@ -319,7 +325,6 @@ const DataViewer: React.FC = () => {
             });
 
             setTelemetryData(updatedTelemetryData);                     // Zustand setter
-            setFile(undefined); // Reset date range after fetching data
 
             // Close loading popup and show success message
             Swal.close();
@@ -357,7 +362,14 @@ const DataViewer: React.FC = () => {
         }
 
         setFile(selectedFile);      // Zustand setter
-        setSelectedDateRange({ startDate: null, endDate: null }); // Reset date range when a new file is uploaded
+        // Reset date range when a new file is uploaded
+        setSelectedDateRange({startDate:null ,endDate: null}) ;
+        if (startDateInputRef?.current) {
+            startDateInputRef.current.value = '';
+        }
+        if(endDateInputRef?.current){
+            endDateInputRef.current.value = '';
+        }
     };
 
     const parseCustomTimestamp = (timestampStr: string): number | null => {
@@ -412,7 +424,7 @@ const DataViewer: React.FC = () => {
     };
 
     const readExcelData = () => {
-        setSelectedDateRange({ startDate: null, endDate: null }); // Reset date range when a new file is uploaded
+        // Reset date range when a new file is uploaded
         if (!file) {
             Swal.fire({
                 icon: 'error',
@@ -430,13 +442,14 @@ const DataViewer: React.FC = () => {
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
                 const jsonData: any = XLSX.utils.sheet_to_json(sheet);
-
+                console.log("jsonData",jsonData)
                 const excelSheetLabels = Object.keys(jsonData[0]);          //extracting labels data for dropdownOptions
-
-                const filteredSelectedOptions = selectedOptions.filter(option =>
+                console.log("excelSheetLabels",excelSheetLabels)
+                const filteredSelectedOptions = initialDropdownOptions.filter(option =>
                     excelSheetLabels.includes(helperFunctions.getFullLabelWithUnits(option))
                 );
 
+                console.log("filtereb labels options",filteredSelectedOptions);
                 // Update the state
                 setDropdownOptions(filteredSelectedOptions);
                 setSelectedOptions(filteredSelectedOptions);
@@ -513,7 +526,7 @@ const DataViewer: React.FC = () => {
         };
 
         reader.readAsArrayBuffer(file);
-        setFile(undefined); // Reset file after reading
+        // Reset file after reading
     };
 
     return (
@@ -554,8 +567,8 @@ const DataViewer: React.FC = () => {
                         )}
                     </div>
                     <div className="time-range-container">
-                        <span>Select Start Date : <input type="datetime-local" name="startDate" onChange={handleDateChange} step="1"></input></span>
-                        <span>Select End Date : <input type="datetime-local" name="endDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select Start Date : <input type="datetime-local" ref={startDateInputRef} name="startDate" onChange={handleDateChange} step="1"></input></span>
+                        <span>Select End Date : <input type="datetime-local" ref={endDateInputRef} name="endDate" onChange={handleDateChange} step="1"></input></span>
                     </div>
 
                     <ul className="data-buttons-container" >
