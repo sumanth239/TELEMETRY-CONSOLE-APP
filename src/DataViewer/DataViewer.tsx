@@ -363,11 +363,11 @@ const DataViewer: React.FC = () => {
 
         setFile(selectedFile);      // Zustand setter
         // Reset date range when a new file is uploaded
-        setSelectedDateRange({startDate:null ,endDate: null}) ;
+        setSelectedDateRange({ startDate: null, endDate: null });
         if (startDateInputRef?.current) {
             startDateInputRef.current.value = '';
         }
-        if(endDateInputRef?.current){
+        if (endDateInputRef?.current) {
             endDateInputRef.current.value = '';
         }
     };
@@ -442,14 +442,17 @@ const DataViewer: React.FC = () => {
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
                 const jsonData: any = XLSX.utils.sheet_to_json(sheet);
-                console.log("jsonData",jsonData)
-                const excelSheetLabels = Object.keys(jsonData[0]);          //extracting labels data for dropdownOptions
-                console.log("excelSheetLabels",excelSheetLabels)
-                const filteredSelectedOptions = initialDropdownOptions.filter(option =>
+
+                const excelSheetLabels = Array.from(
+                    new Set(jsonData.flatMap((row: any) => Object.keys(row)))
+                );
+                //extracting labels data for dropdownOptions
+
+                const filteredSelectedOptions = selectedOptions.filter(option =>
                     excelSheetLabels.includes(helperFunctions.getFullLabelWithUnits(option))
                 );
 
-                console.log("filtereb labels options",filteredSelectedOptions);
+                console.log("filtereb labels options", filteredSelectedOptions);
                 // Update the state
                 setDropdownOptions(filteredSelectedOptions);
                 setSelectedOptions(filteredSelectedOptions);

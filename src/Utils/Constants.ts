@@ -1,6 +1,6 @@
 // Configuration file that contains and configures a single subsystem, e.g., AstroLink V2, AstroBeam, etc.
 // BackEnd URLS
-export const SERVER = "192.168.0.131:8002"
+export const SERVER = "127.0.0.1:8000"
 export const BASE_URL = `http://${SERVER}`
 export const GET_TELEMETRY_API_URL = `${BASE_URL}/dataviewer/telemetry`;
 export const GET_TELECOMMANDS_API_URL = `${BASE_URL}/dashboard/telecommands`;
@@ -232,16 +232,11 @@ export const ALL_LABELS = [
   { label: "EDFA Power", units: "W", graphType: "monotoneX" },
   { label: "EDFA Gain", units: "dB", graphType: "monotoneX" },
   { label: "EDFA Current", units: "mA", graphType: "monotone" },
-  { label: "Beacon Status", units: "", graphType: "monotoneX" },
   { label: "FSM X angle", units: "deg", graphType: "monotoneX" },
   { label: "FSM Y angle", units: "deg", graphType: "monotoneX" },
-  { label: "Gimbal Current ", units: "A", graphType: "monotoneX" },
+  { label: "Beacon Status", units: "", graphType: "monotoneX" },
   { label: "ODT Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Gimbal Temperature", units: "°C", graphType: "monotoneX" },
-  { label: "EDFA Mode", units: "", graphType: "step" },
-  { label: "EDFA Alarms", units: "", graphType: "monotoneX" },
-  { label: "EDFA Laser Temperature", units: "°C", graphType: "monotoneX" },
-  { label: "EDFA Internal Temperature", units: "°C", graphType: "monotoneX" },
   { label: "Beacon Exposure", units: "°C", graphType: "monotoneX" },
   { label: "Beacon  Temperature", units: "°C", graphType: "monotoneX" },
   { label: "TEC  Temperature", units: "°C", graphType: "monotoneX" },
@@ -253,7 +248,10 @@ export const ALL_LABELS = [
   { label: "SOC 1.35V Rail", units: "V", graphType: "monotoneX" },
   { label: "SOC 1V Rail", units: "V", graphType: "monotoneX" },
   { label: "SOC Temperature", units: "°C", graphType: "monotoneX" },
-  { label: "Total Power", units: "W", graphType: "monotoneX" },
+  { label: "EDFA Alarms", units: "", graphType: "monotoneX" },
+  { label: "EDFA Laser Temperature", units: "°C", graphType: "monotoneX" },
+  { label: "EDFA Internal Temperature", units: "°C", graphType: "monotoneX" },
+  { label: "EDFA Mode", units: "", graphType: "step" },
   { label: "Software Version", units: "", graphType: null },
 ];
 
