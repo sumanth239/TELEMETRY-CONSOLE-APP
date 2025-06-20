@@ -218,7 +218,13 @@
 }
 .dashboard-container1  .commands-main-container .commands-output-container .system-logs-container .log-entry{
   display: grid;
-  grid-template-columns: 23.5% 1% 70%;
+  grid-template-columns: 25% 75%;
+}
+
+.dashboard-container1  .commands-main-container .commands-output-container .system-logs-container .log-entry .log-timestamp{
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .dashboard-container1  .commands-main-container .commands-output-container .system-logs-container p {
   margin: 3px;

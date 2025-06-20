@@ -7,7 +7,6 @@ import "./DashBoard.css"; // Import the CSS file
 //components imports
 import GraphComponent from "../Components/Graphs/Graph";
 import { confirmAction } from "../Components/PopUps/ConfirmAction";
-import { inputModalAction } from "../Components/PopUps/InputAction";
 import AlertPopup from "../Components/AlertPopUp/AlertPopUp";
 import { useSettings } from "../SettingsSceen/SettingScreen";
 
@@ -24,13 +23,11 @@ import temperatureIcon from "../assets/temperature_icon.png";
 import powerIcon from "../assets/bolt_icon.png";
 import * as CONSTANTS from "../Utils/Constants";
 import TimeTagCommandsList from "../Components/PopUps/TimeTagCmdsList";
-import { timeStamp } from "console";
 
 
 // Initialization and State Management
 const initialVisibility: { [key: string]: boolean } = {};
 const initialGraphOptionsState: { [key: string]: boolean } = {};
-// const intialTelemeteryData: { [key: string]: { value: number, timestamp: string }[] } = {};
 
 
 //Modifying intial state of graphs as visible
@@ -41,7 +38,6 @@ CONSTANTS.ALL_LABELS.forEach((item) => {
   } else {
     initialVisibility[item.label] = false;
   }
-  // intialTelemeteryData[item.label] = [];
 
 });
 
@@ -65,8 +61,8 @@ const Dashboard: React.FC = () => {
   const renderedLabels = new Set<string>();
   const startSystem = helperFunctions.getSessionStorageKey("powerOn");    //to know system is live or not
   const alertsCount = helperFunctions.getActiveAlertsCount()
+
   //states
-  const [zoomLevels, setZoomLevels] = useState<Record<string, number>>({});
   const { initialTelemetryData, telemetryData, setTelemetryData } = useDashboardStore();   //to handle real time telemetry data 
   const [tmtData, setTmtData] = useState([]);   //to handle telecmd data with counter and telecmd values
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);     //to handle the calender selected date 
@@ -122,7 +118,7 @@ const Dashboard: React.FC = () => {
     return initialState;
   });
   const { labelOrder, setLabelOrder } = useDashboardStore();;    //state to keeps track of the current order in which labels are displayed.
-  const { scheduledTimeTagCmds, setScheduledTimeTagCmds } = useDashboardStore();
+  const { setScheduledTimeTagCmds } = useDashboardStore();
 
   // use Effects
   useEffect(() => {
@@ -220,7 +216,7 @@ const Dashboard: React.FC = () => {
     }
 
     setProcessedTelemetryData(updatedData);
-  }, [telemetryData, frequency]);
+  }, [telemetryData, frequency, startSystem, initialTelemetryData]);
 
 
 
@@ -397,9 +393,6 @@ const Dashboard: React.FC = () => {
     }
 
 
-
-
-
   };
 
 
@@ -425,22 +418,6 @@ const Dashboard: React.FC = () => {
         visibility: !prev[label].visibility
       }
     }));
-  };
-
-  const handleWheelZoom = (e: React.WheelEvent<HTMLDivElement>, label: string) => {
-    // These two lines are correct, but might not be sufficient in all browsers
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Add this to ensure the parent doesn't scroll
-    if (e.currentTarget.contains(e.target as Node)) {
-      setZoomLevels((prev) => {
-        const current = prev[label];
-        const delta = e.deltaY < 0 ? 1 : -1;
-        const next = Math.max(1, current + delta);
-        return { ...prev, [label]: next };
-      });
-    }
   };
 
   const changeGraphOption = (label: string, option: string) => {
@@ -476,21 +453,23 @@ const Dashboard: React.FC = () => {
         }));
       }
 
+    } else {
+      if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
+
+      setVisibleGraphs((prev) => ({
+        ...prev,
+        [label]: {
+          ...prev[label],
+          graphOptions: {
+            ...prev[label].graphOptions,
+            [option]: !prev[label].graphOptions[option as keyof types.GraphOptions],
+          },
+        },
+      }));
     }
 
 
-    if (!CONSTANTS.GRAPH_OPTIONS.includes(option as keyof types.GraphOptions)) return;
 
-    setVisibleGraphs((prev) => ({
-      ...prev,
-      [label]: {
-        ...prev[label],
-        graphOptions: {
-          ...prev[label].graphOptions,
-          [option]: !prev[label].graphOptions[option as keyof types.GraphOptions],
-        },
-      },
-    }));
   };
 
   const graphOptionsButtonHandler = (label: string) => {
@@ -510,7 +489,7 @@ const Dashboard: React.FC = () => {
       {
         ...prevState,
         teleCmd: selectedData,
-        teleCmdValue: selectedData.inputType !== 1 ? [] : [0]
+        teleCmdValue: selectedData.inputType !== CONSTANTS.INPUT_TYPES.DROPDOWN ? [] : [0]
       }
     ))
 
@@ -802,8 +781,9 @@ const Dashboard: React.FC = () => {
               <div className="system-logs-container">
                 {sessionLogsData.map((log, index) => (
                   <div key={index} className="log-entry">
-                    <p>{log.TimeStamp} </p>
-                    <span>:</span>
+                    <div className="log-timestamp">
+                      <p >{log.TimeStamp}  </p><p>:</p>
+                    </div>
                     <p>{log.Action}</p>
                   </div>
                 ))}
@@ -817,7 +797,7 @@ const Dashboard: React.FC = () => {
             <div className="logs-button-container">
               <button className="start-logging-button" onClick={() => { setIsLogging(!isLogging); helperFunctions.updateSessionLogs(`started logging telemetry data`) }} disabled={!startSystem || isLogging} >Start Logging</button>
               <button className="stop-logging-button" onClick={handleLogging} disabled={!isLogging}>Stop Logging</button>
-              {exportTelemetryData.length > 0 && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
+              {!helperFunctions.isArrayEmpty(exportTelemetryData) && !isLogging && <button className="export-button" onClick={handleExportData}>Export Data</button>}
             </div>
             <div className="labels-and-graphs-container">
               <DragDropContext onDragEnd={onDragEnd}>
@@ -878,7 +858,7 @@ const Dashboard: React.FC = () => {
 
                     return (
 
-                      <div className="graph" onWheel={(e) => handleWheelZoom(e, label)} key={label} style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
+                      <div className="graph" style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                         <div className="graph-header">
                           <p>{groupObj.title}</p>
                           <button onClick={() => graphOptionsButtonHandler(groupObj.title)} className="view-more-button" >
@@ -914,7 +894,7 @@ const Dashboard: React.FC = () => {
                   // Fallback: Render individual graph
                   renderedLabels.add(label);
                   return visibleGraphs[label]?.visibility ? (
-                    <div className="graph" onWheel={(e) => handleWheelZoom(e, label)} style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
+                    <div className="graph" style={{ overflowY: 'hidden', opacity: data.length === 0 ? 0.3 : 1 }}>
                       <div className="graph-header">
                         <p>{helperFunctions.getFullLabelWithUnits(label)}</p>
                         <button onClick={() => graphOptionsButtonHandler(label)} className="view-more-button" >
@@ -937,7 +917,7 @@ const Dashboard: React.FC = () => {
                       </div>
                       <GraphComponent
                         graphLineToggles={[visibleGraphs[label].visibility]}
-                        data={data.slice(-Math.min(10, Math.floor(CONSTANTS.MAX_POINTS / (zoomLevels[label] || CONSTANTS.DEFAULT_ZOOM))))}
+                        data={data.slice(-Math.min(10, Math.floor(CONSTANTS.MAX_POINTS)))}
                         graphOptions={visibleGraphs[label].graphOptions}
                         timeSlider={false}
                         graphType={helperFunctions.getLabelGraphType(label)}

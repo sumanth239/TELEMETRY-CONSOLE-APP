@@ -9,7 +9,6 @@ export const exportToExcel = ({ telemetryData,logsData ,fileName }: types.Export
     return;
   }
 
-  const userName = getSessionStorageKey("userName");// Get user name from session storage
   const productName = getSessionStorageKey('product');
   const FileName = fileName?.replace(/\s+/g, '') || `${productName}_${getFormattedDateTime()}.xlsx`;
   updateSessionLogs(`choose ${FileName} filename for exported excel sheet`);
@@ -229,7 +228,7 @@ export function parseTimeToMillis(timestamp: string): number {
     return NaN;
   }
 
-  const [datePart, timePart] = timestamp.split(', ');
+  const [, timePart] = timestamp.split(', ');
   if (!timePart) {
     console.error("Timestamp missing time part");
     return NaN;

@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import Select from 'react-select';
 import moment from 'moment-timezone';
 import * as helperFunctions from '../Utils/HelperFunctions';
+import * as CONSTANTS from '../Utils/Constants' ;
 
 // Types
 interface SettingsContextType {
@@ -166,9 +167,9 @@ const SettingsScreen = () => {
                   onChange={(e) => setLocalFrequency(Number(e.target.value))}
                   className="select"
                 >
-                  {Array.from({ length: 10 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {(i + 1) * 100}ms
+                  {CONSTANTS.FREQUENCES.map((value,i) => (
+                    <option key={value} value={value}>
+                      {value}ms
                     </option>
                   ))}
                 </select>

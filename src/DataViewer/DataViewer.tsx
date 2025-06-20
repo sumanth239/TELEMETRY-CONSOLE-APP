@@ -18,7 +18,6 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 //utilities imports
 import * as types from '../Utils/types';
 import * as CONSTANTS from "../Utils/Constants";
-import axios from "axios";
 import NoDataFound from "../NoData/NoData";
 import { useDataViewerStore } from "../Store/useDataViewerStore";
 
@@ -37,7 +36,7 @@ const DataViewer: React.FC = () => {
     const { timeSliderData, setTimeSliderData } = useDataViewerStore();                                       //for global timeslider
     const { startIndex, setStartIndex } = useDataViewerStore();                                               //to filter data
     const { endIndex, setEndIndex } = useDataViewerStore();                                                   //to filter data
-    const { initialGraphOptionsState, graphOptionsOpendLables, setGraphOptionsOpendLables } = useDataViewerStore();  //to handle the graph options visibility
+    const { graphOptionsOpendLables, setGraphOptionsOpendLables } = useDataViewerStore();  //to handle the graph options visibility
     const { sessionLogsData, setSessionLogsData } = useDataViewerStore();                                     //state to log the data 
     const { file, setFile } = useDataViewerStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +49,7 @@ const DataViewer: React.FC = () => {
 
         const index = timeSliderData.length > CONSTANTS.MAX_TIME_SLIDER_INDEX ? CONSTANTS.MAX_TIME_SLIDER_INDEX : timeSliderData.length - 1;
         setEndIndex(index);
-    }, [timeSliderData]);
+    }, [timeSliderData,setEndIndex]);
 
 
     //handler functions
@@ -167,7 +166,9 @@ const DataViewer: React.FC = () => {
     const handleCheckboxChange = (item: string) => {   //for labels dropdown selection
         let fullLabel = helperFunctions.getFullLabelWithUnits(item); // Get full label with units if available
         const newSelectedOptions = selectedOptions.includes(fullLabel) ? selectedOptions.filter((item) => item !== fullLabel) : [...selectedOptions, fullLabel];         //updating selected options
+        
         setSelectedOptions(newSelectedOptions);
+       
         const updatedVisibleGraphs = {          //getting current state
             ...visibleGraphs,
             [fullLabel]: {
@@ -210,6 +211,7 @@ const DataViewer: React.FC = () => {
 
         const newOrder = Array.from(selectedOptions);
         const [movedItem] = newOrder.splice(result.source.index, 1);
+
         newOrder.splice(result.destination.index, 0, movedItem);
         setSelectedOptions(newOrder); // Zustand setter
     };
@@ -297,10 +299,11 @@ const DataViewer: React.FC = () => {
             setDropdownOptions(initialDropdownOptions);             //updating selectedoptions when user choose import data from database
             setSelectedOptions(initialDropdownOptions);
             setTimeSliderData(timeSliderDataArray);                 // Zustand setter
+            
             // Process SCITM data
             telemetry_data.SCITM.forEach((entry: any) => {
                 const timestamp = entry.time;
-                entry.telemetry_data.slice(0, 14).forEach((value: number, index: number) => {
+                entry.telemetry_data.slice(0, CONSTANTS.SCITM_MAX_INDEX).forEach((value: number, index: number) => {
                     const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index].label);
                     if (label) {
                         if (!updatedTelemetryData[label]) {
@@ -315,7 +318,7 @@ const DataViewer: React.FC = () => {
             telemetry_data.HKTM.forEach((entry: any) => {
                 const timestamp = entry.time;
                 entry.telemetry_data.forEach((value: number, index: number) => {
-                    const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index + 14].label)
+                    const label = helperFunctions.getFullLabelWithUnits(CONSTANTS.ALL_LABELS[index + CONSTANTS.SCITM_MAX_INDEX].label)
                     if (label) {
                         if (!updatedTelemetryData[label]) {
                             updatedTelemetryData[label] = [];
@@ -353,6 +356,7 @@ const DataViewer: React.FC = () => {
         setTelemetryData({});       // Zustand setter
         setEndIndex(10);            // Zustand setter
         setStartIndex(5);           // Zustand setter
+
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
 
@@ -363,6 +367,7 @@ const DataViewer: React.FC = () => {
         }
 
         setFile(selectedFile);      // Zustand setter
+
         // Reset date range when a new file is uploaded
         setSelectedDateRange({ startDate: null, endDate: null });
         setVisibleGraphs(initialVisibleGraphs);
@@ -406,9 +411,11 @@ const DataViewer: React.FC = () => {
             const itemTimestamp = item.timestamp;
             return itemTimestamp >= startTimestamp && itemTimestamp <= endTimestamp;
         });
+
         const baseTime = helperFunctions.parseTimeToMillis(filteredData[0]?.timestamp)
+
         const upData = filteredData.map((point, index) => {
-            const [datePart, timePart] = point.timestamp.split(', ');
+            const [, timePart] = point.timestamp.split(', ');
             const miliTime = helperFunctions.parseTimeToMillis(point.timestamp)
 
             const formattedTimestamp = index === 0
@@ -504,13 +511,16 @@ const DataViewer: React.FC = () => {
                 const logsSheetName = workbook.SheetNames[1];
                 const logsSheet = workbook.Sheets[logsSheetName];
                 const logsJsonData: any = XLSX.utils.sheet_to_json(logsSheet);
+
                 setSessionLogsData(logsJsonData);
                 setIsImported(true);
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Data Imported',
                     text: 'Telemetry data has been successfully imported.',
                 });
+
             } catch (error) {
                 Swal.fire({
                     icon: 'error',

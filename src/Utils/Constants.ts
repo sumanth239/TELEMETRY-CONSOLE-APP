@@ -35,6 +35,7 @@ export const BIT_ERROR_ALERT = "Skipping packet, packet contains bit error."
 export const NO_SCHEDULED_COMMANDS = "No TimeTag commands are Scheduled"
 
 // Objects constants data
+export const FREQUENCES = [100,200,300,400,500,600,700,800,900,1000]
 export const COLOR_MAP = [ "#446BAD","#ff7300","#387908","#F05A7E","#82ca9d","#000000"];
 export const TELE_COMMAND_TYPES = ["Real Time", "Time Tagged"];
 export const PRODUCTS = ["AstroLink Nano", "AstroBeam", "miniOCT"];
