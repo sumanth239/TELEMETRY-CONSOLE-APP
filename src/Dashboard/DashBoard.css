@@ -206,12 +206,6 @@
   margin-right: auto;
 }
 
-.dashboard-container1  .commands-main-container .commands-output-container ul li {
-  margin-right: 10px;
-  display: inline;
-  float: right;
-}
-
 .dashboard-container1 .commands-main-container .commands-output-container .system-logs-container {
   color: black;
   border-radius: 15px;
@@ -222,9 +216,12 @@
   height: calc(30vh - 97px);
   font-size: var(--font-size-body);
 }
-
+.dashboard-container1  .commands-main-container .commands-output-container .system-logs-container .log-entry{
+  display: grid;
+  grid-template-columns: 23.5% 1% 70%;
+}
 .dashboard-container1  .commands-main-container .commands-output-container .system-logs-container p {
-  margin: 4px;
+  margin: 3px;
 }
 
 .dashboard-container2  {

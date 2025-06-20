@@ -652,7 +652,7 @@ const Dashboard: React.FC = () => {
       if (result.isConfirmed && result.value) {
         const { fileName, selectedLabels } = result.value;
         selectedLabels.unshift("Timestamp")         //adding timstamp along with the selected labels
-       
+
         const filteredTelemetryData = exportTelemetryData.map(entry => {
           const filteredEntry: { [key: string]: any } = {};
           selectedLabels.forEach((label: string) => {
@@ -663,7 +663,7 @@ const Dashboard: React.FC = () => {
           });
           return filteredEntry;
         });
-        
+
         helperFunctions.updateSessionLogs(`started exporting telemetry data`);
 
         helperFunctions.exportToExcel({
@@ -671,7 +671,7 @@ const Dashboard: React.FC = () => {
           logsData: sessionLogsData,
           fileName,
         });
-        
+
         setExportTelemetryData([]); // if needed
       }
     });
@@ -802,7 +802,9 @@ const Dashboard: React.FC = () => {
               <div className="system-logs-container">
                 {sessionLogsData.map((log, index) => (
                   <div key={index} className="log-entry">
-                    <p>{log.TimeStamp} &nbsp; : &nbsp; {log.Action}</p>
+                    <p>{log.TimeStamp} </p>
+                    <span>:</span>
+                    <p>{log.Action}</p>
                   </div>
                 ))}
               </div>
@@ -973,15 +975,15 @@ const Dashboard: React.FC = () => {
                     }}>
                   </div>
                   <p className="step-text">
-                    {data.apid === 0 ? (
+                    {data.apid === CONSTANTS.REALTIME_CMD_APID ? (
                       <>
                         <i className="bi bi-alarm" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666' }} />&nbsp;
-                        {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
+                        {helperFunctions.formatDateToReadableString(data.timestamp)} :    <br /> {data.telecmd}
                       </>
                     ) : (
                       <>
                         <i className="bi bi-calendar2-check-fill" style={{ color: data.status === 'PENDING' ? '#666666' : data.status === 'FAILED' ? '#B85450' : data.status === 'SUCCESS' ? '#82B366' : '#666666' }} />&nbsp;
-                        {helperFunctions.formatDateToReadableString(data.timestamp)} : {data.telecmd}
+                        {helperFunctions.formatDateToReadableString(data.timestamp)} :    <br /> {data.telecmd}
                       </>
                     )}
                     {!helperFunctions.isArrayEmpty(data.telecmd_values) && data.telecmd_values.map((value: number, idx: number) => (

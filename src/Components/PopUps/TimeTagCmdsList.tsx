@@ -63,7 +63,7 @@ const TimeTagCommandsList: React.FC<ScheduledCommandsProps> = ({ onClose }) => {
                 helperFunctions.updateSessionLogs("Sent all scheduled Time Tag commands.");
             },
             onCancel: () => {
-                helperFunctions.updateSessionLogs("User cancelled sending scheduled Time Tag commands.");
+                helperFunctions.updateSessionLogs("cancelled sending scheduled Time Tag commands.");
             }
         });
 

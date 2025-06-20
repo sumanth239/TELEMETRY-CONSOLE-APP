@@ -107,9 +107,10 @@ const DataViewer: React.FC = () => {
                 const updatedVisibleGraphs = { ...visibleGraphs };                  //getting current state
 
                 groupObj.labels.forEach((graphLabel) => {
-                    updatedVisibleGraphs[graphLabel] = {
-                        ...visibleGraphs[graphLabel],
-                        visibility: !visibleGraphs[graphLabel].visibility,          //updating visiblity of all labesl in a group object
+                    const fullLabel = helperFunctions.getFullLabelWithUnits(graphLabel);
+                    updatedVisibleGraphs[fullLabel] = {
+                        ...visibleGraphs[fullLabel],
+                        visibility: !visibleGraphs[fullLabel].visibility,          //updating visiblity of all labesl in a group object
                     };
                 });
 
@@ -183,7 +184,7 @@ const DataViewer: React.FC = () => {
 
     const handleAllSelectbBoxChange = (event: React.ChangeEvent<HTMLInputElement>) => {     //for dropdown all selector
         if (event.target.checked) {
-            setSelectedOptions(initialDropdownOptions);     // Select all labels and show all graphs
+            setSelectedOptions(dropdownOptions);     // Select all labels and show all graphs
             setVisibleGraphs(initialVisibleGraphs);
 
         } else {
@@ -364,6 +365,7 @@ const DataViewer: React.FC = () => {
         setFile(selectedFile);      // Zustand setter
         // Reset date range when a new file is uploaded
         setSelectedDateRange({ startDate: null, endDate: null });
+        setVisibleGraphs(initialVisibleGraphs);
         if (startDateInputRef?.current) {
             startDateInputRef.current.value = '';
         }
@@ -443,16 +445,15 @@ const DataViewer: React.FC = () => {
                 const sheet = workbook.Sheets[sheetName];
                 const jsonData: any = XLSX.utils.sheet_to_json(sheet);
 
-                const excelSheetLabels = Array.from(
+                const excelSheetLabels:string[] = Array.from(
                     new Set(jsonData.flatMap((row: any) => Object.keys(row)))
                 );
+
                 //extracting labels data for dropdownOptions
-
-                const filteredSelectedOptions = selectedOptions.filter(option =>
-                    excelSheetLabels.includes(helperFunctions.getFullLabelWithUnits(option))
+                const filteredSelectedOptions = initialDropdownOptions.filter(option =>
+                    excelSheetLabels.includes(option)
                 );
-
-                console.log("filtereb labels options", filteredSelectedOptions);
+                
                 // Update the state
                 setDropdownOptions(filteredSelectedOptions);
                 setSelectedOptions(filteredSelectedOptions);
